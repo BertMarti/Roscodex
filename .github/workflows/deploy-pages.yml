@@ -1,4 +1,4 @@
-name: Deploy PokéReto to GitHub Pages
+name: Deploy Roscodex to GitHub Pages
 
 on:
   push:
