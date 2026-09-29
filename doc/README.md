@@ -42,6 +42,7 @@ Flutter dispone de documentación oficial para crear aplicaciones multiplataform
 - [07-backlog-demo.md](07-backlog-demo.md): tareas ordenadas para comenzar el desarrollo.
 - [08-decisiones-abiertas.md](08-decisiones-abiertas.md): decisiones que deben cerrarse antes de ampliar el alcance.
 - [09-auditoria-mejoras-y-contexto.md](09-auditoria-mejoras-y-contexto.md): auditoría por agentes, contexto acumulado y decisiones de la última iteración.
+- [10-guia-de-usuario.md](10-guia-de-usuario.md): explicación de la aplicación, reglas, dificultades, controles y solución de problemas.
 - [AGENT-TEMPLATE.md](AGENT-TEMPLATE.md): plantilla común para nuevos agentes.
 
 ## Demo visual actual
