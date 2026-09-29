@@ -1,0 +1,6 @@
+All image contents within are Copyright The Pokémon Company.
+
+This repository is distributed under CC0 1.0 Universal. CC0 does not waive trademark or patent rights, and the repository disclaims responsibility for clearing other rights that may apply to the images. Review Pokémon's own legal guidance before public distribution.
+
+Source: https://github.com/PokeAPI/sprites/blob/master/LICENCE.txt
+CC0: http://creativecommons.org/publicdomain/zero/1.0/
