@@ -10,9 +10,11 @@ No se puede garantizar que un proveedor externo mantenga para siempre sus cuotas
 
 | Servicio | Uso | ¿Obligatorio? | Coste de la demo |
 |---|---|---:|---:|
-| Flutter | Aplicación | Sí | 0 € |
+| React + TypeScript + Vite | Aplicación web | Sí | 0 € |
+| PWA | Instalación móvil desde navegador | No, pero recomendado | 0 € |
+| Capacitor | Empaquetado Android/iOS | Solo si se desea build nativa | 0 € |
 | VS Code | Editor | Sí | 0 € |
-| Android Studio | SDK y emulador | Para Android | 0 € |
+| Android Studio/Xcode | SDK y emulador | Para builds nativas | 0 € |
 | Git | Versionado local | Sí | 0 € |
 | GitHub | Copia remota opcional | No | 0 € en uso básico |
 | PokéAPI | Investigación/importación | No en ejecución | 0 € según sus condiciones |
@@ -33,9 +35,7 @@ Supabase y Firebase tienen integraciones gratuitas, pero añadirlos no hace que 
 
 ## Hosting
 
-Para la demo local no hace falta hosting.
-
-Si más adelante se quiere compartir una demo web estática, se puede estudiar GitHub Pages, pero no debe considerarse necesario para el MVP ni utilizarse para alojar datos sensibles.
+La PWA se publica gratuitamente en GitHub Pages. Capacitor no necesita un servidor propio: empaqueta la build local en `dist/`. La publicación en tiendas puede tener costes o requisitos externos, por lo que no forma parte del objetivo de coste cero.
 
 ## Reglas anti-coste
 

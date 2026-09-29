@@ -126,15 +126,14 @@ Los datos se importan y validan antes de guardarse en el banco local. Las fuente
 
 ### La página aparece vacía o no carga las preguntas
 
-Abre la aplicación mediante un servidor HTTP local. No abras directamente `index.html` con `file://`.
-
-Desde la raíz del proyecto puedes ejecutar:
+La aplicación usa Vite; no abras un HTML generado con `file://`. Desde la raíz del proyecto puedes arrancar el servidor de desarrollo con:
 
 ```bash
-python -m http.server 8080 -d demo
+npm install
+npm run dev
 ```
 
-Después visita `http://localhost:8080/`.
+Después visita la URL que muestre Vite, normalmente `http://localhost:5173/Roscodex/`.
 
 ### Quiero empezar de cero
 
@@ -142,10 +141,10 @@ Borra los datos del sitio en el navegador. Esto eliminará el historial local de
 
 ### La aplicación funciona, pero no veo sprites
 
-Comprueba que estás ejecutando la carpeta `demo/` desde un servidor HTTP y que no has movido la carpeta `assets/`.
+Comprueba que el build se ha generado con `npm run build` y que los recursos siguen dentro de `public/assets/`.
 
 ## Estado actual del proyecto
 
-Esta versión es una demo web local/publicada. Incluye el flujo principal del juego, el rosco completo, temporizador, respuestas, segunda vuelta, resultados, créditos y banco de preguntas local.
+Esta versión es una PWA web publicada. Incluye el flujo principal del juego, el rosco completo, temporizador, respuestas, segunda vuelta, resultados, créditos, banco de preguntas local y efectos 8-bit generados con Web Audio.
 
-Todavía no incluye cuentas, ranking online, multijugador, sincronización entre dispositivos ni aplicación nativa para Android o iOS.
+Todavía no incluye cuentas, ranking online, multijugador ni sincronización entre dispositivos. La configuración de Capacitor está preparada para crear proyectos Android/iOS cuando se instalen sus SDK nativos.

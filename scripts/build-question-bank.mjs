@@ -1,11 +1,17 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 
 const API = "https://pokeapi.co/api/v2";
-const DATA_DIR = new URL("../demo/data/", import.meta.url);
+const DATA_DIR = new URL("../public/data/", import.meta.url);
 const CACHE_URL = new URL("./pokeapi-pokemon-cache.json", DATA_DIR);
 const OUTPUT_URL = new URL("./question-bank.json", DATA_DIR);
 const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
-const CONTAINS_LETTERS = new Set(["C", "F", "I", "L", "O", "R", "U", "W"]);
+const CONTAINS_LETTERS_BY_DIFFICULTY = {
+  beginner: new Set(["A", "E", "I", "N", "O", "R", "S", "T"]),
+  normal: new Set(["B", "D", "G", "H", "L", "M", "P", "U"]),
+  hard: new Set(["C", "F", "K", "V", "W", "X", "Y", "Z"]),
+  extreme: new Set(["A", "E", "J", "Q", "R", "T", "U", "Y"])
+};
+const DIFFICULTY_OFFSETS = { beginner: 0, normal: 5, hard: 11, extreme: 17 };
 const QUESTIONS_PER_LETTER = 20;
 const REVIEWED_AT = new Date().toISOString().slice(0, 10);
 
@@ -226,7 +232,7 @@ function chooseTargets(pokemon, letter, rule, count) {
   return Array.from({ length: count }, (_, index) => eligible[(index * 7 + index * index) % eligible.length]);
 }
 
-function buildOptions(pokemon, target, letter, rule, variant) {
+function buildOptions(pokemon, target, letter, rule, variant, difficultyOffset) {
   const normalizedLetter = letter.toLowerCase();
   const sameRule = pokemon.filter((entry) => {
     const starts = entry.name.startsWith(normalizedLetter);
@@ -236,19 +242,20 @@ function buildOptions(pokemon, target, letter, rule, variant) {
   const pool = sameRule.length >= 4 ? sameRule : fallback;
   const distractors = [];
   for (let offset = 0; distractors.length < 3 && offset < pool.length * 2; offset += 1) {
-    const candidate = pool[(variant * 13 + offset) % pool.length];
+    const candidate = pool[((variant + difficultyOffset) * 13 + offset) % pool.length];
     if (candidate.id !== target.id && !distractors.some((entry) => entry.id === candidate.id)) distractors.push(candidate);
   }
   if (distractors.length < 3) throw new Error(`No hay tres distractores únicos para ${target.name}`);
   const choices = [target, ...distractors];
-  const correctIndex = (target.id + variant * 3) % 4;
+  const correctIndex = (target.id + (variant + difficultyOffset) * 3) % 4;
   [choices[0], choices[correctIndex]] = [choices[correctIndex], choices[0]];
   return choices.map((choice, index) => ({ id: String.fromCharCode(97 + index), text: titleName(choice.name) }));
 }
 
 function buildQuestion(pokemon, difficulty, letter, variant, usedQuestionTexts) {
-  const rule = CONTAINS_LETTERS.has(letter) ? "contains" : "starts_with";
-  const target = chooseTargets(pokemon, letter, rule, QUESTIONS_PER_LETTER)[variant];
+  const difficultyOffset = DIFFICULTY_OFFSETS[difficulty];
+  const rule = CONTAINS_LETTERS_BY_DIFFICULTY[difficulty].has(letter) ? "contains" : "starts_with";
+  const target = chooseTargets(pokemon, letter, rule, QUESTIONS_PER_LETTER)[(variant + difficultyOffset) % QUESTIONS_PER_LETTER];
   const clue = buildClue(target, difficulty, variant);
   const formattedClue = `${clue[0].toUpperCase()}${clue.slice(1)}`;
   const ruleHint = rule === "contains" ? `Contiene la letra ${letter}.` : `Empieza por la letra ${letter}.`;
@@ -261,7 +268,7 @@ function buildQuestion(pokemon, difficulty, letter, variant, usedQuestionTexts) 
   }
   if (usedQuestionTexts.has(question)) throw new Error(`Pregunta repetida: ${question}`);
   usedQuestionTexts.add(question);
-  const options = buildOptions(pokemon, target, letter, rule, variant);
+  const options = buildOptions(pokemon, target, letter, rule, variant, difficultyOffset);
   const correctOptionId = options.find((option) => option.text.toLowerCase() === titleName(target.name).toLowerCase()).id;
   return {
     id: `${difficulty}-${letter.toLowerCase()}-${String(variant + 1).padStart(3, "0")}`,

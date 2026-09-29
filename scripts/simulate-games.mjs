@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 
-const bank = JSON.parse(await readFile(new URL("../demo/data/question-bank.json", import.meta.url), "utf8"));
+const bank = JSON.parse(await readFile(new URL("../public/data/question-bank.json", import.meta.url), "utf8"));
 const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 const gamesPerDifficulty = 20;
 

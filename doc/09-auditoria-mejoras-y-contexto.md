@@ -1,7 +1,7 @@
 # Auditoría de mejoras y contexto acumulado
 
 **Fecha:** 2026-09-19  
-**Estado:** segunda iteración aplicada y verificada en la demo local  
+**Estado:** migración web/móvil aplicada y verificada en la build de Vite
 **Nombre de la aplicación:** Roscodex
 **Referencia visual revisada:** https://adivina-quien-pokemon.vercel.app/
 
@@ -24,10 +24,10 @@ Requisitos funcionales acumulados:
 - Proyecto fan con créditos y fuentes dentro de un panel no invasivo.
 - Estética pixel-art inspirada en juegos Pokémon clásicos, sin copiar una interfaz oficial.
 
-Decisiones técnicas anteriores:
+Decisiones técnicas consolidadas:
 
-- Demo web estática para validar rápidamente la experiencia.
-- Flutter + Dart como destino posterior para la aplicación móvil.
+- React + TypeScript + Vite como base única de la interfaz.
+- PWA offline-first y Capacitor como salida móvil opcional.
 - JSON local para preguntas.
 - PokéAPI para recopilar datos, no como dependencia obligatoria durante la partida.
 - Sprites cacheados localmente.
@@ -79,8 +79,8 @@ Conclusiones:
 Conclusiones:
 
 - Los sprites actuales están descargados localmente y no se solicitan durante la partida.
-- La licencia del repositorio de sprites se conserva dentro de `demo/assets/sprites/LICENCE.txt`.
-- La fuente `Press Start 2P` y su licencia están dentro de `demo/assets/fonts/`.
+- La licencia del repositorio de sprites se conserva dentro de `public/assets/sprites/LICENCE.txt`.
+- La fuente `Press Start 2P` y su licencia están dentro de `public/assets/fonts/` y se incorpora al bundle desde `src/assets/`.
 - El aviso de proyecto fan sigue visible, pero agrupado para no invadir la pantalla.
 
 ### QA & Accessibility
@@ -97,9 +97,9 @@ Conclusiones:
 
 Conclusiones:
 
-- La demo se ejecuta con Python sin instalar un stack adicional.
-- El servidor local es suficiente para cargar el JSON y los assets.
-- Flutter aún no está instalado, por lo que la web sigue siendo la superficie de validación rápida.
+- La PWA se construye con Vite y el mismo artefacto se puede servir en web o entregar a Capacitor.
+- El banco, la fuente, los sprites y el sintetizador de audio son locales; la partida no depende de APIs.
+- Flutter y `adb` no están instalados; no son requisitos para la superficie web ni para la configuración de Capacitor.
 
 ## 3. Mejoras aplicadas en esta iteración
 
@@ -226,7 +226,7 @@ Los estados actuales son:
 - Retos diarios.
 - Ranking online.
 - Multijugador.
-- Migración completa a Flutter.
+- Empaquetado nativo con Capacitor cuando se necesite Android/iOS.
 
 ## 5. APIs y recursos recomendados
 
@@ -246,7 +246,7 @@ Estrategia: ejecutar un importador separado, revisar los datos y guardar un JSON
 
 ### PokéAPI Sprites
 
-Usar como fuente de referencia para sprites pixelados cacheados. Mantener los archivos y su licencia dentro de `demo/assets/sprites/`.
+Usar como fuente de referencia para sprites pixelados cacheados. Mantener los archivos y su licencia dentro de `public/assets/sprites/`.
 
 No asumir que una licencia de repositorio elimina los derechos de marca o de los personajes representados. La demo se mantiene como fan, local y no comercial mientras no se haga una revisión legal adicional.
 
@@ -297,3 +297,21 @@ Antes de modificar la interfaz o las reglas, leer este archivo junto con:
 - El documento específico del agente que vaya a trabajar.
 
 La prioridad actual es mejorar claridad, jugabilidad y contenido sin añadir servicios de pago ni dependencias online obligatorias.
+
+## 9. Modernización aplicada — 2026-09-29
+
+- Se sustituyó la implementación monolítica de `demo/app.js` por React + TypeScript en `src/`.
+- Vite genera `dist/` con assets versionados y PWA precacheada para GitHub Pages.
+- Capacitor 8 queda configurado con `dist/` como `webDir`; no se obliga a instalar Android Studio ni Xcode para usar la web.
+- El audio de interfaz usa tonos cuadrados locales de Web Audio: toque, acierto, fallo, Pasapalabra y final.
+- Se añadió un retrato local de SpriteCollab con atribución y licencia separadas en `public/assets/spritecollab/`.
+- Se redirigieron el generador, el validador y el simulador a `public/data/`, eliminando la duplicidad runtime anterior.
+- Cada pack mantiene 520 preguntas, pero rota las ocho letras “Contiene” por dificultad y cambia objetivos/distractores entre niveles.
+
+Verificación actual:
+
+- `npm run typecheck` correcto.
+- `npm run validate:content` correcto: 2.080 preguntas únicas.
+- `npm run simulate:games` correcto: 80 partidas sin repeticiones.
+- `npm run build` correcto: bundle Vite + PWA y 40 entradas precacheadas.
+- Smoke test en `vite preview`: index, manifest y banco HTTP 200; partida, acierto, avance y Pasapalabra comprobados en navegador.

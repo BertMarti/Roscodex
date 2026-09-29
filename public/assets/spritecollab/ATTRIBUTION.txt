@@ -1,0 +1,9 @@
+Sprite utilizado como detalle decorativo de Roscodex:
+
+- Archivo: portrait/0025/Happy.png
+- Proyecto: PMDCollab/SpriteCollab
+- Fuente: https://github.com/PMDCollab/SpriteCollab/blob/master/portrait/0025/Happy.png
+- Política de uso: https://github.com/PMDCollab/SpriteCollab/blob/master/README.md
+- Licencia indicada por el proyecto para material comunitario: CC BY-NC 4.0
+
+Roscodex es un proyecto fan no comercial. Este recurso se mantiene separado del banco y puede retirarse si el autor o el proyecto solicitan una revisión de uso.

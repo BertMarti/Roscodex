@@ -7,7 +7,7 @@ Cada agente tiene una finalidad concreta. No se debe pedir a un agente que modif
 Orden recomendado:
 
 ```text
-Producto → UX/UI → Datos → Arquitectura → Motor → Interfaz → QA → Tooling
+Producto → UX/UI → Datos → Arquitectura web/móvil → Motor → Interfaz → QA → Tooling
 ```
 
 El agente de datos puede trabajar en paralelo con UX/UI. QA empieza cuando exista una primera vertical slice jugable.
@@ -19,7 +19,7 @@ El agente de datos puede trabajar en paralelo con UX/UI. QA empieza cuando exist
 | 1 | Product Owner | Cerrar reglas y alcance | Especificación funcional | Ninguno |
 | 2 | UX/UI Pixel | Diseñar flujo y estética | Wireframes, tokens y estados visuales | Product Owner |
 | 3 | Content & PokéAPI | Generar y validar preguntas | `question-bank.json`, `build-question-bank.mjs`, caché y fuentes | Product Owner |
-| 4 | Flutter Architect | Preparar estructura técnica | Proyecto Flutter y arquitectura | Product Owner |
+| 4 | Web/Mobile Architect | Preparar estructura técnica | React, TypeScript, Vite, PWA y Capacitor | Product Owner |
 | 5 | Game Engine | Implementar la partida | Estado, timer y reglas | Arquitectura, Producto |
 | 6 | Pixel UI | Implementar pantallas y animaciones | Interfaz jugable | UX/UI, Arquitectura |
 | 7 | Assets & Attribution | Gestionar recursos y créditos | Assets permitidos y texto legal | UX/UI, Datos |
@@ -71,7 +71,7 @@ El agente de datos puede trabajar en paralelo con UX/UI. QA empieza cuando exist
 
 ## Agentes de auditoría de la demo
 
-Estos agentes se incorporan después de la primera vertical slice y trabajan sobre el estado real de `demo/`:
+Estos agentes se incorporan después de la primera vertical slice y trabajan sobre el estado real de `src/` y `public/`:
 
 | Agente | Finalidad | Documento |
 |---|---|---|

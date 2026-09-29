@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://bertmarti.github.io/Roscodex/">
-    <img src="demo/assets/readme-banner.svg" alt="Roscodex — Completa el rosco" width="900">
+    <img src="assets/readme-banner.svg" alt="Roscodex — Completa el rosco" width="900">
   </a>
 </p>
 
@@ -72,6 +72,10 @@ La interfaz de Roscodex está construida alrededor de una pantalla de juego comp
 - Estados claros para acierto, fallo, pasada y tiempo agotado.
 - Diseño responsive para móvil, tablet y escritorio.
 
+## 🧩 Base técnica
+
+Roscodex utiliza React y TypeScript sobre Vite, con una PWA offline-first para web y una configuración de Capacitor preparada para reutilizar la misma build en Android e iOS. La lógica de la partida y el banco de preguntas se mantienen locales, sin backend obligatorio ni servicios de pago.
+
 ## 🌐 Demo online
 
 👉 [Abrir Roscodex en GitHub Pages](https://bertmarti.github.io/Roscodex/)
@@ -96,7 +100,8 @@ Roscodex no está afiliado, patrocinado ni aprobado por Nintendo, Creatures Inc.
 - [x] Validación automática y simulación de partidas.
 - [ ] Revisión editorial humana de todas las preguntas.
 - [ ] Normalización de nombres de movimientos y habilidades.
-- [ ] Portar la experiencia a Flutter para Android/iOS.
+- [x] Base React + TypeScript + Vite con PWA instalable.
+- [x] Configuración de Capacitor para futura distribución móvil.
 - [ ] Modo práctica sin temporizador.
 - [ ] Récords locales y estadísticas personales.
 

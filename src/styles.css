@@ -1,6 +1,6 @@
 @font-face {
   font-family: "Press Start 2P";
-  src: url("assets/fonts/press-start-2p.ttf") format("truetype");
+  src: url("./assets/fonts/press-start-2p.ttf") format("truetype");
   font-display: swap;
 }
 
@@ -23,7 +23,7 @@
 }
 
 * { box-sizing: border-box; }
-body { margin: 0; min-width: 320px; min-height: 100vh; background: var(--bg); }
+body { margin: 0; min-width: 320px; min-height: 100vh; background: var(--bg); overscroll-behavior-y: none; }
 button, a { font: inherit; }
 button { color: inherit; cursor: pointer; }
 button:focus-visible, a:focus-visible { outline: 3px solid var(--yellow); outline-offset: 3px; }
@@ -77,13 +77,14 @@ h1 b { color: var(--ink); font-weight: 400; }
 .difficulty-card--red { --accent: var(--red); }
 
 .fan-note { width: min(100%, 690px); display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 11px; margin-top: 18px; padding: 13px 15px; border: 1px solid rgba(255,255,255,.12); border-radius: 10px; background: rgba(8, 10, 18, .8); }
-.fan-note__icon { display: grid; place-items: center; width: 21px; height: 21px; border: 2px solid var(--yellow); color: var(--yellow); font-family: "Press Start 2P", monospace; font-size: 9px; }
+.fan-note__icon { display: grid; place-items: center; width: 34px; height: 34px; overflow: hidden; border: 2px solid var(--yellow); background: #fff6b4; color: var(--yellow); font-family: "Press Start 2P", monospace; font-size: 9px; image-rendering: pixelated; }
+.fan-note__icon img { width: 30px; height: 30px; image-rendering: pixelated; object-fit: contain; }
 .fan-note strong { display: block; margin-bottom: 4px; font-size: 11px; }
 .fan-note p { margin: 0; color: var(--muted); font-size: 10px; }
 .link-button { padding: 0; border: 0; background: transparent; color: var(--yellow); font-family: "Press Start 2P", monospace; font-size: 7px; line-height: 1.5; text-decoration: underline; text-underline-offset: 4px; }
 .home-footer { margin: 21px 0 0; color: rgba(167,172,189,.7); font-family: "Press Start 2P", monospace; font-size: 6px; letter-spacing: .05em; text-align: center; }
 
-.screen-game { padding-top: 8px; }
+.screen-game { position: relative; padding-top: 8px; }
 .game-header { display: flex; align-items: center; justify-content: space-between; gap: 18px; }
 .brand-mini { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .brand-mini h2 { margin: 0; font-size: clamp(13px, 3.5vw, 20px); line-height: 1.45; text-transform: uppercase; }
@@ -157,6 +158,13 @@ h1 b { color: var(--ink); font-weight: 400; }
 .secondary-button { margin-top: 9px; background: transparent; color: var(--muted); }
 .primary-button:hover, .secondary-button:hover { transform: translateY(-1px); }
 
+.sound-toggle, .game-sound-toggle { border: 1px solid rgba(255,255,255,.18); background: rgba(16, 19, 32, .74); color: var(--yellow); font-family: "Press Start 2P", monospace; font-size: 7px; }
+.sound-toggle { align-self: start; padding: 7px 8px; border-radius: 6px; }
+.sound-toggle:hover, .game-sound-toggle:hover { border-color: var(--yellow); background: rgba(255,203,5,.12); }
+.game-sound-toggle { position: absolute; top: 6px; right: 0; width: 28px; height: 28px; border-radius: 50%; font-size: 10px; }
+.inline-status { margin: 16px 0 0; color: var(--yellow); font-family: "Press Start 2P", monospace; font-size: 7px; line-height: 1.7; text-align: center; }
+.inline-status--error { color: var(--red); }
+
 @keyframes heartbeat { 0%, 100% { transform: translate(-50%, -50%) scale(1); } 45% { transform: translate(-50%, -50%) scale(1.14); } 60% { transform: translate(-50%, -50%) scale(1); } }
 @keyframes danger-pulse { 50% { transform: translateX(2px); } }
 
@@ -171,6 +179,7 @@ h1 b { color: var(--ink); font-weight: 400; }
   .rosco { width: min(91vw, 405px); }
   .rosco-letter { width: 31px; height: 31px; font-size: 8px; }
   .question-card { padding: 18px 13px 15px; }
+  .game-sound-toggle { top: -2px; right: 0; }
 }
 
 @media (max-width: 410px) {

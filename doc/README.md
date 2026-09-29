@@ -4,7 +4,7 @@
 
 Roscodex es una demo de un rosco de preguntas inspirado en el formato de “pasapalabra”, con temática fan de Pokémon y estética pixel-art.
 
-El primer objetivo no es publicar una aplicación comercial, sino obtener una demo jugable, offline, gratuita y verificable en local.
+El objetivo es mantener una aplicación jugable, offline, gratuita y verificable en web y móvil.
 
 ## Principios del proyecto
 
@@ -19,9 +19,10 @@ El primer objetivo no es publicar una aplicación comercial, sino obtener una de
 
 | Área | Decisión para la demo | Motivo |
 |---|---|---|
-| Aplicación | Flutter + Dart | Una base de código para Android, iOS y escritorio/web si se necesita probar |
-| Editor | VS Code | Ligero y suficiente para Flutter |
-| SDK Android | Android Studio | SDK, emulador y herramientas oficiales |
+| Aplicación | React + TypeScript + Vite | Base web moderna, tipada y optimizada |
+| PWA/móvil | Vite PWA + Capacitor | Web instalable y empaquetado móvil desde la misma build |
+| Editor | VS Code | Ligero y suficiente para TypeScript |
+| SDK Android/iOS | Opcional para la PWA; Android Studio/Xcode para Capacitor | Solo necesario al preparar builds nativas |
 | Datos | JSON local | Cero coste, fácil de versionar y funciona sin conexión |
 | Imágenes | Pixel-art propio o sprites cacheados para demo | Evitar dependencia de red durante el juego |
 | Fuentes de datos | PokéAPI para datos estructurados | No existe necesidad de consultar preguntas en directo |
@@ -29,7 +30,7 @@ El primer objetivo no es publicar una aplicación comercial, sino obtener una de
 | Backend | Ninguno en el MVP | Mantiene el coste y la complejidad a cero |
 | Control de versiones | Git | Historial y trabajo seguro |
 
-Flutter dispone de documentación oficial para crear aplicaciones multiplataforma y recomienda separar presentación, lógica y datos. [Documentación oficial de Flutter](https://docs.flutter.dev/).
+La decisión completa y sus límites están documentados en [11-modernizacion-stack.md](11-modernizacion-stack.md).
 
 ## Documentos de este directorio
 
@@ -43,19 +44,12 @@ Flutter dispone de documentación oficial para crear aplicaciones multiplataform
 - [08-decisiones-abiertas.md](08-decisiones-abiertas.md): decisiones que deben cerrarse antes de ampliar el alcance.
 - [09-auditoria-mejoras-y-contexto.md](09-auditoria-mejoras-y-contexto.md): auditoría por agentes, contexto acumulado y decisiones de la última iteración.
 - [10-guia-de-usuario.md](10-guia-de-usuario.md): explicación de la aplicación, reglas, dificultades, controles y solución de problemas.
+- [11-modernizacion-stack.md](11-modernizacion-stack.md): migración a React, TypeScript, Vite, PWA y Capacitor.
 - [AGENT-TEMPLATE.md](AGENT-TEMPLATE.md): plantilla común para nuevos agentes.
 
-## Demo visual actual
+## Aplicación actual
 
-La primera vertical slice está en [demo](../demo). Es una demo web estática y local creada para validar rápidamente la experiencia visual antes de instalar Flutter:
-
-```bash
-python -m http.server 8080 -d demo
-```
-
-Después se abre `http://localhost:8080`. Incluye la navegación, el rosco, el temporizador, las respuestas, Pasapalabra, la segunda vuelta y el panel de fuentes.
-
-Esta demo no sustituye al objetivo Flutter; sirve como prototipo funcional de interfaz y reglas mientras el entorno Flutter no esté instalado.
+La aplicación se construye desde `src/` con Vite y publica una PWA estática. El artefacto de GitHub Pages se genera en `dist/`; no se mantiene una copia manual de la demo compilada dentro del repositorio.
 
 ## Agentes
 
@@ -70,7 +64,7 @@ Agentes definidos:
 
 - Product Owner y reglas del juego.
 - UX/UI pixel-art.
-- Arquitectura Flutter.
+- Arquitectura React + TypeScript + Capacitor.
 - Motor de partida y temporizador.
 - Contenido, preguntas y PokéAPI.
 - Recursos visuales y atribución.

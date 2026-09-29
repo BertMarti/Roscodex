@@ -1,6 +1,6 @@
 import { access, readFile } from "node:fs/promises";
 
-const dataUrl = (name) => new URL(`./data/${name}`, import.meta.url);
+const dataUrl = (name) => new URL(`../public/data/${name}`, import.meta.url);
 const errors = [];
 const expectedLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 const globalIds = new Set();

@@ -6,13 +6,14 @@ Conseguir una primera versión jugable en local, sin cuentas externas obligatori
 
 ## Estado actual
 
-Ya existe una primera vertical slice web en `demo/`. Se ejecuta con un servidor estático de Python y permite validar la experiencia antes de instalar Flutter. El siguiente paso técnico será trasladar los modelos, reglas y estados visuales validados a Flutter.
+La vertical slice se ha modernizado a React + TypeScript + Vite. El build web se sirve como PWA y la configuración de Capacitor permite reutilizarlo en móvil sin mantener una segunda interfaz.
 
 ## Fase 0 — decisiones rápidas
 
 Cerrar estas decisiones antes de programar:
 
-- Flutter + Dart.
+- React + TypeScript + Vite.
+- PWA offline-first y Capacitor como salida móvil opcional.
 - Android como primera plataforma de prueba.
 - Rosco A-Z con 26 letras en la demo inicial.
 - Preguntas almacenadas en JSON.
@@ -24,43 +25,39 @@ Cerrar estas decisiones antes de programar:
 
 Instalar gratuitamente:
 
-- Flutter SDK.
-- Dart incluido con Flutter.
-- VS Code y extensiones Flutter/Dart.
-- Android Studio, Android SDK y un emulador.
+- Node.js y npm.
+- VS Code y extensiones TypeScript.
+- Android Studio/Android SDK solo para probar la salida Android de Capacitor.
 - Git.
 
 Comprobación inicial:
 
 ```bash
-flutter doctor
-flutter create roscodex_app
-cd roscodex_app
-flutter run
+npm install
+npm run typecheck
+npm run dev
 ```
 
 El nombre real del paquete debe decidirse antes de publicar; durante la demo puede mantenerse privado y provisional.
 
 ## Fase 2 — estructura mínima
 
-Crear:
+La base actual se organiza así:
 
 ```text
-lib/
-  main.dart
-  models/
-  repositories/
-  services/
-  features/
-  widgets/
+src/
+  App.tsx
+  game.ts
+  audio.ts
+  main.tsx
+  styles.css
 
-assets/
-  data/questions.json
-  fonts/
-  sprites/
+public/
+  data/
+  assets/
 ```
 
-Registrar el JSON y los recursos en `pubspec.yaml`.
+Los datos y recursos se sirven desde `public/` y Vite los incorpora al artefacto web.
 
 ## Fase 3 — vertical slice
 
@@ -106,7 +103,7 @@ El motor debe ser independiente de la UI para poder probarlo con tests unitarios
 
 ## Fase 5 — contenido completo
 
-- Crear 26 preguntas por pack.
+- Mantener al menos 500 preguntas por dificultad y 20 candidatas por letra.
 - Mantener aproximadamente 70 % “Empieza por…” y 30 % “Contiene…”.
 - Crear al menos un pack por dificultad para la demo.
 - Revisar manualmente las preguntas.
@@ -138,9 +135,10 @@ Al pulsar el botón, abrir información completa con fuentes y atribuciones. El 
 Ejecutar:
 
 ```bash
-flutter analyze
-flutter test
-flutter run
+npm run typecheck
+npm run validate:content
+npm run simulate:games
+npm run build
 ```
 
 Comprobar manualmente:

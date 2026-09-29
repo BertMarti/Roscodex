@@ -1,0 +1,36 @@
+{
+  "name": "roscodex",
+  "version": "0.3.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "validate:content": "node scripts/validate-content.mjs",
+    "simulate:games": "node scripts/simulate-games.mjs",
+    "test": "npm run typecheck && npm run validate:content && npm run simulate:games && npm run build",
+    "mobile:add:android": "npm run build -- --base=/ && cap add android && cap sync android",
+    "mobile:add:ios": "npm run build -- --base=/ && cap add ios && cap sync ios",
+    "mobile:sync": "npm run build -- --base=/ && cap sync",
+    "mobile:android": "npm run mobile:sync && cap open android",
+    "mobile:ios": "npm run mobile:sync && cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/core": "^8.5.2",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/cli": "^8.5.2",
+    "@capacitor/ios": "^8.5.2",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.1",
+    "vite-plugin-pwa": "^1.3.0"
+  }
+}
