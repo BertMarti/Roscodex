@@ -4,7 +4,7 @@ Estas decisiones deben cerrarse antes de ampliar el MVP.
 
 ## Nombre visual
 
-- [x] **PokéReto** como nombre provisional de la demo.
+- [x] **Roscodex** como nombre de la aplicación.
 - [ ] Comprobar disponibilidad y posibles conflictos antes de distribuir públicamente.
 
 ## Alfabeto

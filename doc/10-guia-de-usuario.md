@@ -1,8 +1,8 @@
-# PokéReto — Guía de usuario
+# Roscodex — Guía de usuario
 
-## ¿Qué es PokéReto?
+## ¿Qué es Roscodex?
 
-PokéReto es un juego de preguntas tipo rosco inspirado en el formato de televisión de “Pasapalabra”, con estética pixel-art y temática Pokémon.
+Roscodex es un juego de preguntas tipo rosco inspirado en el formato de televisión de “Pasapalabra”, con estética pixel-art y temática Pokémon.
 
 El objetivo es completar el rosco de la A a la Z respondiendo preguntas antes de que termine el tiempo.
 
@@ -118,7 +118,7 @@ La conexión a Internet solo es necesaria para abrir la versión publicada por p
 
 ## Proyecto fan y fuentes
 
-PokéReto utiliza datos estructurados de [PokéAPI](https://pokeapi.co/), sprites de [PokéAPI Sprites](https://github.com/PokeAPI/sprites) y la tipografía [Press Start 2P](https://fonts.google.com/specimen/Press+Start+2P).
+Roscodex utiliza datos estructurados de [PokéAPI](https://pokeapi.co/), sprites de [PokéAPI Sprites](https://github.com/PokeAPI/sprites) y la tipografía [Press Start 2P](https://fonts.google.com/specimen/Press+Start+2P).
 
 Los datos se importan y validan antes de guardarse en el banco local. Las fuentes y la información legal están disponibles en el botón **Fuentes y créditos** de la pantalla inicial.
 

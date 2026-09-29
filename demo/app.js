@@ -5,6 +5,9 @@ const difficultyConfig = {
   extreme: { label: "EXTREMO", seconds: 180 }
 };
 
+const QUESTION_HISTORY_KEY = "roscodex-question-history-v4";
+const LEGACY_QUESTION_HISTORY_KEY = "pokereto-question-history-v3";
+
 class QuestionBankExhaustedError extends Error {
   constructor(difficulty) {
     super(`No quedan preguntas nuevas para ${difficulty}`);
@@ -208,7 +211,8 @@ function choosePack(difficulty) {
 
 function loadQuestionHistory() {
   try {
-    return JSON.parse(localStorage.getItem("pokereto-question-history-v3") || "{}");
+    const stored = localStorage.getItem(QUESTION_HISTORY_KEY) || localStorage.getItem(LEGACY_QUESTION_HISTORY_KEY) || "{}";
+    return JSON.parse(stored);
   } catch {
     return {};
   }
@@ -216,7 +220,7 @@ function loadQuestionHistory() {
 
 function saveQuestionHistory(history) {
   try {
-    localStorage.setItem("pokereto-question-history-v3", JSON.stringify(history));
+    localStorage.setItem(QUESTION_HISTORY_KEY, JSON.stringify(history));
   } catch {
     // La demo sigue funcionando aunque el navegador bloquee el almacenamiento local.
   }

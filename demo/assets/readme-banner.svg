@@ -1,65 +1,92 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 500" role="img" aria-labelledby="title desc">
-  <title id="title">PokéReto — El desafío de las letras</title>
-  <desc id="desc">Banner pixel-art de PokéReto con el rosco circular A-Z.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 680" role="img" aria-labelledby="title desc">
+  <title id="title">Roscodex — Completa el rosco</title>
+  <desc id="desc">Recreación pixel-art de la pantalla de juego de Roscodex, con cabecera, rosco circular y tarjeta de pregunta.</desc>
   <defs>
     <pattern id="scanlines" width="8" height="8" patternUnits="userSpaceOnUse">
-      <rect width="8" height="8" fill="#080b17"/><rect y="5" width="8" height="1" fill="#ffffff" opacity=".08"/>
+      <rect width="8" height="8" fill="#080b17"/><rect y="5" width="8" height="1" fill="#ffffff" opacity=".075"/>
     </pattern>
-    <radialGradient id="halo"><stop stop-color="#233d7b" stop-opacity=".8"/><stop offset="1" stop-color="#080b17" stop-opacity="0"/></radialGradient>
+    <radialGradient id="screenGlow" cx="42%" cy="48%" r="70%">
+      <stop offset="0" stop-color="#121e3c"/><stop offset=".58" stop-color="#0a0e1d"/><stop offset="1" stop-color="#080b17"/>
+    </radialGradient>
+    <filter id="blur"><feGaussianBlur stdDeviation="12"/></filter>
+    <style>
+      .pixel { font-family: 'Courier New', monospace; font-weight: 900; }
+      .tiny { font-family: 'Courier New', monospace; font-weight: 700; letter-spacing: 2px; }
+    </style>
   </defs>
-  <rect width="1200" height="500" fill="#080b17"/>
-  <rect width="1200" height="500" fill="url(#halo)"/>
-  <rect width="1200" height="500" fill="url(#scanlines)"/>
-  <rect x="20" y="20" width="1160" height="460" rx="18" fill="none" stroke="#626679" stroke-width="4"/>
-  <rect x="30" y="30" width="1140" height="440" rx="12" fill="none" stroke="#1f263e" stroke-width="3"/>
 
-  <g transform="translate(76 78)">
-    <circle cx="42" cy="42" r="36" fill="#e74a4a" stroke="#ffcb05" stroke-width="7"/>
-    <path d="M8 42h68" stroke="#252737" stroke-width="9"/>
-    <circle cx="42" cy="42" r="13" fill="#f5f5f7" stroke="#252737" stroke-width="6"/>
-    <circle cx="42" cy="42" r="5" fill="#ffcb05"/>
+  <rect width="1200" height="680" fill="url(#screenGlow)"/>
+  <g opacity=".18" filter="url(#blur)">
+    <rect x="30" y="230" width="260" height="155" rx="20" fill="#a62f47"/>
+    <rect x="320" y="230" width="260" height="155" rx="20" fill="#203a82"/>
+    <rect x="610" y="230" width="260" height="155" rx="20" fill="#26704e"/>
+    <rect x="900" y="230" width="260" height="155" rx="20" fill="#b16b20"/>
   </g>
-  <text x="174" y="102" fill="#ffcb05" font-family="monospace" font-size="22" font-weight="700" letter-spacing="4">FAN GAME // DEMO LOCAL</text>
-  <text x="174" y="182" fill="#ffcb05" font-family="monospace" font-size="78" font-weight="900" letter-spacing="-6">POKÉ</text>
-  <text x="482" y="182" fill="#f7f7fa" font-family="monospace" font-size="78" font-weight="900" letter-spacing="-6">RETO</text>
-  <text x="178" y="225" fill="#a7acbd" font-family="monospace" font-size="19" letter-spacing="3">EL DESAFÍO DE LAS LETRAS</text>
-  <rect x="176" y="270" width="350" height="52" rx="8" fill="#1a1c2a" stroke="#626679" stroke-width="3"/>
-  <text x="351" y="303" fill="#f7f7fa" font-family="monospace" font-size="14" font-weight="700" text-anchor="middle">PREGUNTAS · TIEMPO · ROSCO</text>
-  <text x="351" y="365" fill="#35cf78" font-family="monospace" font-size="15" font-weight="700" text-anchor="middle" letter-spacing="2">SIN CUENTAS · GRATIS</text>
+  <rect width="1200" height="680" fill="url(#scanlines)"/>
+  <rect x="20" y="20" width="1160" height="640" rx="16" fill="none" stroke="#171c2e" stroke-width="3"/>
 
-  <g fill="#f7f7fa" font-family="monospace" font-size="16" font-weight="900" text-anchor="middle">
-    <circle cx="850" cy="135" r="24" fill="#c93649" opacity=".85"/><text x="850" y="141">A</text>
-    <circle cx="885" cy="139" r="24" fill="#c93649" opacity=".85"/><text x="885" y="145">B</text>
-    <circle cx="920" cy="148" r="24" fill="#c93649" opacity=".85"/><text x="920" y="154">C</text>
-    <circle cx="951" cy="166" r="24" fill="#c93649" opacity=".85"/><text x="951" y="172">D</text>
-    <circle cx="978" cy="191" r="24" fill="#c93649" opacity=".85"/><text x="978" y="197">E</text>
-    <circle cx="1000" cy="220" r="24" fill="#c93649" opacity=".85"/><text x="1000" y="226">F</text>
-    <circle cx="1010" cy="254" r="24" fill="#c93649" opacity=".85"/><text x="1010" y="260">G</text>
-    <circle cx="1015" cy="290" r="24" fill="#ffcb05"/><text x="1015" y="296" fill="#191c2b">H</text>
-    <circle cx="1010" cy="326" r="24" fill="#c93649" opacity=".85"/><text x="1010" y="332">I</text>
-    <circle cx="1000" cy="360" r="24" fill="#c93649" opacity=".85"/><text x="1000" y="366">J</text>
-    <circle cx="978" cy="389" r="24" fill="#c93649" opacity=".85"/><text x="978" y="395">K</text>
-    <circle cx="951" cy="414" r="24" fill="#c93649" opacity=".85"/><text x="951" y="420">L</text>
-    <circle cx="920" cy="432" r="24" fill="#c93649" opacity=".85"/><text x="920" y="438">M</text>
-    <circle cx="885" cy="441" r="24" fill="#c93649" opacity=".85"/><text x="885" y="447">N</text>
-    <circle cx="850" cy="445" r="24" fill="#c93649" opacity=".85"/><text x="850" y="451">O</text>
-    <circle cx="815" cy="441" r="24" fill="#c93649" opacity=".85"/><text x="815" y="447">P</text>
-    <circle cx="780" cy="432" r="24" fill="#c93649" opacity=".85"/><text x="780" y="438">Q</text>
-    <circle cx="749" cy="414" r="24" fill="#c93649" opacity=".85"/><text x="749" y="420">R</text>
-    <circle cx="722" cy="389" r="24" fill="#c93649" opacity=".85"/><text x="722" y="395">S</text>
-    <circle cx="700" cy="360" r="24" fill="#c93649" opacity=".85"/><text x="700" y="366">T</text>
-    <circle cx="690" cy="326" r="24" fill="#c93649" opacity=".85"/><text x="690" y="332">U</text>
-    <circle cx="685" cy="290" r="24" fill="#c93649" opacity=".85"/><text x="685" y="296">V</text>
-    <circle cx="690" cy="254" r="24" fill="#c93649" opacity=".85"/><text x="690" y="260">W</text>
-    <circle cx="700" cy="220" r="24" fill="#c93649" opacity=".85"/><text x="700" y="226">X</text>
-    <circle cx="722" cy="191" r="24" fill="#c93649" opacity=".85"/><text x="722" y="197">Y</text>
-    <circle cx="749" cy="166" r="24" fill="#c93649" opacity=".85"/><text x="749" y="172">Z</text>
+  <g transform="translate(86 66)">
+    <circle cx="29" cy="29" r="25" fill="#e74a4a" stroke="#ffcb05" stroke-width="5"/>
+    <path d="M7 29h44" stroke="#252737" stroke-width="6"/>
+    <circle cx="29" cy="29" r="10" fill="#f5f5f7" stroke="#252737" stroke-width="4"/>
+    <circle cx="29" cy="29" r="4" fill="#ffcb05"/>
   </g>
-  <g>
-    <circle cx="850" cy="290" r="55" fill="#121625" stroke="#ffcb05" stroke-width="5"/>
-    <path d="M800 290h100" stroke="#252737" stroke-width="11"/>
-    <circle cx="850" cy="290" r="19" fill="#f5f5f7" stroke="#252737" stroke-width="7"/>
-    <circle cx="850" cy="290" r="7" fill="#ffcb05"/>
-    <text x="850" y="348" fill="#ffcb05" font-family="monospace" font-size="13" font-weight="900" text-anchor="middle">A-Z</text>
+  <text x="143" y="72" fill="#ffcb05" class="tiny" font-size="13">ROSCODEX  //  PRINCIPIANTE</text>
+  <text x="143" y="116" fill="#f7f7fa" class="pixel" font-size="34" letter-spacing="1">COMPLETA EL ROSCO</text>
+  <text x="144" y="145" fill="#a7acbd" class="tiny" font-size="11">VUELTA 1  ·  LETRA A</text>
+
+  <g transform="translate(975 55)">
+    <rect width="115" height="62" rx="9" fill="#0d1020" stroke="#ffcb05" stroke-width="2"/>
+    <text x="57" y="20" fill="#ffcb05" class="tiny" font-size="9" text-anchor="middle">TIEMPO</text>
+    <text x="57" y="47" fill="#f7f7fa" class="pixel" font-size="20" text-anchor="middle">06:00</text>
   </g>
+  <text x="1089" y="145" fill="#ffcb05" class="tiny" font-size="11" text-anchor="end">120 PUNTOS</text>
+
+  <g fill="#f7f7fa" class="pixel" font-size="14" text-anchor="middle">
+    <circle cx="370" cy="178" r="21" fill="#ffcb05" stroke="#626679" stroke-width="3"/><text x="370" y="183" fill="#191c2b">A</text>
+    <circle cx="410" cy="182" r="21" fill="#626679" stroke="#5874ff" stroke-width="2"/><text x="410" y="187">B</text>
+    <circle cx="449" cy="194" r="21" fill="#626679" stroke="#5874ff" stroke-width="2"/><text x="449" y="199">C</text>
+    <circle cx="484" cy="213" r="21" fill="#626679" stroke="#5874ff" stroke-width="2"/><text x="484" y="218">D</text>
+    <circle cx="514" cy="239" r="21" fill="#626679" stroke="#5874ff" stroke-width="2"/><text x="514" y="244">E</text>
+    <circle cx="536" cy="272" r="21" fill="#626679" stroke="#5874ff" stroke-width="2"/><text x="536" y="277">F</text>
+    <circle cx="547" cy="309" r="21" fill="#626679" stroke="#5874ff" stroke-width="2"/><text x="547" y="314">G</text>
+    <circle cx="551" cy="349" r="21" fill="#626679" stroke="#5874ff" stroke-width="2"/><text x="551" y="354">H</text>
+    <circle cx="547" cy="389" r="21" fill="#626679" stroke="#5874ff" stroke-width="2"/><text x="547" y="394">I</text>
+    <circle cx="536" cy="426" r="21" fill="#626679" stroke="#5874ff" stroke-width="2"/><text x="536" y="431">J</text>
+    <circle cx="514" cy="459" r="21" fill="#626679" stroke="#5874ff" stroke-width="2"/><text x="514" y="464">K</text>
+    <circle cx="484" cy="485" r="21" fill="#626679" stroke="#5874ff" stroke-width="2"/><text x="484" y="490">L</text>
+    <circle cx="449" cy="504" r="21" fill="#626679" stroke="#5874ff" stroke-width="2"/><text x="449" y="509">M</text>
+    <circle cx="410" cy="516" r="21" fill="#626679" stroke="#5874ff" stroke-width="2"/><text x="410" y="521">N</text>
+    <circle cx="370" cy="520" r="21" fill="#626679" stroke="#5874ff" stroke-width="2"/><text x="370" y="525">O</text>
+    <circle cx="330" cy="516" r="21" fill="#626679" stroke="#5874ff" stroke-width="2"/><text x="330" y="521">P</text>
+    <circle cx="291" cy="504" r="21" fill="#626679" stroke="#5874ff" stroke-width="2"/><text x="291" y="509">Q</text>
+    <circle cx="256" cy="485" r="21" fill="#626679" stroke="#5874ff" stroke-width="2"/><text x="256" y="490">R</text>
+    <circle cx="226" cy="459" r="21" fill="#626679" stroke="#5874ff" stroke-width="2"/><text x="226" y="464">S</text>
+    <circle cx="204" cy="426" r="21" fill="#626679" stroke="#5874ff" stroke-width="2"/><text x="204" y="431">T</text>
+    <circle cx="193" cy="389" r="21" fill="#626679" stroke="#5874ff" stroke-width="2"/><text x="193" y="394">U</text>
+    <circle cx="189" cy="349" r="21" fill="#626679" stroke="#5874ff" stroke-width="2"/><text x="189" y="354">V</text>
+    <circle cx="193" cy="309" r="21" fill="#626679" stroke="#5874ff" stroke-width="2"/><text x="193" y="314">W</text>
+    <circle cx="204" cy="272" r="21" fill="#626679" stroke="#5874ff" stroke-width="2"/><text x="204" y="277">X</text>
+    <circle cx="226" cy="239" r="21" fill="#626679" stroke="#5874ff" stroke-width="2"/><text x="226" y="244">Y</text>
+    <circle cx="256" cy="213" r="21" fill="#626679" stroke="#5874ff" stroke-width="2"/><text x="256" y="218">Z</text>
+  </g>
+
+  <g transform="translate(665 205)">
+    <rect width="430" height="310" rx="16" fill="#1a1c2a" stroke="#626679" stroke-width="3"/>
+    <text x="24" y="34" fill="#a7acbd" class="tiny" font-size="10">DESAFÍO ACTIVO</text>
+    <rect x="232" y="17" width="174" height="31" rx="3" fill="#111525" stroke="#ffcb05" stroke-width="2"/>
+    <text x="319" y="38" fill="#ffcb05" class="tiny" font-size="9" text-anchor="middle">EMPIEZA POR LA LETRA A</text>
+    <text x="215" y="91" fill="#f7f7fa" class="pixel" font-size="17" text-anchor="middle">Empieza por la letra A.</text>
+    <text x="215" y="118" fill="#f7f7fa" class="pixel" font-size="17" text-anchor="middle">Es de tipo Agua y Hada.</text>
+    <g fill="#111525" stroke="#626679" stroke-width="2">
+      <rect x="24" y="147" width="184" height="48" rx="7"/><rect x="222" y="147" width="184" height="48" rx="7"/>
+      <rect x="24" y="207" width="184" height="48" rx="7"/><rect x="222" y="207" width="184" height="48" rx="7"/>
+    </g>
+    <g fill="#f7f7fa" font-family="Arial, sans-serif" font-size="13"><text x="38" y="176">Alakazam</text><text x="236" y="176">Azumarill</text><text x="38" y="236">Arcanine</text><text x="236" y="236">Abra</text></g>
+    <rect x="24" y="270" width="382" height="25" rx="5" fill="#182342" stroke="#5874ff" stroke-width="2"/>
+    <text x="215" y="288" fill="#9fb1ff" class="tiny" font-size="9" text-anchor="middle">↻ PASAPALABRA</text>
+  </g>
+
+  <text x="370" y="580" fill="#a7acbd" class="tiny" font-size="10" text-anchor="middle">○ PENDIENTE   ● ACIERTO   ● FALLADA   ● PASADA   ● TIEMPO</text>
+  <text x="600" y="635" fill="#35cf78" class="tiny" font-size="13" text-anchor="middle">ROSCODEX · PROYECTO FAN GRATUITO</text>
 </svg>

@@ -2,7 +2,7 @@
 
 ## Propósito
 
-Roscodex será una demo local de un rosco de preguntas inspirado en el formato de “pasapalabra”, con temática fan de Pokémon y estética pixel-art. El nombre visual provisional de la aplicación es **PokéReto**.
+Roscodex es una demo de un rosco de preguntas inspirado en el formato de “pasapalabra”, con temática fan de Pokémon y estética pixel-art.
 
 El primer objetivo no es publicar una aplicación comercial, sino obtener una demo jugable, offline, gratuita y verificable en local.
 

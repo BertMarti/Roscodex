@@ -2,7 +2,7 @@
 
 **Fecha:** 2026-09-19  
 **Estado:** segunda iteración aplicada y verificada en la demo local  
-**Nombre visual provisional:** PokéReto  
+**Nombre de la aplicación:** Roscodex
 **Referencia visual revisada:** https://adivina-quien-pokemon.vercel.app/
 
 ## 1. Contexto acumulado del proyecto
@@ -43,7 +43,7 @@ Se aplicaron las responsabilidades de los agentes definidos en `doc/agents`.
 Conclusiones:
 
 - El nombre “El rosco pixelado” no comunica la temática Pokémon ni tiene fuerza de marca.
-- **PokéReto** funciona mejor como nombre visual provisional porque es corto, identificable y comunica reto.
+- **Roscodex** es el nombre definitivo de la aplicación y conserva la referencia directa al formato de rosco.
 - El rosco debe ser reconocible en menos de un segundo.
 - Cada ficha del rosco debe reforzar la temática sin competir con la pregunta.
 
@@ -126,7 +126,7 @@ Los estados actuales son:
 
 ### Identidad visual
 
-- “PokéReto” sustituye a “El rosco pixelado” en la interfaz.
+- “Roscodex” sustituye a “El rosco pixelado” y a “PokéReto” en la interfaz.
 - El subtítulo es “El desafío de las letras”.
 - Se mantiene el tono fan, pero con una marca más breve.
 - El panel principal utiliza una jerarquía similar a una pantalla de creación de partida.
@@ -152,7 +152,7 @@ Los estados actuales son:
 - Se añadió un generador basado en PokéAPI en `scripts/build-question-bank.mjs`.
 - El banco compilado contiene 520 preguntas por dificultad, 20 por letra y 2.080 preguntas únicas en total.
 - La partida selecciona solo 26 preguntas —una por letra— y nunca intenta dibujar las 520 en el rosco.
-- El historial `pokereto-question-history-v3` reserva IDs usados por dificultad.
+- El historial actual `roscodex-question-history-v4` reserva IDs usados por dificultad y migra el historial antiguo de `pokereto-question-history-v3`.
 - Cuando se agota una dificultad, la interfaz muestra “No quedan preguntas nuevas” y no borra el historial automáticamente; reiniciar la rotación requiere una acción explícita.
 - `scripts/simulate-games.mjs` simula 20 roscos por dificultad y verifica que se consumen 520 IDs únicos por banco.
 - El estado de fuente del banco generado es `generated-validated`: la validación automática confirma regla, opciones, distribución y trazabilidad de PokéAPI; queda pendiente una revisión editorial humana de los 2.080 enunciados, especialmente nombres de movimientos y habilidades.

@@ -1,6 +1,6 @@
-# PokéReto — demo visual local
+# Roscodex — demo visual local
 
-Esta primera demo es una vertical slice visual autocontenida para validar el flujo antes de portar la experiencia a Flutter. El nombre visual provisional es **PokéReto**: más directo, reconocible y alineado con el tono fan que “El rosco pixelado”.
+Esta primera demo es una vertical slice visual autocontenida para validar el flujo antes de portar la experiencia a Flutter. **Roscodex** es el nombre de la aplicación.
 
 ## Ejecutar
 

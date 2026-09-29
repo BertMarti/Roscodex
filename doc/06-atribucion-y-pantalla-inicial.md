@@ -16,7 +16,7 @@ Sin afiliación ni patrocinio oficial.
 ## Texto ampliado sugerido
 
 ```text
-PokéReto es un proyecto fan no oficial creado con fines educativos y de experimentación.
+Roscodex es un proyecto fan no oficial creado con fines educativos y de experimentación.
 
 Pokémon y los nombres de sus personajes pertenecen a sus respectivos titulares. Este proyecto no está afiliado, patrocinado ni aprobado por Nintendo, Creatures Inc., GAME FREAK inc. ni The Pokémon Company.
 
