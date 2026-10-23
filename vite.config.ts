@@ -38,7 +38,8 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["favicon.svg", "assets/spritecollab/pikachu-happy.png"],
+      // No usar includeAssets para archivos que ya cubre globPatterns: Workbox los duplicaba con
+      // distinta revisión y el service worker fallaba al instalarse (add-to-cache-list-conflicting-entries).
       manifest: {
         name: "Roscodex",
         short_name: "Roscodex",
