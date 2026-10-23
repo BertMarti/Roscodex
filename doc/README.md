@@ -26,7 +26,7 @@ El objetivo es mantener una aplicación jugable, offline, gratuita y verificable
 | Datos | JSON local | Cero coste, fácil de versionar y funciona sin conexión |
 | Imágenes | Pixel-art propio o sprites cacheados para demo | Evitar dependencia de red durante el juego |
 | Fuentes de datos | PokéAPI para datos estructurados | No existe necesidad de consultar preguntas en directo |
-| Persistencia local | `shared_preferences` o archivo local | Ajustes y récords sencillos |
+| Persistencia local | `localStorage` del navegador | Historial de preguntas y preferencia de sonido |
 | Backend | Ninguno en el MVP | Mantiene el coste y la complejidad a cero |
 | Control de versiones | Git | Historial y trabajo seguro |
 
@@ -45,6 +45,7 @@ La decisión completa y sus límites están documentados en [11-modernizacion-st
 - [09-auditoria-mejoras-y-contexto.md](09-auditoria-mejoras-y-contexto.md): auditoría por agentes, contexto acumulado y decisiones de la última iteración.
 - [10-guia-de-usuario.md](10-guia-de-usuario.md): explicación de la aplicación, reglas, dificultades, controles y solución de problemas.
 - [11-modernizacion-stack.md](11-modernizacion-stack.md): migración a React, TypeScript, Vite, PWA y Capacitor.
+- [DESARROLLO.md](DESARROLLO.md): guía técnica actual (comandos, estructura, CI, Pages, seguridad).
 - [AGENT-TEMPLATE.md](AGENT-TEMPLATE.md): plantilla común para nuevos agentes.
 
 ## Aplicación actual
