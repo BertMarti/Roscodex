@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { difficultyConfig, LETTERS } from "./game";
 import type { Difficulty, Question, QuestionPack, QuestionRule } from "./game";
-import { advance, answerCurrent, createGameState, finish, passCurrent } from "./gameState";
+import { advance, answerCurrent, createGameState, finish, passCurrent, resumeAfterPause } from "./gameState";
 
 const AHORA = 1_000_000;
 
@@ -277,5 +277,19 @@ describe("partida completa simulada", () => {
     expect(state.finished).toBe(true);
     expect(state.finishReason).toBe("complete");
     expect(state.currentIndex).toBeNull();
+  });
+});
+
+describe("resumeAfterPause", () => {
+  it("devuelve al reloj el tiempo que estuvo en pausa", () => {
+    const estado = createGameState("normal", makePack("normal", 1).questions, AHORA);
+    expect(resumeAfterPause(estado, 15_000).endAt).toBe(estado.endAt + 15_000);
+  });
+
+  it("no cambia nada si la pausa no es positiva o la partida terminó", () => {
+    const estado = createGameState("normal", makePack("normal", 1).questions, AHORA);
+    expect(resumeAfterPause(estado, 0)).toBe(estado);
+    const terminado = finish(estado, "time");
+    expect(resumeAfterPause(terminado, 5_000)).toBe(terminado);
   });
 });

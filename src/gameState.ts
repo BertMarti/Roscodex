@@ -93,3 +93,9 @@ export function finish(state: GameState, reason: FinishReason): GameState {
     ? { ...state.statuses, [question.letter]: "expired" as RoscoStatus } : state.statuses;
   return { ...state, statuses, acceptingInput: false, finished: true, finishReason: reason, feedback: { text: "", kind: "" } };
 }
+
+/** Reanuda tras una pausa (modal «¿Abandonar la partida?»): el reloj recupera el tiempo que estuvo parado. */
+export function resumeAfterPause(state: GameState, pausedMs: number): GameState {
+  if (state.finished || !(pausedMs > 0)) return state;
+  return { ...state, endAt: state.endAt + pausedMs };
+}

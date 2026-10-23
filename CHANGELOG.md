@@ -8,12 +8,12 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 - `npm audit` a 0: vite 8.3.5 (2 avisos altos) y `uuid` 11 forzado para `xcode` (3 moderados).
 - Content-Security-Policy estricta y `referrer` en la build de producción.
 - CI nueva (`ci.yml`): gitleaks, `npm audit --audit-level=high`, tipos, tests, validación del banco, simulación y build.
-- `deploy-pages.yml` con permisos de Pages solo en el job que publica; ahora también pasa los tests.
+- `deploy-pages.yml` con permisos de Pages solo en el job que publica (sin `configure-pages`, que exigía permiso de Pages en el job de build); ahora también pasa los tests.
 - Dependabot semanal agrupado, `SECURITY.md`, `.gitignore` para `.env*`.
 
 ### Añadido
 - Atajos de teclado: 1–4 para responder y P para Pasapalabra (con insignias numeradas).
-- Botón «‹ Menú» durante la partida con confirmación para abandonar.
+- Botón «‹ Menú» durante la partida con confirmación para abandonar; el reloj se pausa mientras se decide.
 - Botón «Reintentar» si no se puede cargar el banco.
 - Anuncios para lectores de pantalla: pregunta nueva y avisos de 60/30/10 segundos.
 - Tests con Vitest de la lógica de partida y del historial.

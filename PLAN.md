@@ -9,7 +9,7 @@ Actualizado el 24/10/2026. Prioridad de arriba abajo dentro de cada bloque.
 - [x] CI en cada PR: gitleaks, `npm audit`, tipos, tests, validación del banco, simulación y build.
 - [x] Content-Security-Policy estricta en la build, Dependabot semanal y `SECURITY.md`.
 - [x] Accesibilidad: atajos 1–4 y P, modales con foco atrapado y Escape, anuncios para lector de pantalla sin spam del reloj, rosco con estados en español, textos de al menos 8 px, letras del rosco legibles.
-- [x] UX: botón «‹ Menú» con confirmación, «Reintentar» si falla la carga, sonido que ya no tapa el temporizador.
+- [x] UX: botón «‹ Menú» con confirmación (reloj en pausa mientras se decide), «Reintentar» si falla la carga, sonido que ya no tapa el temporizador.
 - [x] Datos de generación (caché de PokéAPI, packs antiguos) fuera de la web publicada: ~600 KB menos de precache.
 - [x] README para jugadores, guía técnica en `doc/DESARROLLO.md`, AGENTS/CLAUDE/MEMORY/PLAN, subagentes y skills.
 - [x] Licencia MIT para el código, con las excepciones de recursos de terceros.

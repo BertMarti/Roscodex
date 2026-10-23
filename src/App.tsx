@@ -15,7 +15,7 @@ import {
   type RoscoStatus
 } from "./game";
 import { playSound } from "./audio";
-import { answerCurrent, advance, createGameState, finish, passCurrent, type GameState } from "./gameState";
+import { answerCurrent, advance, createGameState, finish, passCurrent, resumeAfterPause, type GameState } from "./gameState";
 
 type Screen = "home" | "game";
 type Modal = "credits" | "exhausted" | "results" | "abandon" | null;
@@ -40,6 +40,8 @@ function App() {
     }
   });
   const [now, setNow] = useState(() => Date.now());
+  // Momento en que se abrió «¿Abandonar la partida?»: mientras no sea null, el reloj está en pausa.
+  const [pausedAt, setPausedAt] = useState<number | null>(null);
   const transitionRef = useRef<number | null>(null);
   const creditsButtonRef = useRef<HTMLButtonElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
@@ -69,14 +71,14 @@ function App() {
   }, [game?.finished, soundEnabled]);
 
   useEffect(() => {
-    if (!game || game.finished) return undefined;
+    if (!game || game.finished || pausedAt !== null) return undefined;
     const interval = window.setInterval(() => {
       const currentNow = Date.now();
       setNow(currentNow);
       if (currentNow >= game.endAt) finishGame("time");
     }, 250);
     return () => window.clearInterval(interval);
-  }, [finishGame, game?.endAt, game?.finished]);
+  }, [finishGame, game?.endAt, game?.finished, pausedAt]);
 
   useEffect(() => {
     if (game?.finished) setModal("results");
@@ -119,6 +121,7 @@ function App() {
       const selected = choosePack(availablePacks, difficulty);
       const startedAt = Date.now();
       setGame(createGameState(difficulty, selected.questions, startedAt));
+      setPausedAt(null);
       setNow(startedAt);
       setModal(null);
       setExhaustedDifficulty(null);
@@ -154,8 +157,22 @@ function App() {
     scheduleNext();
   }, [game, question, scheduleNext, soundEnabled]);
 
+  const pauseForMenu = useCallback(() => {
+    setPausedAt(Date.now());
+    setModal("abandon");
+  }, []);
+
+  const resumeGame = useCallback(() => {
+    const resumedAt = Date.now();
+    if (pausedAt !== null) setGame((previous) => previous ? resumeAfterPause(previous, resumedAt - pausedAt) : previous);
+    setPausedAt(null);
+    setNow(resumedAt);
+    setModal(null);
+  }, [pausedAt]);
+
   const showHome = useCallback(() => {
     clearTransition();
+    setPausedAt(null);
     setGame(null);
     setExhaustedDifficulty(null);
     setModal(null);
@@ -214,7 +231,7 @@ function App() {
             onToggleSound={() => setSoundEnabled((enabled) => !enabled)}
             onAnswer={answerQuestion}
             onPass={passQuestion}
-            onMenu={() => setModal("abandon")}
+            onMenu={pauseForMenu}
             menuButtonRef={menuButtonRef}
           />
         )}
@@ -222,7 +239,7 @@ function App() {
       {modal === "credits" && <CreditsModal onClose={() => setModal(null)} />}
       {modal === "exhausted" && <ExhaustedModal onClose={showHome} onReset={resetRotation} />}
       {modal === "results" && game && <ResultsModal game={game} onRestart={() => void startGame(game.difficulty)} onHome={showHome} />}
-      {modal === "abandon" && <AbandonModal onClose={() => setModal(null)} onHome={showHome} />}
+      {modal === "abandon" && <AbandonModal onClose={resumeGame} onHome={showHome} />}
     </>
   );
 }
@@ -428,7 +445,7 @@ function ResultsModal({ game, onRestart, onHome }: { game: GameState; onRestart:
 
 function AbandonModal({ onClose, onHome }: { onClose: () => void; onHome: () => void }) {
   const titleId = useId();
-  return <ModalShell titleId={titleId} onClose={onClose}><p className="eyebrow">PARTIDA EN CURSO</p><h2 id={titleId}>¿Abandonar la partida?</h2><button className="primary-button" type="button" onClick={onClose}>Seguir jugando</button><button className="secondary-button" type="button" onClick={onHome}>Abandonar</button></ModalShell>;
+  return <ModalShell titleId={titleId} onClose={onClose}><p className="eyebrow">PARTIDA EN CURSO</p><h2 id={titleId}>¿Abandonar la partida?</h2><p>El reloj está en pausa mientras decides.</p><button className="primary-button" type="button" onClick={onClose}>Seguir jugando</button><button className="secondary-button" type="button" onClick={onHome}>Abandonar</button></ModalShell>;
 }
 
 export default App;

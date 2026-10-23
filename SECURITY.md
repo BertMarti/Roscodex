@@ -16,6 +16,6 @@ Intentaré responder en un plazo de 7 días. Gracias por ayudar a que el juego s
 
 ## Medidas actuales
 
-- Content-Security-Policy restrictiva en `index.html` (solo recursos propios, sin scripts en línea).
+- Content-Security-Policy restrictiva (solo recursos propios, sin scripts en línea) que el plugin `roscodex-csp` de `vite.config.ts` inyecta como `<meta>` en el `index.html` de la build de producción (no en `npm run dev`, que necesita scripts en línea para el HMR).
 - CI con [gitleaks](https://github.com/gitleaks/gitleaks), comprobación de tipos, tests y `npm audit` en cada PR.
 - Dependabot semanal para dependencias de npm y acciones de GitHub.
