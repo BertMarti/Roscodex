@@ -1,6 +1,8 @@
 import { access, readFile } from "node:fs/promises";
 
 const dataUrl = (name) => new URL(`../public/data/${name}`, import.meta.url);
+// Packs editoriales antiguos (respaldo manual): no se publican, viven en data/.
+const legacyUrl = (name) => new URL(`../data/${name}`, import.meta.url);
 const errors = [];
 const expectedLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 const globalIds = new Set();
@@ -15,8 +17,8 @@ async function loadBank() {
     await access(dataUrl("question-bank.json"));
     return JSON.parse(await readFile(dataUrl("question-bank.json"), "utf8"));
   } catch {
-    const baseQuestions = JSON.parse(await readFile(dataUrl("questions.json"), "utf8"));
-    const packData = JSON.parse(await readFile(dataUrl("question-packs.json"), "utf8"));
+    const baseQuestions = JSON.parse(await readFile(legacyUrl("questions.json"), "utf8"));
+    const packData = JSON.parse(await readFile(legacyUrl("question-packs.json"), "utf8"));
     return { packs: [{ id: "beginner-001", difficulty: "beginner", questions: baseQuestions }, ...packData.packs] };
   }
 }
