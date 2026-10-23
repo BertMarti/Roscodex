@@ -33,6 +33,8 @@ Memoria del proyecto para personas y agentes: decisiones, por qué se tomaron y 
 - **Historial de preguntas** en `localStorage` (`roscodex-question-history-v4`, migra desde `pokereto-question-history-v3`). Si se reutilizan IDs con contenido nuevo, los jugadores las verán como «ya jugadas».
 - **`ModalShell`**: `App` se repinta cada 250 ms durante la partida; cualquier efecto que dependa de una función creada en el render (p. ej. `onClose`) se reejecuta y roba el foco. Por eso `onClose` va en una ref.
 - **`finish()`** debe poder terminar la partida aunque `acceptingInput` sea `false` (el reloj puede agotarse en los 850 ms entre preguntas).
+- **PWA**: no repitas en `includeAssets` archivos que ya cubre `workbox.globPatterns`; Workbox los duplica con otra revisión y el service worker no se instala (pasó hasta la v0.3.0: la web publicada no funcionaba offline).
+- **CSP y `style={{…}}`**: React aplica los estilos por CSSOM (`element.style`), que `style-src 'self'` no bloquea; el rosco posicionado con `left/top` funciona con la CSP (comprobado en Chromium). Un revisor automático lo marcó como fallo: es un falso positivo.
 - **Press Start 2P** sí tiene «Í», pero en mayúsculas pequeñas parece una «í»: no es un fallo de la fuente.
 - **Nombres de Pokémon con forma** (p. ej. «Basculin-Red-Striped», «Tornadus-Incarnate») salen tal cual de PokéAPI; pendiente de normalizar en el generador.
 - Hay documentación histórica en `doc/` que menciona Flutter o `demo/`: es contexto de diseño, la app actual es React + Vite.

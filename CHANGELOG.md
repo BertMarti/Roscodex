@@ -28,6 +28,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 - Datos que solo usa el generador (caché de PokéAPI, packs antiguos) movidos a `data/`: la PWA precachea ~600 KB menos.
 
 ### Corregido
+- El service worker no se instalaba (entrada duplicada en el precache de Workbox), así que la PWA no funcionaba sin conexión.
 - El sonido de fin de partida podía sonar dos veces (efecto dentro de un updater de React).
 - El temporizador se anunciaba 4 veces por segundo a los lectores de pantalla.
 - Un historial corrupto en `localStorage` podía romper la selección de preguntas.
