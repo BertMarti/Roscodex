@@ -6,6 +6,11 @@ updates:
       interval: weekly
       day: monday
     open-pull-requests-limit: 5
+    ignore:
+      # Vitest 5 exige Node >= 22.12 y la Raspberry Pi de desarrollo tiene Node 20.19 (ver MEMORY.md).
+      # Quitar esta regla cuando la Pi pase a Node 22.
+      - dependency-name: vitest
+        update-types: ["version-update:semver-major"]
     groups:
       npm-menores:
         update-types: [minor, patch]
