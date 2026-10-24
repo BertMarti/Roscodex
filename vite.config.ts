@@ -37,7 +37,8 @@ export default defineConfig({
     contentSecurityPolicyPlugin(),
     react(),
     VitePWA({
-      registerType: "autoUpdate",
+      registerType: "prompt",
+      injectRegister: false,
       // No usar includeAssets para archivos que ya cubre globPatterns: Workbox los duplicaba con
       // distinta revisión y el service worker fallaba al instalarse (add-to-cache-list-conflicting-entries).
       manifest: {
@@ -49,6 +50,8 @@ export default defineConfig({
         background_color: "#080b17",
         display: "standalone",
         start_url: ".",
+        id: "/Roscodex/",
+        scope: "/Roscodex/",
         icons: [
           { src: "favicon.svg", sizes: "any", type: "image/svg+xml", purpose: "any maskable" }
         ]

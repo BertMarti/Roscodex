@@ -1,3 +1,5 @@
+import { STORAGE_KEYS } from "./storage";
+
 export const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
 export type Difficulty = "beginner" | "normal" | "hard" | "extreme";
@@ -32,7 +34,8 @@ export const difficultyConfig: Record<Difficulty, { label: string; seconds: numb
   extreme: { label: "EXTREMO", seconds: 180, description: "3:00 · Liga máxima" }
 };
 
-const QUESTION_HISTORY_KEY = "roscodex-question-history-v4";
+const QUESTION_HISTORY_KEY = STORAGE_KEYS.questionHistory;
+// Nombre antiguo del proyecto: se lee una vez para migrar y se borra al guardar (origen compartido con otras webs).
 const LEGACY_QUESTION_HISTORY_KEY = "pokereto-question-history-v3";
 
 export class QuestionBankExhaustedError extends Error {
@@ -80,6 +83,7 @@ export function loadQuestionHistory(): Record<Difficulty, string[]> {
 export function saveQuestionHistory(history: Record<Difficulty, string[]>): void {
   try {
     localStorage.setItem(QUESTION_HISTORY_KEY, JSON.stringify(history));
+    localStorage.removeItem(LEGACY_QUESTION_HISTORY_KEY);
   } catch {
     // El juego sigue funcionando aunque el navegador bloquee el almacenamiento local.
   }

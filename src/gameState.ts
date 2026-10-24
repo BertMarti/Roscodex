@@ -2,6 +2,7 @@ import { difficultyConfig, emptyStatuses, type Difficulty, type Question, type R
 
 export type FeedbackKind = "" | "is-correct" | "is-wrong" | "is-passed";
 export type FinishReason = "time" | "complete";
+export type GameMode = "timed" | "practice" | "guided";
 
 export interface GameState {
   difficulty: Difficulty;
@@ -21,18 +22,23 @@ export interface GameState {
   finishReason: FinishReason | null;
   feedback: { text: string; kind: FeedbackKind };
   selectedOptionId: string | null;
+  mode: GameMode;
 }
 
-export function createGameState(difficulty: Difficulty, questions: Question[], now: number): GameState {
+export function createGameState(difficulty: Difficulty, questions: Question[], now: number, mode: GameMode = "timed"): GameState {
   const [firstIndex, ...queue] = questions.map((_, index) => index);
   return {
     difficulty, questions, queue, deferred: [], currentIndex: firstIndex ?? null, round: 1,
     score: 0, correct: 0, wrong: 0, passed: 0,
     statuses: firstIndex === undefined ? emptyStatuses() : { ...emptyStatuses(), [questions[firstIndex].letter]: "active" },
-    endAt: now + difficultyConfig[difficulty].seconds * 1000,
+    endAt: mode === "timed" ? now + difficultyConfig[difficulty].seconds * 1000 : Number.POSITIVE_INFINITY,
     acceptingInput: firstIndex !== undefined, finished: false, finishReason: null,
-    feedback: { text: "", kind: "" }, selectedOptionId: null
+    feedback: { text: "", kind: "" }, selectedOptionId: null, mode
   };
+}
+
+export function isTimed(state: GameState): boolean {
+  return state.mode === "timed";
 }
 
 export function answerCurrent(state: GameState, optionId: string): { state: GameState; isCorrect: boolean } {
@@ -96,6 +102,6 @@ export function finish(state: GameState, reason: FinishReason): GameState {
 
 /** Reanuda tras una pausa (modal «¿Abandonar la partida?»): el reloj recupera el tiempo que estuvo parado. */
 export function resumeAfterPause(state: GameState, pausedMs: number): GameState {
-  if (state.finished || !(pausedMs > 0)) return state;
+  if (!isTimed(state) || state.finished || !(pausedMs > 0)) return state;
   return { ...state, endAt: state.endAt + pausedMs };
 }
