@@ -170,6 +170,14 @@ describe("saveQuestionHistory", () => {
     expect(localStorage.getItem(CLAVE_V4)).toBe(JSON.stringify({ ...historialVacio(), normal: ["A-normal-0", "B-normal-0"] }));
   });
 
+  it("migra y borra la clave antigua del proyecto (origen compartido)", () => {
+    localStorage.setItem(CLAVE_V3, JSON.stringify({ hard: ["H-hard-0"] }));
+    const historial = loadQuestionHistory();
+    saveQuestionHistory(historial);
+    expect(localStorage.getItem(CLAVE_V3)).toBeNull();
+    expect(JSON.parse(localStorage.getItem(CLAVE_V4) ?? "{}")).toEqual({ hard: ["H-hard-0"] });
+  });
+
   it("no lanza si el navegador bloquea el almacenamiento", () => {
     vi.stubGlobal("localStorage", {
       getItem: () => null,
