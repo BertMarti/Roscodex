@@ -10,14 +10,14 @@ Todo lo técnico del proyecto: cómo arrancarlo, cómo está organizado, cómo s
 | Vite 8 | Servidor de desarrollo y build estática |
 | vite-plugin-pwa (Workbox) | PWA instalable y offline-first (precache de la build) |
 | Capacitor 8 | Empaquetado opcional para Android/iOS reutilizando la misma build |
-| Vitest 4 | Tests unitarios de la lógica |
+| Vitest 4 + happy-dom + Testing Library | Tests unitarios y de componentes (Vitest 5 exige Node ≥ 22.12: no se actualiza) |
 | Scripts Node (`scripts/*.mjs`) | Generar, validar y simular el banco de preguntas |
 
 No hay backend, cuentas, analítica ni servicios de pago. La partida no llama a ninguna API: todo lo necesario viaja en la build.
 
 ## Requisitos
 
-- Node.js 22 o superior (la CI usa Node 24; Node 20.19 también funciona en local).
+- Node.js 20.19 o superior (la CI usa Node 24; la Raspberry Pi de desarrollo, 20.19). `package.json` lo declara en `engines`.
 - npm 10+ (con el npm 9 de algunas distribuciones `npm install` de paquetes nuevos puede fallar; usa `npx npm@11 install ...`).
 - Para móvil: Android Studio y/o Xcode, solo si vas a usar Capacitor.
 
@@ -54,7 +54,11 @@ src/
   game.ts          tipos, dificultades, carga del banco, selección sin repetir e historial
   audio.ts         efectos 8-bit generados con Web Audio (sin archivos de audio)
   styles.css       estética pixel-art; la paleta vive en :root
-  *.test.ts        tests de Vitest junto al archivo que prueban
+  storage.ts       claves de localStorage (prefijo roscodex-) y lectura/escritura segura
+  tutorial.ts      consejos de la partida guiada (función pura currentTip)
+  records.ts       récords locales por dificultad
+  pwa.ts           instalar la app (beforeinstallprompt / iPhone) y aviso de versión nueva
+  *.test.ts(x)     tests de Vitest junto al archivo que prueban (los .tsx usan happy-dom)
 public/
   data/question-bank.json   banco que se publica y carga la partida
   assets/                   sprites, retrato de SpriteCollab y licencias
@@ -98,7 +102,8 @@ doc/               documentación de diseño, roles de agentes y esta guía
 - `.github/workflows/deploy-pages.yml` se ejecuta en cada push a `main` y a mano (`workflow_dispatch`): `npm ci` → `npm run check` → `npm run build` → sube `dist/` y despliega.
 - La base es `/Roscodex/` (con **R** mayúscula) en `vite.config.ts`. GitHub Pages distingue mayúsculas.
 - Para probar como en producción: `npm run build && npm run preview` y abre `http://localhost:4173/Roscodex/`.
-- La PWA se actualiza sola (`registerType: "autoUpdate"`); tras un despliegue puede hacer falta recargar dos veces.
+- La PWA avisa de las versiones nuevas (`registerType: "prompt"`): `src/main.tsx` registra el service worker con `virtual:pwa-register` y `src/pwa.ts` guarda el estado; la interfaz muestra «Hay una versión nueva» (nunca en mitad de una partida) y comprueba si hay actualización cada hora.
+- El service worker vive en `/Roscodex/sw.js` y su ámbito es `/Roscodex/` (no toca otras webs de `bertmarti.github.io`). Para probarlo de verdad: `npm run build`, sirve una carpeta que contenga `Roscodex/` (copia de `dist/`) con `python3 -m http.server` y abre `http://127.0.0.1:8000/Roscodex/` en Chromium; recarga, apaga el servidor y vuelve a recargar: debe seguir funcionando.
 
 ## CI
 
@@ -113,7 +118,7 @@ Dependabot (`.github/dependabot.yml`) propone cada lunes las actualizaciones de 
 
 - La build incluye una Content-Security-Policy estricta (`default-src 'self'`, sin scripts en línea) inyectada por el plugin `roscodex-csp` de `vite.config.ts`. Solo se aplica en la build porque el servidor de desarrollo necesita scripts en línea. Si añades un recurso externo, ajusta la política.
 - Nada de `innerHTML` ni `dangerouslySetInnerHTML`; los enlaces externos llevan `rel="noopener noreferrer"`.
-- Solo se guarda en `localStorage` el historial de preguntas y la preferencia de sonido. Nada sale del navegador.
+- **Origen compartido**: todas las webs de Pages de BertMarti comparten `https://bertmarti.github.io`, así que `localStorage` es común. Todas las claves están en `STORAGE_KEYS` (`src/storage.ts`) con el prefijo `roscodex-` (lo comprueba un test): historial de preguntas, sonido, primera visita, modo práctica y récords. Nada sensible y nada sale del navegador.
 - `npm audit`: `uuid` se fuerza a 11.x para `xcode` (dependencia de `@capacitor/cli`) mediante `overrides` en `package.json`.
 - Política de avisos: [SECURITY.md](../SECURITY.md).
 

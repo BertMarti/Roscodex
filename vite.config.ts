@@ -56,8 +56,10 @@ export default defineConfig({
           { src: "favicon.svg", sizes: "any", type: "image/svg+xml", purpose: "any maskable" }
         ]
       },
+      // El plugin ya añade manifest.webmanifest y los iconos del manifest al precache: no se repiten aquí.
+      includeManifestIcons: false,
       workbox: {
-        globPatterns: ["**/*.{js,css,html,svg,png,ttf,json,webmanifest}"]
+        globPatterns: ["**/*.{js,css,html,svg,png,ttf,json}"]
       }
     })
   ],

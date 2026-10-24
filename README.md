@@ -53,13 +53,16 @@
 
 ## 🕹️ Cómo se juega, paso a paso
 
+> 🆕 **¿Nunca has jugado?** La primera vez que abras Roscodex verás **«¿Primera vez?»**: pulsa **«Jugar partida guiada»** y el juego te lo explica mientras juegas, sin reloj. Siempre puedes repasarlo en **«Cómo se juega»**, en la portada.
+
 1. **Abre el juego:** entra en [Roscodex](https://bertmarti.github.io/Roscodex/) desde tu navegador web habitual o ábrelo desde el icono de tu pantalla si lo has instalado como app.
-2. **Elige la dificultad:** selecciona uno de los cuatro niveles disponibles (Principiante, Normal, Difícil o Extremo) según el tiempo por partida y la profundidad de las preguntas.
-3. **Lee con atención la regla:** cada rosco consta de 26 letras (de la A a la Z). El enunciado te especificará siempre si la respuesta correcta **«Empieza por la letra X»** o **«Contiene la letra X»** (18 letras por rosco empiezan por la letra indicada y 8 la contienen).
-4. **Elige tu respuesta:** dispones de **4 opciones posibles**. Si aciertas, sumas **+10 puntos** y la casilla se ilumina en verde; si fallas, se tiñe de rojo.
-5. **Usa «Pasapalabra»:** si dudas con una letra, puedes pasarla para no arriesgarte. No penaliza y la casilla quedará en azul para más adelante.
-6. **Segunda vuelta:** tras recorrer el abecedario de la A a la Z, volverás una vez más a las letras que hayas dejado pendientes, siempre que el temporizador no haya llegado a cero.
-7. **Consulta tu resultado:** al finalizar, la pantalla de resumen te mostrará tu puntuación, tus aciertos, tus fallos y las letras que pasaste. Desde ahí puedes volver a jugar o cambiar de dificultad.
+2. **Elige el modo:** **«Con reloj»** (el reto de verdad) o **«Práctica (sin reloj)»** para jugar con calma. El juego recuerda tu elección.
+3. **Elige la dificultad:** selecciona uno de los cuatro niveles disponibles (Principiante, Normal, Difícil o Extremo) según el tiempo por partida y la profundidad de las preguntas.
+4. **Lee con atención la regla:** cada rosco consta de 26 letras (de la A a la Z). El enunciado te especificará siempre si la respuesta correcta **«Empieza por la letra X»** o **«Contiene la letra X»** (18 letras por rosco empiezan por la letra indicada y 8 la contienen).
+5. **Elige tu respuesta:** dispones de **4 opciones posibles**. Si aciertas, sumas **+10 puntos** y la casilla se ilumina en verde; si fallas, se tiñe de rojo.
+6. **Usa «Pasapalabra»:** si dudas con una letra, puedes pasarla para no arriesgarte. No penaliza y la casilla quedará en azul para más adelante.
+7. **Segunda vuelta:** tras recorrer el abecedario de la A a la Z, volverás una vez más a las letras que hayas dejado pendientes, siempre que el temporizador no haya llegado a cero.
+8. **Consulta tu resultado:** al finalizar, la pantalla de resumen te mostrará tu puntuación, tus aciertos, tus fallos y las letras que pasaste. En las partidas con reloj verás también tu **récord** de esa dificultad (y «¡Nuevo récord!» si lo superas). Desde ahí puedes volver a jugar o cambiar de dificultad.
 
 ---
 
@@ -103,13 +106,13 @@ Durante la partida, las casillas del rosco cambian de color para reflejar tu pro
 
 ## 📱 Instalar como app (PWA)
 
-Roscodex es una Aplicación Web Progresiva (PWA). Puedes instalarla en tu dispositivo para jugar a pantalla completa y sin conexión a Internet:
+Roscodex es una Aplicación Web Progresiva (PWA). Puedes instalarla en tu dispositivo para jugar a pantalla completa y sin conexión a Internet. **Si tu navegador lo permite, verás el botón «⇩ Instalar app» en la portada**; en iPhone y iPad aparece **«Instalar en iPhone»** con los pasos. Si no, hazlo a mano:
 
 - **En Android (Chrome, Edge u otros navegadores compatibles):** abre el menú de opciones (tres puntos) y pulsa en **«Añadir a pantalla de inicio»** o **«Instalar aplicación»**.
 - **En iPhone o iPad (Safari):** pulsa el botón **Compartir** (icono de un recuadro con flecha hacia arriba) y selecciona **«Añadir a la pantalla de inicio»**.
 - **En ordenador (Chrome o Edge):** haz clic en el icono de instalación situado en la parte derecha de la barra de direcciones.
 
-Una vez instalada, la app funcionará de forma autónoma sin necesidad de conexión a Internet ni cobertura móvil.
+Una vez instalada, la app funcionará de forma autónoma sin necesidad de conexión a Internet ni cobertura móvil. Cuando publiquemos una versión nueva verás el aviso **«Hay una versión nueva de Roscodex»**: pulsa **Recargar** (o **Luego** si estás a mitad de algo; nunca aparece durante una partida).
 
 ---
 
@@ -142,7 +145,7 @@ Sí. Gracias a la tecnología PWA, tras abrir la web por primera vez, el juego y
 <details>
 <summary><strong>¿Guarda o comparte mis datos?</strong></summary>
 
-No. Roscodex no envía ningún dato a servidores externos. Únicamente guarda de manera local en tu navegador tu preferencia de sonido y el registro de preguntas jugadas para gestionar la rotación.
+No. Roscodex no envía ningún dato a servidores externos. Únicamente guarda de manera local en tu navegador tu preferencia de sonido, el modo de juego elegido, si ya hiciste la partida guiada, tus récords y el registro de preguntas jugadas para gestionar la rotación.
 </details>
 
 <details>
@@ -156,6 +159,22 @@ Si encuentras cualquier fallo en una pregunta, una errata ortográfica o un dato
 
 No. Es un proyecto fan sin ánimo de lucro y sin relación comercial ni oficial con Nintendo, Creatures Inc., GAME FREAK inc. ni The Pokémon Company.
 </details>
+
+<details>
+<summary><strong>¿Puedo jugar sin presión de tiempo?</strong></summary>
+
+Sí. En la portada elige **«Práctica (sin reloj)»** antes de la dificultad. Las partidas de práctica no cuentan para los récords.
+</details>
+
+---
+
+## 🧑‍💻 Lo que tienes que hacer tú (Alberto)
+
+1. **Fusionar la PR de la fase 2** cuando la revisión dé el visto bueno: Pages se publica sola al llegar a `main` (no hay que activar nada más).
+2. **Comprobarlo en el móvil** una vez publicada: abre <https://bertmarti.github.io/Roscodex/>, haz la partida guiada, instala la app y ponla en modo avión para ver que sigue funcionando.
+3. **Revisión editorial del banco** de preguntas (muestreo por dificultad; ver `doc/agents/content-quality.md`).
+4. **Derechos del contenido Pokémon y del retrato CC BY-NC** antes de pensar en tiendas de apps.
+5. Cuando la Raspberry Pi pase a **Node 22.12 o superior**, quitar la regla de Vitest en `.github/dependabot.yml` para recibir Vitest 5.
 
 ---
 

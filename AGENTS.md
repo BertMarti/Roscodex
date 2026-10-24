@@ -14,8 +14,11 @@ Roscodex es un juego fan, gratuito y no oficial de preguntas tipo rosco (inspira
 | `src/gameState.ts` | Transiciones **puras** de la partida (sin React ni efectos) |
 | `src/game.ts` | Tipos, dificultades, carga del banco, selección sin repetir, historial en `localStorage` |
 | `src/audio.ts` | Sonidos 8-bit con Web Audio |
+| `src/storage.ts` | **Todas** las claves de `localStorage` (prefijo `roscodex-`) y lectura/escritura que nunca lanza |
+| `src/tutorial.ts` / `src/records.ts` | Partida guiada (`currentTip`) y récords locales |
+| `src/pwa.ts` | Instalar la app y aviso de versión nueva (el registro del SW está en `main.tsx`) |
 | `src/styles.css` | Estética pixel-art; paleta en `:root` |
-| `src/*.test.ts` | Tests de Vitest junto al archivo que prueban |
+| `src/*.test.ts(x)` | Tests de Vitest junto al archivo que prueban; los `.tsx` usan happy-dom + Testing Library |
 | `public/data/question-bank.json` | Banco publicado (2.080 preguntas) |
 | `data/` | Caché de PokéAPI y packs antiguos; **no se publica** |
 | `scripts/` | `build-question-bank.mjs`, `validate-content.mjs`, `simulate-games.mjs` |
@@ -28,7 +31,7 @@ Roscodex es un juego fan, gratuito y no oficial de preguntas tipo rosco (inspira
 npm ci                 # instalar
 npm run dev            # desarrollo → http://localhost:5173/Roscodex/
 npm run check          # tipos + Vitest + validación del banco + simulación (obligatorio antes de entregar)
-npm run test:unit      # solo Vitest
+npm run test:unit      # solo Vitest (máx. 2 procesos; en la Pi: nice -n 19 ionice -c3 y NODE_OPTIONS=--max-old-space-size=1024)
 npm test               # check + build (igual que la CI)
 npm run build          # dist/ con base /Roscodex/
 npm run preview        # → http://localhost:4173/Roscodex/
@@ -65,7 +68,8 @@ Despliegue: push a `main` → `deploy-pages.yml` publica en GitHub Pages. Tambi�
 
 - `base: "/Roscodex/"` en `vite.config.ts` (la R mayúscula importa).
 - Licencias y atribuciones de `public/assets/*` y el aviso de proyecto fan de la portada y de los créditos.
-- Claves de `localStorage` (`roscodex-question-history-v4`, `roscodex-audio`) salvo migración pensada.
+- Claves de `localStorage` de `STORAGE_KEYS` salvo migración pensada. Toda clave nueva va ahí y con prefijo `roscodex-` (origen compartido `bertmarti.github.io`). Nada sensible en el navegador.
+- El service worker debe seguir limitado a `/Roscodex/` (manifest `scope`/`id`, `base`).
 
 ## Más contexto
 

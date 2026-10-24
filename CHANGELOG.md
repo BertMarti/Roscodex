@@ -2,6 +2,27 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). Versionado semántico.
 
+## [0.5.0] — 2026-10-24 (fase 2: facilidad de uso)
+
+### Añadido
+- **Partida guiada** para quien no conoce el juego: la portada la ofrece en la primera visita («¿Primera vez?») y una guía explica, mientras se juega, el rosco, cómo responder (1–4), el Pasapalabra (P) y la segunda vuelta.
+- **Cómo se juega**: ayuda siempre a mano en la portada.
+- **Modo práctica sin reloj** (se recuerda la elección).
+- **Récords locales** por dificultad en las partidas con reloj («¡Nuevo récord!»).
+- **Instalar la app**: botón cuando el navegador lo permite (`beforeinstallprompt`) e instrucciones para iPhone/iPad (Compartir → Añadir a pantalla de inicio).
+- **Aviso de versión nueva** («Hay una versión nueva de Roscodex» → Recargar / Luego), que nunca interrumpe una partida, y aviso «Listo para jugar sin conexión».
+- Tests de componentes con happy-dom y Testing Library, y tests de los módulos nuevos.
+
+### Cambiado
+- vite-plugin-pwa 1.3 → 2.0; el service worker pasa de actualizarse solo a avisar (`registerType: "prompt"`). Manifest con `id` y `scope` `/Roscodex/`.
+- Acciones de GitHub al día (checkout v7, setup-node v7, upload-pages-artifact v5, deploy-pages v5).
+- `package.json` declara `engines.node >= 20.19`; los tests usan como mucho 2 procesos (la Raspberry Pi va justa de memoria).
+
+### Seguridad
+- Origen compartido (`bertmarti.github.io`): todas las claves de `localStorage` están en `src/storage.ts` con el prefijo `roscodex-`; la clave antigua `pokereto-question-history-v3` se borra tras migrarla. Nada sensible se guarda.
+- Precache sin entradas repetidas (`favicon.svg` y `manifest.webmanifest` salían dos veces).
+- Dependabot ignora los saltos mayores de Vitest (Vitest 5 exige Node ≥ 22.12).
+
 ## [0.4.0] — 2026-10-24
 
 ### Seguridad

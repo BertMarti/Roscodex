@@ -14,14 +14,22 @@ Actualizado el 24/10/2026. Prioridad de arriba abajo dentro de cada bloque.
 - [x] README para jugadores, guía técnica en `doc/DESARROLLO.md`, AGENTS/CLAUDE/MEMORY/PLAN, subagentes y skills.
 - [x] Licencia MIT para el código, con las excepciones de recursos de terceros.
 
+## Hecho en la fase 2 (24/10/2026, v0.5.0)
+
+- [x] Partida guiada para la primera visita y ayuda «Cómo se juega».
+- [x] Modo práctica sin reloj.
+- [x] Récords locales por dificultad.
+- [x] Botón «Instalar app» e instrucciones para iPhone; aviso de versión nueva del service worker.
+- [x] Tests de componentes con Testing Library + happy-dom.
+- [x] vite-plugin-pwa 2.0, acciones al día, Vitest 5 descartado mientras la Pi tenga Node 20.
+
 ## Siguiente
 
 1. **Revisión editorial humana del banco**: muestreo por dificultad con el subagente `revisor-banco-preguntas` (ver hallazgos en `doc/agents/content-quality.md`).
 2. **Normalizar nombres** de movimientos y habilidades al español oficial y formas como «Basculin-Red-Striped» a nombres legibles.
-3. **Modo práctica** sin temporizador.
-4. **Récords locales y estadísticas** (mejor puntuación por dificultad, aciertos totales) en `localStorage`.
-5. **Tests de componentes** con Testing Library + jsdom (portada, modales, atajos).
-6. Decidir la puntuación pendiente de `doc/08-decisiones-abiertas.md` (penalización por fallo, bonus por completar).
+3. **Estadísticas** más allá del récord (aciertos totales, racha) en una pantalla propia.
+4. Modo «menos tiempo» (contrarreloj de 2 minutos) si los jugadores lo piden.
+5. Decidir la puntuación pendiente de `doc/08-decisiones-abiertas.md` (penalización por fallo, bonus por completar).
 
 ## Ideas (sin compromiso)
 

@@ -1,14 +1,17 @@
 {
   "name": "roscodex",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=20.19"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "test:unit": "vitest run",
+    "test:unit": "vitest run --maxWorkers=2",
     "test:watch": "vitest",
     "validate:content": "node scripts/validate-content.mjs",
     "simulate:games": "node scripts/simulate-games.mjs",

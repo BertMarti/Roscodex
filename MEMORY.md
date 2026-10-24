@@ -4,10 +4,11 @@ Memoria del proyecto para personas y agentes: decisiones, por qué se tomaron y 
 
 ## Estado actual (24/10/2026)
 
-- Versión 0.4.0. Publicada en <https://bertmarti.github.io/Roscodex/> con `deploy-pages.yml` (push a `main` + manual).
+- Versión 0.5.0 (fase 2, PR desde `fase2-2026-10-24`): partida guiada, modo práctica, récords, instalar la app y aviso de versión nueva.
+- Versión 0.4.0 publicada en <https://bertmarti.github.io/Roscodex/> con `deploy-pages.yml` (push a `main` + manual).
 - `npm audit`: 0 vulnerabilidades. `npm run check` y `npm run build` en verde.
 - Banco: 2.080 preguntas válidas (4 × 520). Revisión editorial humana aún pendiente.
-- La rama `mejoras-2026-10-24` (PR abierta, sin fusionar) trae seguridad, tests, accesibilidad y docs.
+- La rama `mejoras-2026-10-24` (PR #1) ya está fusionada.
 
 ## Decisiones
 
@@ -16,6 +17,10 @@ Memoria del proyecto para personas y agentes: decisiones, por qué se tomaron y 
 | PWA estática sin backend | Coste cero, funciona offline, sin datos personales. |
 | Lógica de partida pura en `src/gameState.ts` | Testeable con Vitest sin DOM; evita efectos dentro de updaters de React (StrictMode los ejecuta dos veces y el sonido sonaba doble). |
 | Vitest 4.1 (no 5) | Vitest 5 exige Node ≥ 22.12 y la Raspberry Pi de desarrollo tiene Node 20.19. La CI usa Node 24. |
+| vite-plugin-pwa 2 con `registerType: "prompt"` | Con `autoUpdate` la versión nueva entraba sin avisar y podía recargar en mitad de una partida; ahora se avisa y el jugador decide. El aviso se oculta durante la partida. |
+| happy-dom (no jsdom) para tests de componentes | jsdom 30 exige Node ≥ 22.22; happy-dom 21 funciona con Node 20. |
+| Claves de `localStorage` centralizadas en `src/storage.ts` | Todas las webs de Pages de BertMarti comparten origen: prefijo `roscodex-` obligatorio (test) y la clave antigua `pokereto-*` se borra tras migrar. |
+| Partida guiada = Principiante sin reloj + consejos | Enseña jugando, sin presión; los consejos no son modales y no roban el foco (los atajos siguen funcionando). |
 | `vitest.config.ts` separado | Evita cargar el plugin PWA (lento) al pasar los tests. Entorno `node`; `localStorage` se simula con `vi.stubGlobal`. |
 | CSP inyectada por plugin solo en build | El servidor de Vite usa scripts en línea para HMR; una meta CSP fija en `index.html` rompería `npm run dev`. |
 | `overrides` de `uuid` ^11 para `xcode` | `@capacitor/cli` → `xcode` arrastraba `uuid@7` (aviso moderado). `xcode` solo usa `uuid.v4()`, compatible con la 11 (CJS). |
@@ -32,6 +37,8 @@ Memoria del proyecto para personas y agentes: decisiones, por qué se tomaron y 
 - **El plugin PWA tarda** (hasta ~70 s en la Pi en el primer build por `closeBundle`). No lances varios builds a la vez.
 - **Historial de preguntas** en `localStorage` (`roscodex-question-history-v4`, migra desde `pokereto-question-history-v3`). Si se reutilizan IDs con contenido nuevo, los jugadores las verán como «ya jugadas».
 - **`ModalShell`**: `App` se repinta cada 250 ms durante la partida; cualquier efecto que dependa de una función creada en el render (p. ej. `onClose`) se reejecuta y roba el foco. Por eso `onClose` va en una ref.
+- **El panel de navegador de Claude Desktop no deja registrar service workers** («unknown error when fetching the script»): para probar la PWA usa Chromium sin cabeza con CDP (ver `doc/DESARROLLO.md`).
+- **`useUpdateState()`** devuelve funciones estables a propósito: `App` se repinta cada 250 ms y un efecto que dependiera de una función nueva reiniciaría el temporizador del aviso sin fin.
 - **`finish()`** debe poder terminar la partida aunque `acceptingInput` sea `false` (el reloj puede agotarse en los 850 ms entre preguntas).
 - **PWA**: no repitas en `includeAssets` archivos que ya cubre `workbox.globPatterns`; Workbox los duplica con otra revisión y el service worker no se instala (pasó hasta la v0.3.0: la web publicada no funcionaba offline).
 - **CSP y `style={{…}}`**: React aplica los estilos por CSSOM (`element.style`), que `style-src 'self'` no bloquea; el rosco posicionado con `left/top` funciona con la CSP (comprobado en Chromium). Un revisor automático lo marcó como fallo: es un falso positivo.
