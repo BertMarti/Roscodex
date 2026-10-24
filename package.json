@@ -1,6 +1,6 @@
 {
   "name": "roscodex",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -8,9 +8,13 @@
     "build": "vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
+    "test:unit": "vitest run",
+    "test:watch": "vitest",
     "validate:content": "node scripts/validate-content.mjs",
     "simulate:games": "node scripts/simulate-games.mjs",
-    "test": "npm run typecheck && npm run validate:content && npm run simulate:games && npm run build",
+    "build:bank": "node scripts/build-question-bank.mjs",
+    "check": "npm run typecheck && npm run test:unit && npm run validate:content && npm run simulate:games",
+    "test": "npm run check && npm run build",
     "mobile:add:android": "npm run build -- --base=/ && cap add android && cap sync android",
     "mobile:add:ios": "npm run build -- --base=/ && cap add ios && cap sync ios",
     "mobile:sync": "npm run build -- --base=/ && cap sync",
@@ -30,7 +34,13 @@
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.1",
     "typescript": "^7.0.2",
-    "vite": "^8.3.1",
-    "vite-plugin-pwa": "^1.3.0"
+    "vite": "^8.3.5",
+    "vite-plugin-pwa": "^1.3.0",
+    "vitest": "^4.1.12"
+  },
+  "overrides": {
+    "xcode": {
+      "uuid": "^11.1.1"
+    }
   }
 }

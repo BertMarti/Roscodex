@@ -13,7 +13,7 @@ Es un proyecto fan, gratuito y no oficial. No está afiliado, patrocinado ni apr
 Abre la aplicación desde una de estas direcciones:
 
 - Demo publicada: [bertmarti.github.io/Roscodex](https://bertmarti.github.io/Roscodex/)
-- Demo local: `http://localhost:8080/`
+- Demo local: `http://localhost:4173/Roscodex/` tras `npm run build && npm run preview` (ver [DESARROLLO.md](DESARROLLO.md))
 
 En la pantalla inicial selecciona uno de los cuatro niveles de dificultad:
 

@@ -2,7 +2,9 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 
 const API = "https://pokeapi.co/api/v2";
 const DATA_DIR = new URL("../public/data/", import.meta.url);
-const CACHE_URL = new URL("./pokeapi-pokemon-cache.json", DATA_DIR);
+// La caché de PokéAPI solo sirve para generar el banco: vive fuera de public/ para no publicarse ni precachearse.
+const SOURCE_DIR = new URL("../data/", import.meta.url);
+const CACHE_URL = new URL("./pokeapi-pokemon-cache.json", SOURCE_DIR);
 const OUTPUT_URL = new URL("./question-bank.json", DATA_DIR);
 const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 const CONTAINS_LETTERS_BY_DIFFICULTY = {
@@ -319,7 +321,7 @@ async function loadPokemon() {
       stats: raw.stats.map((stat) => ({ name: stat.stat.name, value: stat.base_stat }))
     };
   });
-  await mkdir(DATA_DIR, { recursive: true });
+  await mkdir(SOURCE_DIR, { recursive: true });
   await writeFile(CACHE_URL, `${JSON.stringify(details)}\n`, "utf8");
   return details;
 }

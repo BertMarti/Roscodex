@@ -4,3 +4,12 @@ dist/
 android/
 ios/
 .DS_Store
+
+# Variables de entorno (nunca se suben)
+.env
+.env.*
+!.env.example
+
+# Resultados de tests y cobertura
+coverage/
+*.log

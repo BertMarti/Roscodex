@@ -7,18 +7,14 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  build:
+    name: Comprobar y construir
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -33,23 +29,28 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Validate content and types
-        run: |
-          npm run typecheck
-          npm run validate:content
-          npm run simulate:games
+      - name: Tipos, tests, contenido y simulación
+        run: npm run check
 
-      - name: Build Roscodex
+      - name: Build Roscodex (base /Roscodex/)
         run: npm run build
 
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
-
       - name: Upload web artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
           path: ./dist
 
+  deploy:
+    name: Publicar
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

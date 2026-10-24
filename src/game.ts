@@ -57,10 +57,21 @@ export function shuffle<T>(items: T[]): T[] {
   return items;
 }
 
+export function isDifficulty(value: string): value is Difficulty {
+  return Object.prototype.hasOwnProperty.call(difficultyConfig, value);
+}
+
 export function loadQuestionHistory(): Record<Difficulty, string[]> {
   try {
     const stored = localStorage.getItem(QUESTION_HISTORY_KEY) || localStorage.getItem(LEGACY_QUESTION_HISTORY_KEY) || "{}";
-    return JSON.parse(stored) as Record<Difficulty, string[]>;
+    const parsed: unknown = JSON.parse(stored);
+    const valid = {} as Record<Difficulty, string[]>;
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return valid;
+    // Se descarta lo que no tenga la forma esperada (dificultad conocida → lista de IDs) sin perder el resto.
+    for (const [key, value] of Object.entries(parsed)) {
+      if (isDifficulty(key) && Array.isArray(value) && value.every((item) => typeof item === "string")) valid[key] = value;
+    }
+    return valid;
   } catch {
     return {} as Record<Difficulty, string[]>;
   }
@@ -90,7 +101,8 @@ export function choosePack(packs: QuestionPack[], difficulty: Difficulty): Selec
     const selected = candidates[Math.floor(Math.random() * candidates.length)];
     if (!selected) throw new Error(`No quedan preguntas para la letra ${letter} en ${difficulty}`);
     history.push(selected.id);
-    return { ...selected, options: selected.options.map((option) => ({ ...option })) };
+    // Se barajan una sola vez por partida: el orden en pantalla y los atajos 1–4 coinciden siempre.
+    return { ...selected, options: shuffle(selected.options.map((option) => ({ ...option }))) };
   });
 
   const completeHistory = loadQuestionHistory();
