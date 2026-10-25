@@ -1,3 +1,5 @@
+import { STORAGE_KEYS } from "./storage";
+
 export const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
 export type Difficulty = "beginner" | "normal" | "hard" | "extreme";
@@ -32,7 +34,8 @@ export const difficultyConfig: Record<Difficulty, { label: string; seconds: numb
   extreme: { label: "EXTREMO", seconds: 180, description: "3:00 · Liga máxima" }
 };
 
-const QUESTION_HISTORY_KEY = "roscodex-question-history-v4";
+const QUESTION_HISTORY_KEY = STORAGE_KEYS.questionHistory;
+// Nombre antiguo del proyecto: se lee una vez para migrar y se borra al guardar (origen compartido con otras webs).
 const LEGACY_QUESTION_HISTORY_KEY = "pokereto-question-history-v3";
 
 export class QuestionBankExhaustedError extends Error {
@@ -80,12 +83,14 @@ export function loadQuestionHistory(): Record<Difficulty, string[]> {
 export function saveQuestionHistory(history: Record<Difficulty, string[]>): void {
   try {
     localStorage.setItem(QUESTION_HISTORY_KEY, JSON.stringify(history));
+    localStorage.removeItem(LEGACY_QUESTION_HISTORY_KEY);
   } catch {
     // El juego sigue funcionando aunque el navegador bloquee el almacenamiento local.
   }
 }
 
-export function choosePack(packs: QuestionPack[], difficulty: Difficulty): SelectedPack {
+/** persistHistory = false: elige sin repetir pero no apunta las preguntas en el historial (partida guiada). */
+export function choosePack(packs: QuestionPack[], difficulty: Difficulty, persistHistory = true): SelectedPack {
   const matchingPack = packs.find((pack) => pack.difficulty === difficulty);
   if (!matchingPack) throw new Error(`No existe un banco para la dificultad ${difficulty}`);
 
@@ -105,9 +110,11 @@ export function choosePack(packs: QuestionPack[], difficulty: Difficulty): Selec
     return { ...selected, options: shuffle(selected.options.map((option) => ({ ...option }))) };
   });
 
-  const completeHistory = loadQuestionHistory();
-  completeHistory[difficulty] = history;
-  saveQuestionHistory(completeHistory);
+  if (persistHistory) {
+    const completeHistory = loadQuestionHistory();
+    completeHistory[difficulty] = history;
+    saveQuestionHistory(completeHistory);
+  }
   return { ...matchingPack, id: `${matchingPack.id}-${Date.now()}`, questions: selectedQuestions };
 }
 

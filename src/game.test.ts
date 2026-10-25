@@ -170,6 +170,14 @@ describe("saveQuestionHistory", () => {
     expect(localStorage.getItem(CLAVE_V4)).toBe(JSON.stringify({ ...historialVacio(), normal: ["A-normal-0", "B-normal-0"] }));
   });
 
+  it("migra y borra la clave antigua del proyecto (origen compartido)", () => {
+    localStorage.setItem(CLAVE_V3, JSON.stringify({ hard: ["H-hard-0"] }));
+    const historial = loadQuestionHistory();
+    saveQuestionHistory(historial);
+    expect(localStorage.getItem(CLAVE_V3)).toBeNull();
+    expect(JSON.parse(localStorage.getItem(CLAVE_V4) ?? "{}")).toEqual({ hard: ["H-hard-0"] });
+  });
+
   it("no lanza si el navegador bloquea el almacenamiento", () => {
     vi.stubGlobal("localStorage", {
       getItem: () => null,
@@ -188,6 +196,13 @@ describe("choosePack", () => {
     const seleccion = choosePack([makePack("normal", 3)], "normal");
     expect(seleccion.questions).toHaveLength(26);
     expect(seleccion.questions.map((question) => question.letter)).toEqual(LETTERS);
+  });
+
+  it("con persistHistory = false no gasta preguntas del historial (partida guiada)", () => {
+    saveQuestionHistory({ ...historialVacio(), normal: ["previa"] });
+    const seleccion = choosePack([makePack("normal", 2)], "normal", false);
+    expect(seleccion.questions).toHaveLength(26);
+    expect(loadQuestionHistory().normal).toEqual(["previa"]);
   });
 
   it("guarda los IDs elegidos y evita repetirlos en la siguiente partida", () => {

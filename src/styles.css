@@ -57,6 +57,9 @@ h1 b { color: var(--ink); font-weight: 400; }
 
 .panel { border: 2px solid var(--line); border-radius: 18px; background: var(--panel); box-shadow: var(--shadow); backdrop-filter: blur(7px); }
 .setup-panel { width: min(100%, 690px); padding: 24px 25px 26px; }
+.onboarding-card { width: min(100%, 690px); margin-bottom: 18px; padding: 20px 22px; }
+.onboarding-card h2 { margin: 0 0 10px; font-size: 16px; }
+.onboarding-card p { margin: 0 0 16px; color: var(--muted); font-size: 12px; line-height: 1.6; }
 .panel-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
 .panel-kicker { display: block; margin-bottom: 10px; color: var(--muted); font-family: "Press Start 2P", monospace; font-size: 8px; letter-spacing: .06em; }
 .panel-heading h2 { margin: 0; font-size: clamp(16px, 4vw, 23px); line-height: 1.35; text-transform: uppercase; }
@@ -75,6 +78,12 @@ h1 b { color: var(--ink); font-weight: 400; }
 .difficulty-card--blue { --accent: var(--blue); }
 .difficulty-card--orange { --accent: var(--orange); }
 .difficulty-card--red { --accent: var(--red); }
+.mode-selector { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin: 0 0 20px; padding: 0; border: 0; }
+.mode-selector legend { grid-column: 1 / -1; margin-bottom: 2px; color: var(--muted); font-size: 12px; font-weight: 700; }
+.mode-selector label { position: relative; flex: 1; min-height: 44px; display: grid; place-items: center; padding: 8px; border: 2px solid var(--line); border-radius: 8px; color: var(--muted); font-family: "Press Start 2P", monospace; font-size: 8px; text-align: center; cursor: pointer; }
+.mode-selector label.is-selected { border-color: var(--yellow); color: var(--yellow); background: rgba(255,203,5,.1); }
+.mode-selector input { position: absolute; opacity: 0; }
+.mode-selector label:has(input:focus-visible) { outline: 3px solid var(--yellow); outline-offset: 3px; }
 
 .fan-note { width: min(100%, 690px); display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 11px; margin-top: 18px; padding: 13px 15px; border: 1px solid rgba(255,255,255,.12); border-radius: 10px; background: rgba(8, 10, 18, .8); }
 .fan-note__actions { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
@@ -118,6 +127,12 @@ h1 b { color: var(--ink); font-weight: 400; }
 .rosco-legend__dot--expired { background: #72798b; color: #72798b; }
 
 .question-card { padding: 21px 22px 17px; }
+.coach-card { margin: 0 0 12px; padding: 16px 18px; border: 2px solid var(--yellow); border-radius: 12px; background: rgba(31, 31, 35, .94); box-shadow: 0 0 18px rgba(255,203,5,.12); }
+.coach-card h3 { margin: 0 0 8px; color: var(--yellow); font-size: 13px; }
+.coach-card p { margin: 0 0 12px; color: var(--muted); font-size: 11px; line-height: 1.6; }
+.answers.is-coached { border-radius: 10px; }
+.timer-box__value--untimed { font-size: 10px; line-height: 1.6; }
+.rosco-letter.is-coached, .answers.is-coached, .pass-button.is-coached { box-shadow: 0 0 0 3px var(--yellow), 0 0 18px rgba(255,203,5,.5); }
 .question-card__topline { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 15px; }
 .question-card__topline .panel-kicker { margin: 0; }
 .question-rule { display: inline-block; padding: 7px 8px; border: 1px solid var(--yellow); color: var(--yellow); font-family: "Press Start 2P", monospace; font-size: 8px; line-height: 1.4; text-align: right; }
@@ -161,6 +176,11 @@ h1 b { color: var(--ink); font-weight: 400; }
 .primary-button { border-color: var(--blue); border-bottom-width: 5px; background: var(--blue); color: white; }
 .secondary-button { margin-top: 9px; background: transparent; color: var(--muted); }
 .primary-button:hover, .secondary-button:hover { transform: translateY(-1px); }
+.install-button { width: min(100%, 690px); margin-top: 14px; }
+.record-message { color: var(--yellow) !important; font-family: "Press Start 2P", monospace; font-size: 10px !important; text-align: center; }
+.update-toast { position: fixed; z-index: 20; right: max(12px, env(safe-area-inset-right)); bottom: max(12px, env(safe-area-inset-bottom)); left: max(12px, env(safe-area-inset-left)); display: flex; align-items: center; gap: 10px; width: min(100% - 24px, 650px); margin: 0 auto; padding: 13px 15px; border: 2px solid var(--yellow); border-radius: 10px; background: #151829; box-shadow: var(--shadow); color: var(--ink); font-size: 11px; }
+.update-toast span { flex: 1; }
+.update-toast button { min-height: 44px; padding: 7px 10px; border: 1px solid var(--yellow); border-radius: 6px; background: transparent; color: var(--yellow); font-family: "Press Start 2P", monospace; font-size: 8px; }
 
 .sound-toggle, .game-sound-toggle, .game-menu-button { border: 1px solid rgba(255,255,255,.18); background: rgba(16, 19, 32, .74); color: var(--yellow); font-family: "Press Start 2P", monospace; font-size: 8px; }
 .sound-toggle { align-self: start; padding: 7px 8px; border-radius: 6px; }
@@ -187,6 +207,9 @@ h1 b { color: var(--ink); font-weight: 400; }
   .rosco { width: min(91vw, 405px); }
   .rosco-letter { width: 31px; height: 31px; font-size: 10px; }
   .question-card { padding: 18px 13px 15px; }
+  .mode-selector { grid-template-columns: 1fr; }
+  .mode-selector legend { grid-column: auto; }
+  .update-toast { flex-wrap: wrap; }
 }
 
 @media (hover: none) { .shortcut-help { display: none; } }
