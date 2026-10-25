@@ -198,6 +198,13 @@ describe("choosePack", () => {
     expect(seleccion.questions.map((question) => question.letter)).toEqual(LETTERS);
   });
 
+  it("con persistHistory = false no gasta preguntas del historial (partida guiada)", () => {
+    saveQuestionHistory({ ...historialVacio(), normal: ["previa"] });
+    const seleccion = choosePack([makePack("normal", 2)], "normal", false);
+    expect(seleccion.questions).toHaveLength(26);
+    expect(loadQuestionHistory().normal).toEqual(["previa"]);
+  });
+
   it("guarda los IDs elegidos y evita repetirlos en la siguiente partida", () => {
     vi.spyOn(Math, "random").mockReturnValue(0);
     const pack = makePack("normal", 2);

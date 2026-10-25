@@ -89,7 +89,8 @@ export function saveQuestionHistory(history: Record<Difficulty, string[]>): void
   }
 }
 
-export function choosePack(packs: QuestionPack[], difficulty: Difficulty): SelectedPack {
+/** persistHistory = false: elige sin repetir pero no apunta las preguntas en el historial (partida guiada). */
+export function choosePack(packs: QuestionPack[], difficulty: Difficulty, persistHistory = true): SelectedPack {
   const matchingPack = packs.find((pack) => pack.difficulty === difficulty);
   if (!matchingPack) throw new Error(`No existe un banco para la dificultad ${difficulty}`);
 
@@ -109,9 +110,11 @@ export function choosePack(packs: QuestionPack[], difficulty: Difficulty): Selec
     return { ...selected, options: shuffle(selected.options.map((option) => ({ ...option }))) };
   });
 
-  const completeHistory = loadQuestionHistory();
-  completeHistory[difficulty] = history;
-  saveQuestionHistory(completeHistory);
+  if (persistHistory) {
+    const completeHistory = loadQuestionHistory();
+    completeHistory[difficulty] = history;
+    saveQuestionHistory(completeHistory);
+  }
   return { ...matchingPack, id: `${matchingPack.id}-${Date.now()}`, questions: selectedQuestions };
 }
 

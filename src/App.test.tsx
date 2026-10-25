@@ -68,6 +68,13 @@ describe("partida guiada", () => {
     await waitFor(() => expect(screen.queryByRole("heading", { name: "Pasapalabra" })).toBeNull());
   });
 
+  it("no gasta preguntas de la rotación de Principiante", async () => {
+    render(<App />);
+    fireEvent.click(boton("Jugar partida guiada"));
+    await screen.findByRole("heading", { name: "El rosco" });
+    expect(localStorage.getItem(STORAGE_KEYS.questionHistory)).toBeNull();
+  });
+
   it("al abandonarla se da por vista la bienvenida", async () => {
     render(<App />);
     fireEvent.click(boton("Jugar partida guiada"));
@@ -128,6 +135,25 @@ describe("aviso de versión nueva", () => {
     fireEvent.click(boton("‹ Menú"));
     fireEvent.click(boton("Abandonar"));
     expect(screen.getByText("Hay una versión nueva de Roscodex.")).toBeTruthy();
+  });
+
+  it("no se pinta encima de un diálogo abierto y vuelve al cerrarlo", () => {
+    render(<App />);
+    fireEvent.click(boton("Cómo se juega"));
+    act(() => setUpdateStateForTests({ needRefresh: true, offlineReady: true }));
+    expect(screen.queryByText("Hay una versión nueva de Roscodex.")).toBeNull();
+    expect(screen.queryByText("Listo para jugar sin conexión.")).toBeNull();
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(screen.getByText("Hay una versión nueva de Roscodex.")).toBeTruthy();
+  });
+
+  it("el aviso «sin conexión» tampoco sale durante la partida", async () => {
+    localStorage.setItem(STORAGE_KEYS.onboarding, "done");
+    render(<App />);
+    fireEvent.click(boton(/NORMAL/));
+    await screen.findByText("Completa el rosco");
+    act(() => setUpdateStateForTests({ offlineReady: true }));
+    expect(screen.queryByText("Listo para jugar sin conexión.")).toBeNull();
   });
 
   it("«Cerrar» del aviso sin conexión no borra el de versión nueva", () => {

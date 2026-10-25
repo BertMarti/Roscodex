@@ -27,8 +27,12 @@ function installSnapshot(): InstallPlatform {
   return detectInstallPlatform({ userAgent: navigator.userAgent, maxTouchPoints: navigator.maxTouchPoints, standalone, hasPrompt: installEvent !== null });
 }
 
+// Fuera del hook: una función nueva en cada render haría que React se resuscribiera 4 veces por segundo durante la partida.
+const subscribeInstall = (listener: () => void) => { listeners.add(listener); return () => { listeners.delete(listener); }; };
+const serverInstallSnapshot = (): InstallPlatform => "unsupported";
+
 export function useInstallPrompt(): { platform: InstallPlatform; promptInstall: () => Promise<"accepted" | "dismissed" | "unavailable"> } {
-  const platform = useSyncExternalStore((listener) => { listeners.add(listener); return () => listeners.delete(listener); }, installSnapshot, () => "unsupported" as InstallPlatform);
+  const platform = useSyncExternalStore(subscribeInstall, installSnapshot, serverInstallSnapshot);
   const promptInstall = async () => {
     if (!installEvent) return "unavailable" as const;
     const event = installEvent; installEvent = null; notify();

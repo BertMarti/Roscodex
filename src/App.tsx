@@ -134,7 +134,8 @@ function App() {
     try {
       const availablePacks = packs ?? await loadQuestionPacks();
       if (!packs) setPacks(availablePacks);
-      const selected = choosePack(availablePacks, difficulty);
+      // La partida guiada no gasta preguntas de la rotación de Principiante.
+      const selected = choosePack(availablePacks, difficulty, mode !== "guided");
       const startedAt = Date.now();
       setGame(createGameState(difficulty, selected.questions, startedAt, mode));
       resultRegistered.current = false;
@@ -275,7 +276,7 @@ function App() {
       {modal === "exhausted" && <ExhaustedModal onClose={showHome} onReset={resetRotation} />}
       {modal === "results" && game && <ResultsModal game={game} record={records[game.difficulty]} newRecord={newRecord} onRestart={() => void startGame(game.difficulty, game.mode === "guided" ? "timed" : game.mode)} onHome={showHome} />}
       {modal === "abandon" && <AbandonModal timed={game ? isTimed(game) : true} onClose={resumeGame} onHome={showHome} />}
-      <UpdateToast screen={screen} game={game} update={update} />
+      <UpdateToast visible={screen === "home" && modal === null} update={update} />
     </>
   );
 }
@@ -510,11 +511,13 @@ function IosInstallModal({ onClose }: { onClose: () => void }) {
   return <ModalShell titleId={titleId} onClose={onClose}><p className="eyebrow">INSTALACIÓN // IOS</p><h2 id={titleId}>Instalar en iPhone</h2><ol><li>Abre Roscodex en Safari.</li><li>Toca Compartir (el cuadrado con la flecha hacia arriba).</li><li>Elige «Añadir a pantalla de inicio».</li><li>Toca «Añadir».</li></ol><p>Así se abre a pantalla completa y funciona sin conexión.</p></ModalShell>;
 }
 
-function UpdateToast({ screen, game, update }: { screen: Screen; game: GameState | null; update: ReturnType<typeof useUpdateState> }) {
-  const visibleRefresh = update.needRefresh && !(screen === "game" && game && !game.finished);
-  const { offlineReady, dismissOffline } = update;
-  useEffect(() => { if (!offlineReady) return undefined; const timer = window.setTimeout(dismissOffline, 6000); return () => window.clearTimeout(timer); }, [offlineReady, dismissOffline]);
-  if (!visibleRefresh && !update.offlineReady) return null;
+// Solo en la portada y sin modales: ni interrumpe una partida ni queda encima de un diálogo con el foco atrapado.
+function UpdateToast({ visible, update }: { visible: boolean; update: ReturnType<typeof useUpdateState> }) {
+  const visibleRefresh = visible && update.needRefresh;
+  const visibleOffline = visible && update.offlineReady;
+  const { dismissOffline } = update;
+  useEffect(() => { if (!visibleOffline) return undefined; const timer = window.setTimeout(dismissOffline, 6000); return () => window.clearTimeout(timer); }, [visibleOffline, dismissOffline]);
+  if (!visibleRefresh && !visibleOffline) return null;
   return <div className="update-toast" role="status" aria-live="polite">{visibleRefresh ? <><span>Hay una versión nueva de Roscodex.</span><button type="button" onClick={update.reload}>Recargar</button><button type="button" onClick={update.dismissRefresh}>Luego</button></> : <><span>Listo para jugar sin conexión.</span><button type="button" onClick={update.dismissOffline}>Cerrar</button></>}</div>;
 }
 
