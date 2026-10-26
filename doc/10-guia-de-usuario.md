@@ -4,18 +4,21 @@
 
 Roscodex es un juego de preguntas tipo rosco inspirado en el formato de televisión de “Pasapalabra”, con estética pixel-art y temática Pokémon.
 
-El objetivo es completar el rosco de la A a la Z respondiendo preguntas antes de que termine el tiempo.
+El objetivo es completar el rosco de la A a la Z respondiendo preguntas antes de que termine el tiempo, o jugar sin reloj a tu ritmo.
 
 Es un proyecto fan, gratuito y no oficial. No está afiliado, patrocinado ni aprobado por Nintendo, GAME FREAK, Creatures Inc. ni The Pokémon Company.
 
 ## Cómo empezar
 
-Abre la aplicación desde una de estas direcciones:
+Abre la aplicación desde la [versión publicada](https://bertmarti.github.io/Roscodex/).
 
-- Demo publicada: [bertmarti.github.io/Roscodex](https://bertmarti.github.io/Roscodex/)
-- Demo local: `http://localhost:4173/Roscodex/` tras `npm run build && npm run preview` (ver [DESARROLLO.md](DESARROLLO.md))
+En la pantalla inicial elige primero el modo:
 
-En la pantalla inicial selecciona uno de los cuatro niveles de dificultad:
+- **Con reloj**: una partida con el tiempo de la dificultad elegida.
+- **Contrarreloj 2:00**: completa todo el rosco en dos minutos, en cualquier dificultad, con récords propios.
+- **Práctica (sin reloj)**: juega con calma y sin temporizador.
+
+El juego recuerda el modo que hayas elegido. Después selecciona uno de los cuatro niveles de dificultad:
 
 | Nivel | Tiempo | Tipo de preguntas |
 |---|---:|---|
@@ -24,11 +27,13 @@ En la pantalla inicial selecciona uno de los cuatro niveles de dificultad:
 | Difícil | 4 minutos | Varias condiciones, estadísticas, habilidades o movimientos |
 | Extremo | 3 minutos | Combinaciones avanzadas de datos de combate |
 
+Si es tu primera vez, la portada muestra **¿Primera vez?**: pulsa **Jugar partida guiada** para que el juego te explique cómo jugar mientras avanzas, sin reloj. También puedes consultar en cualquier momento el botón **Cómo se juega** de la portada.
+
 ## Cómo se juega
 
 Al comenzar una partida aparecen:
 
-1. El temporizador.
+1. El temporizador, salvo en Práctica.
 2. El rosco circular con las letras de la A a la Z.
 3. La puntuación actual.
 4. La pregunta correspondiente a la letra activa.
@@ -44,22 +49,19 @@ Cada pregunta indica siempre una de estas dos reglas:
 - **Empieza por la letra X.** La respuesta debe comenzar por esa letra.
 - **Contiene la letra X.** La respuesta debe contener esa letra en cualquier posición.
 
-La regla aparece tanto en el encabezado de la pregunta como dentro del enunciado. No se utilizan etiquetas como “Pista directa” o “Pista experta”.
+La regla aparece tanto en el encabezado de la pregunta como dentro del enunciado. El rosco tiene 18 preguntas de tipo **Empieza por** y 8 de tipo **Contiene**.
 
-El reparto aproximado del rosco es:
-
-- 18 preguntas de tipo **Empieza por**.
-- 8 preguntas de tipo **Contiene**.
-
-En un rosco de 26 letras no es posible representar un 70/30 exacto con números enteros; 18/8 equivale aproximadamente a 69,2 % y 30,8 %.
+Las respuestas usan los nombres oficiales en español de Pokémon, movimientos y habilidades. Las alturas y los pesos llevan coma decimal, por ejemplo, **0,7 m**.
 
 ## Responder una pregunta
 
-Pulsa una de las cuatro respuestas:
+Pulsa una de las cuatro respuestas, o usa las teclas `1`, `2`, `3` y `4`:
 
-- Si es correcta, se marca en verde y recibes puntos.
-- Si es incorrecta, se marca en rojo y se muestra la respuesta correcta.
-- Después de responder, el juego avanza automáticamente a la siguiente letra.
+- Si es correcta, se marca en verde y recibes **+10 puntos**.
+- Si es incorrecta, se marca en rojo y se muestra la respuesta correcta con una línea que la explica, indicando su tipo y generación.
+- Después de un fallo, pulsa **Siguiente ›** o `Intro` para continuar. Con reloj, el juego continúa solo a los pocos segundos (2,6 s); sin reloj espera hasta que pulses el botón.
+
+La tecla `P` activa **Pasapalabra**.
 
 Las letras del rosco cambian de estado para mostrar el progreso:
 
@@ -71,7 +73,7 @@ Las letras del rosco cambian de estado para mostrar el progreso:
 
 ## Usar Pasapalabra
 
-Pulsa **Pasapalabra** cuando no quieras responder en ese momento.
+Pulsa **Pasapalabra** cuando no quieras responder en ese momento, o usa la tecla `P`.
 
 La pregunta queda marcada como pasada y se coloca para una segunda vuelta. Cuando termina la primera vuelta, el juego vuelve a las letras que se hayan pasado, siempre que todavía quede tiempo.
 
@@ -89,62 +91,66 @@ La pantalla de resultados muestra:
 - Respuestas incorrectas.
 - Preguntas pasadas.
 
-Desde ahí puedes:
+En las partidas con reloj y en las contrarrelojes también muestra el récord de la dificultad. Si superas el anterior, aparece **¡Nuevo récord!** Las partidas de práctica no cuentan para los récords, pero sí para las estadísticas.
 
-- Pulsar **Jugar de nuevo** para iniciar otra partida con la misma dificultad.
-- Pulsar **Cambiar dificultad** para volver a la pantalla inicial.
+Desde ahí puedes pulsar **Compartir resultado**. Se abre el menú de compartir del sistema; si no está disponible, el resultado se copia al portapapeles o se muestra un texto para copiarlo a mano. Solo incluye los puntos, los contadores y una fila de cuadritos **🟩🟥⬜**: no incluye ningún dato personal.
+
+También puedes pulsar **Jugar de nuevo** para iniciar otra partida con el mismo modo y dificultad, o **Cambiar dificultad** para volver a la pantalla inicial.
+
+## Estadísticas
+
+El botón **▤ Estadísticas** de la portada muestra, entre otros datos:
+
+- Partidas jugadas.
+- Aciertos totales y porcentaje de acierto.
+- Mejor racha de aciertos seguidos.
+- Preguntas falladas y pasadas.
+- Aciertos por letra y la letra que más cuesta.
+- Récords de las partidas con reloj y de las contrarrelojes, por dificultad.
+
+Puedes borrarlas con **Borrar estadísticas** y confirmando con **Borrar** (se borran también los récords; no se puede deshacer). Todo se queda en tu dispositivo.
+
+## Accesibilidad y ajustes
+
+- El botón de sonido activa o desactiva los efectos de sonido 8-bit y recuerda tu preferencia.
+- **Alto contraste** se activa automáticamente si el sistema pide más contraste. También puedes forzarlo o quitarlo desde el interruptor de la portada.
+- **‹ Menú** permite abandonar la partida tras una confirmación. El reloj se pausa mientras decides.
+- Los lectores de pantalla reciben avisos cuando aparece una pregunta nueva y cuando quedan 60, 30 o 10 segundos.
 
 ## Preguntas sin repetición
 
-La aplicación dispone de un banco local de 2.080 preguntas:
+La aplicación dispone de un banco local de 2.080 preguntas, 520 para cada nivel de dificultad. Al empezar cada partida se seleccionan preguntas nuevas para gestionar la rotación.
 
-- 520 para Principiante.
-- 520 para Normal.
-- 520 para Difícil.
-- 520 para Extremo.
-- 20 candidatas para cada letra dentro de cada dificultad.
-
-Al empezar cada partida se selecciona una pregunta nueva por letra. El historial se guarda en el almacenamiento local del navegador, por lo que cerrar y volver a abrir la página no borra automáticamente las preguntas utilizadas.
-
-Cuando se han consumido todas las preguntas de una dificultad, la aplicación muestra un aviso y no reinicia la rotación por su cuenta. El reinicio del banco requiere pulsar la acción explícita **Reiniciar rotación**.
-
-Si se borran los datos del navegador o se utiliza otro dispositivo, el historial local no estará disponible.
+Cuando se agotan las preguntas de una dificultad, la aplicación muestra un aviso y ofrece **Reiniciar rotación**. La rotación no se reinicia por su cuenta.
 
 ## Funcionamiento sin conexión
 
-La partida no consulta una API en tiempo real. Las preguntas, los sprites y la tipografía se sirven desde archivos locales incluidos en la aplicación.
+La PWA permite jugar sin conexión después de abrir la web por primera vez. Si el navegador lo permite, en la portada aparece el botón **⇩ Instalar app**. En iPhone y iPad aparece **Instalar en iPhone**, con los pasos para usar Compartir y **Añadir a la pantalla de inicio**.
 
-La conexión a Internet solo es necesaria para abrir la versión publicada por primera vez o para consultar los enlaces de fuentes y créditos.
+Cuando haya una versión nueva verás el aviso **Hay una versión nueva de Roscodex**. Puedes pulsar **Recargar** o **Luego**; el aviso nunca interrumpe una partida.
 
 ## Proyecto fan y fuentes
 
-Roscodex utiliza datos estructurados de [PokéAPI](https://pokeapi.co/), sprites de [PokéAPI Sprites](https://github.com/PokeAPI/sprites) y la tipografía [Press Start 2P](https://fonts.google.com/specimen/Press+Start+2P).
-
-Los datos se importan y validan antes de guardarse en el banco local. Las fuentes y la información legal están disponibles en el botón **Fuentes y créditos** de la pantalla inicial.
+Roscodex utiliza datos de [PokéAPI](https://pokeapi.co/), sprites de [PokéAPI Sprites](https://github.com/PokeAPI/sprites) y la tipografía [Press Start 2P](https://fonts.google.com/specimen/Press+Start+2P). Las fuentes y la información legal están disponibles en **Fuentes y créditos**, en la pantalla inicial.
 
 ## Problemas habituales
 
 ### La página aparece vacía o no carga las preguntas
 
-La aplicación usa Vite; no abras un HTML generado con `file://`. Desde la raíz del proyecto puedes arrancar el servidor de desarrollo con:
-
-```bash
-npm install
-npm run dev
-```
-
-Después visita la URL que muestre Vite, normalmente `http://localhost:5173/Roscodex/`.
+La puesta en marcha local y los problemas técnicos relacionados con la aplicación se explican en la [guía de desarrollo](DESARROLLO.md).
 
 ### Quiero empezar de cero
 
-Borra los datos del sitio en el navegador. Esto eliminará el historial local de preguntas y la aplicación volverá a utilizar la rotación desde el principio.
+Si se han agotado las preguntas de una dificultad, pulsa **Reiniciar rotación**. Para borrar las estadísticas y los récords, entra en **▤ Estadísticas** y pulsa **Borrar estadísticas**.
+
+Si quieres borrar todos los datos de Roscodex, elimina solo las claves que empiezan por **roscodex-**. Si instalaste la app, también puedes desinstalarla. No borres todos los datos del sitio, porque la web comparte origen con otras webs de `bertmarti.github.io`.
 
 ### La aplicación funciona, pero no veo sprites
 
-Comprueba que el build se ha generado con `npm run build` y que los recursos siguen dentro de `public/assets/`.
+Los problemas técnicos de recursos y de desarrollo se explican en la [guía de desarrollo](DESARROLLO.md).
 
 ## Estado actual del proyecto
 
-Esta versión es una PWA web publicada. Incluye el flujo principal del juego, el rosco completo, temporizador, respuestas, segunda vuelta, resultados, créditos, banco de preguntas local y efectos 8-bit generados con Web Audio.
+La versión actual es la **0.6.0**. Incluye los modos con reloj, contrarreloj y práctica, partida guiada, estadísticas, récords, compartir resultado, alto contraste y una PWA instalable que funciona sin conexión.
 
-Todavía no incluye cuentas, ranking online, multijugador ni sincronización entre dispositivos. La configuración de Capacitor está preparada para crear proyectos Android/iOS cuando se instalen sus SDK nativos.
+Sigue sin incluir cuentas, ranking online, multijugador ni sincronización entre dispositivos.
