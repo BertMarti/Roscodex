@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { difficultyConfig, LETTERS } from "./game";
 import type { Difficulty, Question, QuestionPack, QuestionRule } from "./game";
-import { advance, answerCurrent, createGameState, finish, passCurrent, resumeAfterPause } from "./gameState";
+import { advance, answerCurrent, BLITZ_SECONDS, createGameState, finish, isTimed, passCurrent, resumeAfterPause } from "./gameState";
 
 const AHORA = 1_000_000;
 
@@ -92,6 +92,12 @@ describe("createGameState", () => {
     expect(state.acceptingInput).toBe(false);
     expect(state.endAt).toBe(AHORA + difficultyConfig.beginner.seconds * 1000);
   });
+
+  it.each(["beginner", "normal", "hard", "extreme"] as const)("en contrarreloj %s termina a los 2 minutos", (difficulty) => {
+    const state = createGameState(difficulty, makePack(difficulty, 1).questions, AHORA, "blitz");
+    expect(state.endAt).toBe(AHORA + BLITZ_SECONDS * 1000);
+    expect(isTimed(state)).toBe(true);
+  });
 });
 
 describe("answerCurrent", () => {
@@ -141,6 +147,27 @@ describe("answerCurrent", () => {
     const terminada = finish(state, "time");
     expect(answerCurrent(terminada, "a").state).toBe(terminada);
     expect(passCurrent(terminada)).toBe(terminada);
+  });
+
+  it("la racha sube con los aciertos, se corta con un fallo y no cuenta las pasadas", () => {
+    let state = partidaNormal();
+    state = advance(answerCurrent(state, "a").state);
+    expect(state.streak).toBe(1);
+    state = advance(answerCurrent(state, "a").state);
+    expect(state.streak).toBe(2);
+    expect(state.bestStreak).toBe(2);
+    state = advance(passCurrent(state));
+    expect(state.streak).toBe(2);
+    expect(state.bestStreak).toBe(2);
+    state = advance(answerCurrent(state, "a").state);
+    expect(state.streak).toBe(3);
+    expect(state.bestStreak).toBe(3);
+    state = advance(answerCurrent(state, "b").state);
+    expect(state.streak).toBe(0);
+    expect(state.bestStreak).toBe(3);
+    state = advance(answerCurrent(state, "a").state);
+    expect(state.streak).toBe(1);
+    expect(state.bestStreak).toBe(3);
   });
 });
 

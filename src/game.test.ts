@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   choosePack,
   emptyStatuses,
+  explanationFor,
   formatTime,
   isDifficulty,
   LETTERS,
@@ -123,6 +124,23 @@ describe("isDifficulty", () => {
     expect(isDifficulty("extreme")).toBe(true);
     expect(isDifficulty("facil")).toBe(false);
     expect(isDifficulty("__proto__")).toBe(false);
+  });
+});
+
+describe("explanationFor", () => {
+  const conExplicacion = (explanation: unknown) => ({ ...makeQuestion("A", "A-normal-0"), explanation }) as unknown as Question;
+
+  it("devuelve null si no hay una explicación de texto válida", () => {
+    expect(explanationFor(makeQuestion("A", "A-normal-0"))).toBeNull();
+    expect(explanationFor(conExplicacion(42))).toBeNull();
+    expect(explanationFor(conExplicacion(""))).toBeNull();
+    expect(explanationFor(conExplicacion("   "))).toBeNull();
+    expect(explanationFor(conExplicacion("a".repeat(241)))).toBeNull();
+  });
+
+  it("recorta la explicación y acepta hasta 240 caracteres", () => {
+    expect(explanationFor(conExplicacion("  Texto útil  "))).toBe("Texto útil");
+    expect(explanationFor(conExplicacion("a".repeat(240)))).toBe("a".repeat(240));
   });
 });
 
