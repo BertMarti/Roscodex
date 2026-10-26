@@ -32,7 +32,7 @@
 
 ## 🎯 ¿Para qué sirve?
 
-- **Pasar un buen rato:** partidas rápidas, dinámicas y adictivas de entre 3 y 6 minutos.
+- **Pasar un buen rato:** partidas rápidas, dinámicas y adictivas de entre 2 y 6 minutos (o sin reloj, a tu ritmo).
 - **Poner a prueba tus conocimientos Pokémon:** desde tipos y generaciones hasta estadísticas, habilidades y movimientos.
 - **Jugar en cualquier lugar sin conexión:** llévalo en el móvil, tableta u ordenador y juega sin consumir datos ni depender de cobertura.
 
@@ -56,13 +56,14 @@
 > 🆕 **¿Nunca has jugado?** La primera vez que abras Roscodex verás **«¿Primera vez?»**: pulsa **«Jugar partida guiada»** y el juego te lo explica mientras juegas, sin reloj. Siempre puedes repasarlo en **«Cómo se juega»**, en la portada.
 
 1. **Abre el juego:** entra en [Roscodex](https://bertmarti.github.io/Roscodex/) desde tu navegador web habitual o ábrelo desde el icono de tu pantalla si lo has instalado como app.
-2. **Elige el modo:** **«Con reloj»** (el reto de verdad) o **«Práctica (sin reloj)»** para jugar con calma. El juego recuerda tu elección.
+2. **Elige el modo:** **«Con reloj»** (el reto de verdad), **«Contrarreloj 2:00»** (todo el rosco en solo 2 minutos, con récords propios) o **«Práctica (sin reloj)»** para jugar con calma. El juego recuerda tu elección.
 3. **Elige la dificultad:** selecciona uno de los cuatro niveles disponibles (Principiante, Normal, Difícil o Extremo) según el tiempo por partida y la profundidad de las preguntas.
 4. **Lee con atención la regla:** cada rosco consta de 26 letras (de la A a la Z). El enunciado te especificará siempre si la respuesta correcta **«Empieza por la letra X»** o **«Contiene la letra X»** (18 letras por rosco empiezan por la letra indicada y 8 la contienen).
-5. **Elige tu respuesta:** dispones de **4 opciones posibles**. Si aciertas, sumas **+10 puntos** y la casilla se ilumina en verde; si fallas, se tiñe de rojo.
+5. **Elige tu respuesta:** dispones de **4 opciones posibles**. Si aciertas, sumas **+10 puntos** y la casilla se ilumina en verde; si fallas, se tiñe de rojo y verás **la respuesta correcta con una línea que la explica** (su tipo y su generación). Pulsa **«Siguiente ›»** (o `Intro`) para seguir; con reloj, el juego sigue solo a los pocos segundos.
 6. **Usa «Pasapalabra»:** si dudas con una letra, puedes pasarla para no arriesgarte. No penaliza y la casilla quedará en azul para más adelante.
 7. **Segunda vuelta:** tras recorrer el abecedario de la A a la Z, volverás una vez más a las letras que hayas dejado pendientes, siempre que el temporizador no haya llegado a cero.
-8. **Consulta tu resultado:** al finalizar, la pantalla de resumen te mostrará tu puntuación, tus aciertos, tus fallos y las letras que pasaste. En las partidas con reloj verás también tu **récord** de esa dificultad (y «¡Nuevo récord!» si lo superas). Desde ahí puedes volver a jugar o cambiar de dificultad.
+8. **Consulta tu resultado:** al finalizar, la pantalla de resumen te mostrará tu puntuación, tus aciertos, tus fallos y las letras que pasaste. En las partidas con reloj verás también tu **récord** de esa dificultad (y «¡Nuevo récord!» si lo superas). Desde ahí puedes **compartir tu resultado** (un resumen con tus puntos y una fila de cuadritos 🟩🟥⬜, sin ningún dato tuyo), volver a jugar o cambiar de dificultad.
+9. **Mira tus estadísticas:** en la portada, **«▤ Estadísticas»** muestra tus partidas, aciertos totales, porcentaje de acierto, tu mejor racha de aciertos seguidos, qué letras se te dan mejor y peor, y tus récords. Todo se queda en tu dispositivo y puedes borrarlo cuando quieras.
 
 ---
 
@@ -72,10 +73,12 @@
 - **Atajos de teclado:**
   - Teclas `1`, `2`, `3` y `4`: seleccionar y responder con la opción 1, 2, 3 o 4.
   - Tecla `P`: activar Pasapalabra y aplazar la letra en juego.
+  - Tecla `Intro`: tras un fallo, pasar a la siguiente pregunta.
   - Tecla `Tab`: navegar de forma accesible entre los botones interactivos.
   - Tecla `Escape`: cerrar cuadros de diálogo o ventanas emergentes.
 - **Botón «‹ Menú»:** ubicado en la barra superior para abandonar la partida actual y regresar a la pantalla de bienvenida.
 - **Botón de sonido:** activa o desactiva los efectos de sonido 8-bit en cualquier momento (la preferencia se recuerda).
+- **Botón «Alto contraste»** (en la portada): fondo negro, textos y bordes blancos y sin el mosaico de fondo. Si tu móvil u ordenador ya pide más contraste, se activa solo; el botón te deja forzarlo o quitarlo.
 
 ---
 
@@ -145,7 +148,7 @@ Sí. Gracias a la tecnología PWA, tras abrir la web por primera vez, el juego y
 <details>
 <summary><strong>¿Guarda o comparte mis datos?</strong></summary>
 
-No. Roscodex no envía ningún dato a servidores externos. Únicamente guarda de manera local en tu navegador tu preferencia de sonido, el modo de juego elegido, si ya hiciste la partida guiada, tus récords y el registro de preguntas jugadas para gestionar la rotación.
+No. Roscodex no envía ningún dato a servidores externos. Únicamente guarda de manera local en tu navegador tu preferencia de sonido y de contraste, el modo de juego elegido, si ya hiciste la partida guiada, tus récords, tus estadísticas y el registro de preguntas jugadas para gestionar la rotación. Al compartir un resultado solo se comparte el resumen que ves (puntos y cuadritos), nunca tu nombre ni nada tuyo.
 </details>
 
 <details>
@@ -163,18 +166,25 @@ No. Es un proyecto fan sin ánimo de lucro y sin relación comercial ni oficial 
 <details>
 <summary><strong>¿Puedo jugar sin presión de tiempo?</strong></summary>
 
-Sí. En la portada elige **«Práctica (sin reloj)»** antes de la dificultad. Las partidas de práctica no cuentan para los récords.
+Sí. En la portada elige **«Práctica (sin reloj)»** antes de la dificultad. Las partidas de práctica no cuentan para los récords (sí para tus estadísticas). Además, sin reloj el juego espera a que pulses «Siguiente ›» después de un fallo, para que leas la explicación con calma.
+</details>
+
+<details>
+<summary><strong>¿Y si quiero algo más rápido?</strong></summary>
+
+Elige **«Contrarreloj 2:00»**: el rosco entero en dos minutos, en cualquier dificultad. Tiene sus propios récords, que verás en las tarjetas de dificultad y en «Estadísticas».
 </details>
 
 ---
 
 ## 🧑‍💻 Lo que tienes que hacer tú (Alberto)
 
-1. **Fusionar la PR de la fase 2** cuando la revisión dé el visto bueno: Pages se publica sola al llegar a `main` (no hay que activar nada más).
-2. **Comprobarlo en el móvil** una vez publicada: abre <https://bertmarti.github.io/Roscodex/>, haz la partida guiada, instala la app y ponla en modo avión para ver que sigue funcionando.
-3. **Revisión editorial del banco** de preguntas (muestreo por dificultad; ver `doc/agents/content-quality.md`).
-4. **Derechos del contenido Pokémon y del retrato CC BY-NC** antes de pensar en tiendas de apps.
-5. Cuando la Raspberry Pi pase a **Node 22.12 o superior**, quitar la regla de Vitest en `.github/dependabot.yml` para recibir Vitest 5.
+1. **Fusionar la PR de la fase 3** cuando la revisión dé el visto bueno: Pages se publica sola al llegar a `main` (no hay que activar nada más).
+2. **Comprobarlo en el móvil** una vez publicada: abre <https://bertmarti.github.io/Roscodex/>, juega una contrarreloj, falla a propósito para ver la explicación, pulsa «Compartir resultado» (en el móvil sale el menú de compartir del sistema), abre «Estadísticas» y prueba «Alto contraste». Ponla en modo avión para ver que sigue funcionando.
+3. **Revisión editorial del banco** de preguntas (muestreo por dificultad; ver `doc/agents/content-quality.md`). Los nombres ya salen en español oficial (Pokémon, movimientos y habilidades); lo que queda es leer preguntas y decidir si alguna es confusa.
+4. **Decidir la puntuación** pendiente en `doc/08-decisiones-abiertas.md` (penalización por fallo, bonus por completar, puntos por velocidad, si Pasapalabra resta). Ahora mismo: +10 por acierto y nada más. Cuando lo decidas, se cambia solo `answerCurrent` en `src/gameState.ts` y su test.
+5. **Derechos del contenido Pokémon y del retrato CC BY-NC** antes de pensar en tiendas de apps.
+6. Cuando la Raspberry Pi pase a **Node 22.12 o superior**, quitar la regla de Vitest en `.github/dependabot.yml` para recibir Vitest 5.
 
 ---
 

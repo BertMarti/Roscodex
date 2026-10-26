@@ -2,7 +2,8 @@ import { difficultyConfig, emptyStatuses, type Difficulty, type Question, type R
 
 export type FeedbackKind = "" | "is-correct" | "is-wrong" | "is-passed";
 export type FinishReason = "time" | "complete";
-export type GameMode = "timed" | "practice" | "guided";
+export type GameMode = "timed" | "blitz" | "practice" | "guided";
+export const BLITZ_SECONDS = 120;
 
 export interface GameState {
   difficulty: Difficulty;
@@ -23,22 +24,24 @@ export interface GameState {
   feedback: { text: string; kind: FeedbackKind };
   selectedOptionId: string | null;
   mode: GameMode;
+  streak: number;
+  bestStreak: number;
 }
 
 export function createGameState(difficulty: Difficulty, questions: Question[], now: number, mode: GameMode = "timed"): GameState {
   const [firstIndex, ...queue] = questions.map((_, index) => index);
   return {
     difficulty, questions, queue, deferred: [], currentIndex: firstIndex ?? null, round: 1,
-    score: 0, correct: 0, wrong: 0, passed: 0,
+    score: 0, correct: 0, wrong: 0, passed: 0, streak: 0, bestStreak: 0,
     statuses: firstIndex === undefined ? emptyStatuses() : { ...emptyStatuses(), [questions[firstIndex].letter]: "active" },
-    endAt: mode === "timed" ? now + difficultyConfig[difficulty].seconds * 1000 : Number.POSITIVE_INFINITY,
+    endAt: mode === "timed" ? now + difficultyConfig[difficulty].seconds * 1000 : mode === "blitz" ? now + BLITZ_SECONDS * 1000 : Number.POSITIVE_INFINITY,
     acceptingInput: firstIndex !== undefined, finished: false, finishReason: null,
     feedback: { text: "", kind: "" }, selectedOptionId: null, mode
   };
 }
 
 export function isTimed(state: GameState): boolean {
-  return state.mode === "timed";
+  return state.mode === "timed" || state.mode === "blitz";
 }
 
 export function answerCurrent(state: GameState, optionId: string): { state: GameState; isCorrect: boolean } {
@@ -54,6 +57,8 @@ export function answerCurrent(state: GameState, optionId: string): { state: Game
       statuses: { ...state.statuses, [question.letter]: isCorrect ? "correct" : "wrong" },
       score: state.score + (isCorrect ? 10 : 0), correct: state.correct + (isCorrect ? 1 : 0),
       wrong: state.wrong + (isCorrect ? 0 : 1),
+      streak: isCorrect ? state.streak + 1 : 0,
+      bestStreak: isCorrect ? Math.max(state.bestStreak, state.streak + 1) : state.bestStreak,
       feedback: { text: isCorrect ? "✓ ¡Correcto! +10 puntos" : `✕ Era ${correctOption?.text ?? "la opción correcta"}`, kind: isCorrect ? "is-correct" : "is-wrong" }
     }
   };

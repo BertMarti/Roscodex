@@ -56,7 +56,10 @@ src/
   styles.css       estética pixel-art; la paleta vive en :root
   storage.ts       claves de localStorage (prefijo roscodex-) y lectura/escritura segura
   tutorial.ts      consejos de la partida guiada (función pura currentTip)
-  records.ts       récords locales por dificultad
+  records.ts       récords locales por dificultad (con reloj y contrarreloj)
+  stats.ts         estadísticas del jugador (parseStats valida lo guardado)
+  share.ts         texto del resultado y Web Share API → portapapeles
+  contrast.ts      tema de alto contraste (prefers-contrast + interruptor)
   pwa.ts           instalar la app (beforeinstallprompt / iPhone) y aviso de versión nueva
   *.test.ts(x)     tests de Vitest junto al archivo que prueban (los .tsx usan happy-dom)
 public/
@@ -118,7 +121,7 @@ Dependabot (`.github/dependabot.yml`) propone cada lunes las actualizaciones de 
 
 - La build incluye una Content-Security-Policy estricta (`default-src 'self'`, sin scripts en línea) inyectada por el plugin `roscodex-csp` de `vite.config.ts`. Solo se aplica en la build porque el servidor de desarrollo necesita scripts en línea. Si añades un recurso externo, ajusta la política.
 - Nada de `innerHTML` ni `dangerouslySetInnerHTML`; los enlaces externos llevan `rel="noopener noreferrer"`.
-- **Origen compartido**: todas las webs de Pages de BertMarti comparten `https://bertmarti.github.io`, así que `localStorage` es común. Todas las claves están en `STORAGE_KEYS` (`src/storage.ts`) con el prefijo `roscodex-` (lo comprueba un test): historial de preguntas, sonido, primera visita, modo práctica y récords. Nada sensible y nada sale del navegador.
+- **Origen compartido**: todas las webs de Pages de BertMarti comparten `https://bertmarti.github.io`, así que `localStorage` es común. Todas las claves están en `STORAGE_KEYS` (`src/storage.ts`) con el prefijo `roscodex-` (lo comprueba un test): historial de preguntas, sonido, primera visita, modo de juego, récords (con reloj y contrarreloj), estadísticas y contraste. Todo se valida al leer (otra web del mismo origen podría escribir esas claves). Nada sensible y nada sale del navegador; al compartir solo se envía el resumen visible y solo si el jugador lo pide.
 - `npm audit`: `uuid` se fuerza a 11.x para `xcode` (dependencia de `@capacitor/cli`) mediante `overrides` en `package.json`.
 - Política de avisos: [SECURITY.md](../SECURITY.md).
 

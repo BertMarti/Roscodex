@@ -52,6 +52,19 @@ describe("records", () => {
     expect(loadRecords()).toEqual({ normal: { bestScore: 90, bestCorrect: 9, games: 2 } });
   });
 
+  it("la contrarreloj guarda en su propia clave y no se mezcla con los récords con reloj", () => {
+    expect(STORAGE_KEYS.blitzRecords).toBe("roscodex-blitz-records-v1");
+    registerResult("normal", 100, 10, "blitz");
+    expect(almacen.getItem(STORAGE_KEYS.blitzRecords)).not.toBeNull();
+    expect(almacen.getItem(STORAGE_KEYS.records)).toBeNull();
+    expect(loadRecords("blitz").normal).toEqual({ bestScore: 100, bestCorrect: 10, games: 1 });
+    expect(loadRecords().normal).toBeUndefined();
+
+    registerResult("normal", 200, 20);
+    expect(loadRecords().normal?.bestScore).toBe(200);
+    expect(loadRecords("blitz").normal?.bestScore).toBe(100);
+  });
+
   it("funciona aunque el almacenamiento esté bloqueado", () => {
     const roto = () => { throw new Error("SecurityError"); };
     vi.stubGlobal("localStorage", { getItem: roto, setItem: roto, removeItem: roto });

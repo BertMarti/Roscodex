@@ -19,6 +19,7 @@ export interface Question {
   question: string;
   options: AnswerOption[];
   correctOptionId: string;
+  explanation?: string;
 }
 
 export interface QuestionPack {
@@ -37,6 +38,9 @@ export const difficultyConfig: Record<Difficulty, { label: string; seconds: numb
 const QUESTION_HISTORY_KEY = STORAGE_KEYS.questionHistory;
 // Nombre antiguo del proyecto: se lee una vez para migrar y se borra al guardar (origen compartido con otras webs).
 const LEGACY_QUESTION_HISTORY_KEY = "pokereto-question-history-v3";
+
+// Cada dificultad tiene 520 preguntas: con margen para bancos futuros, nunca hace falta más.
+const MAX_HISTORY_PER_DIFFICULTY = 5000;
 
 export class QuestionBankExhaustedError extends Error {
   difficulty: Difficulty;
@@ -71,8 +75,10 @@ export function loadQuestionHistory(): Record<Difficulty, string[]> {
     const valid = {} as Record<Difficulty, string[]>;
     if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return valid;
     // Se descarta lo que no tenga la forma esperada (dificultad conocida → lista de IDs) sin perder el resto.
+    // Límites: el origen es compartido con otras webs y una lista enorme haría lenta cada partida.
     for (const [key, value] of Object.entries(parsed)) {
-      if (isDifficulty(key) && Array.isArray(value) && value.every((item) => typeof item === "string")) valid[key] = value;
+      if (isDifficulty(key) && Array.isArray(value) && value.length <= MAX_HISTORY_PER_DIFFICULTY
+        && value.every((item) => typeof item === "string" && item.length <= 64)) valid[key] = value;
     }
     return valid;
   } catch {
@@ -121,6 +127,12 @@ export function choosePack(packs: QuestionPack[], difficulty: Difficulty, persis
 export function formatTime(milliseconds: number): string {
   const seconds = Math.max(0, Math.ceil(milliseconds / 1000));
   return `${Math.floor(seconds / 60).toString().padStart(2, "0")}:${(seconds % 60).toString().padStart(2, "0")}`;
+}
+
+export function explanationFor(question: Question): string | null {
+  if (typeof question.explanation !== "string") return null;
+  const explanation = question.explanation.trim();
+  return explanation.length >= 1 && explanation.length <= 240 ? explanation : null;
 }
 
 export async function loadQuestionPacks(): Promise<QuestionPack[]> {

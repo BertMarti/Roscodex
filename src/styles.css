@@ -78,7 +78,7 @@ h1 b { color: var(--ink); font-weight: 400; }
 .difficulty-card--blue { --accent: var(--blue); }
 .difficulty-card--orange { --accent: var(--orange); }
 .difficulty-card--red { --accent: var(--red); }
-.mode-selector { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin: 0 0 20px; padding: 0; border: 0; }
+.mode-selector { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 0 0 20px; padding: 0; border: 0; }
 .mode-selector legend { grid-column: 1 / -1; margin-bottom: 2px; color: var(--muted); font-size: 12px; font-weight: 700; }
 .mode-selector label { position: relative; flex: 1; min-height: 44px; display: grid; place-items: center; padding: 8px; border: 2px solid var(--line); border-radius: 8px; color: var(--muted); font-family: "Press Start 2P", monospace; font-size: 8px; text-align: center; cursor: pointer; }
 .mode-selector label.is-selected { border-color: var(--yellow); color: var(--yellow); background: rgba(255,203,5,.1); }
@@ -153,6 +153,45 @@ h1 b { color: var(--ink); font-weight: 400; }
 .feedback.is-correct { color: var(--green); }
 .feedback.is-wrong { color: var(--red); }
 .feedback.is-passed { color: #9fb1ff; }
+.feedback small { display: block; margin-top: 6px; color: var(--ink); font-family: Inter, ui-sans-serif, system-ui, sans-serif; font-size: 12px; line-height: 1.5; }
+.next-button { display: block; min-height: 44px; margin: 10px auto 0; padding: 8px 14px; border: 2px solid var(--yellow); border-radius: 8px; background: transparent; color: var(--yellow); font-family: "Press Start 2P", monospace; font-size: 9px; }
+.next-button:hover { background: rgba(255,203,5,.12); }
+
+.stats-screen { padding-top: 8px; }
+.stats-screen h2 { margin: 0 0 20px; font-size: clamp(16px, 4vw, 22px); line-height: 1.4; text-transform: uppercase; }
+.stats-screen h2:focus { outline: none; }
+.stats-screen h2:focus-visible { outline: 3px solid var(--yellow); outline-offset: 4px; }
+.empty-stats { padding: 24px; text-align: center; }
+.empty-stats p { margin: 0; font-family: "Press Start 2P", monospace; font-size: 10px; line-height: 1.7; }
+.empty-stats span { display: block; margin: 12px 0 20px; color: var(--muted); font-size: 12px; line-height: 1.6; }
+.stats-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
+.stats-card { padding: 14px 6px 12px; border: 2px solid var(--line); border-radius: 10px; background: var(--panel); text-align: center; }
+.stats-card strong, .stats-card span { display: block; }
+.stats-card strong { color: var(--yellow); font-family: "Press Start 2P", monospace; font-size: 13px; line-height: 1.4; }
+.stats-card span { margin-top: 8px; color: var(--muted); font-size: 11px; }
+.stats-panel { padding: 18px 16px; }
+.stats-panel h3 { margin: 0 0 14px; font-size: 11px; line-height: 1.5; }
+.letter-stats { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin: 0; padding: 0; list-style: none; }
+.letter-stat { padding: 7px 2px; border: 2px solid var(--line); border-radius: 7px; background: rgba(13, 16, 28, .86); text-align: center; }
+.letter-stat b, .letter-stat span, .letter-stat small { display: block; }
+.letter-stat b { font-family: "Press Start 2P", monospace; font-size: 11px; }
+.letter-stat span, .letter-stat small { margin-top: 4px; font-size: 10px; }
+.letter-stat small { color: var(--muted); }
+.letter-stat--high { border-color: var(--green); background: rgba(53,207,120,.16); }
+.letter-stat--medium { border-color: var(--yellow); background: rgba(255,203,5,.1); }
+.letter-stat--low { border-color: var(--red); background: rgba(239,82,98,.16); }
+.letter-stat--empty { border-style: dashed; color: var(--muted); }
+.stats-hint { margin: 14px 0 0; color: var(--muted); font-size: 12px; }
+.stats-hint b { color: var(--yellow); font-family: "Press Start 2P", monospace; font-size: 10px; }
+.records-table { width: 100%; margin: 14px 0 6px; border-collapse: collapse; background: var(--panel); font-size: 11px; }
+.records-table caption { margin-bottom: 10px; color: var(--ink); font-family: "Press Start 2P", monospace; font-size: 10px; line-height: 1.5; text-align: left; }
+.records-table th, .records-table td { padding: 10px 8px; border: 1px solid var(--line); text-align: left; }
+.records-table thead th { color: var(--muted); font-weight: 700; }
+.records-table tbody th { font-family: "Press Start 2P", monospace; font-size: 8px; font-weight: 400; }
+.streak-message { color: var(--green) !important; }
+.modal .share-status { font-size: 9px; line-height: 1.7; }
+.share-fallback-label { display: block; margin-top: 10px; color: var(--muted); font-size: 11px; text-align: left; }
+.share-fallback { width: 100%; margin-top: 6px; padding: 10px; border: 2px solid var(--line); border-radius: 8px; background: #0d101c; color: var(--ink); font: 12px/1.5 ui-monospace, monospace; resize: vertical; }
 
 .modal-backdrop { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; padding: 18px; background: rgba(3, 5, 12, .86); }
 .modal { position: relative; width: min(100%, 560px); max-height: min(90vh, 680px); overflow: auto; padding: 27px; border: 2px solid var(--line); border-radius: 15px; background: var(--panel); box-shadow: var(--shadow); line-height: 1.7; }
@@ -173,7 +212,8 @@ h1 b { color: var(--ink); font-weight: 400; }
 .result-grid strong { font-family: "Press Start 2P", monospace; font-size: 14px; }
 .result-grid span { margin-top: 7px; color: var(--muted); font-size: 9px; }
 .primary-button, .secondary-button { width: 100%; padding: 14px; font-family: "Press Start 2P", monospace; font-size: 8px; }
-.primary-button { border-color: var(--blue); border-bottom-width: 5px; background: var(--blue); color: white; }
+/* Azul algo más oscuro que --blue solo aquí: el texto blanco necesita ≥ 4,5:1 (5,5:1 con #3f5ed8; --blue daba 3,9:1). */
+.primary-button { border-color: #3f5ed8; border-bottom-width: 5px; background: #3f5ed8; color: white; }
 .secondary-button { margin-top: 9px; background: transparent; color: var(--muted); }
 .primary-button:hover, .secondary-button:hover { transform: translateY(-1px); }
 .install-button { width: min(100%, 690px); margin-top: 14px; }
@@ -225,7 +265,17 @@ h1 b { color: var(--ink); font-weight: 400; }
   .question-card__topline { align-items: flex-start; flex-direction: column; }
   .question-rule { align-self: stretch; text-align: left; }
   .answers { grid-template-columns: 1fr; }
+  .stats-cards { grid-template-columns: repeat(2, 1fr); }
+  .letter-stats { grid-template-columns: repeat(5, 1fr); }
+  .fan-note__actions { flex-wrap: wrap; }
 }
+
+:root[data-contrast="high"] { --bg: #000; --ink: #fff; --muted: #e8e8e8; --panel: #000; --line: #fff; --line-soft: #fff; --yellow: #ffe500; --green: #55ff91; --red: #ff6675; --blue: #8da0ff; --orange: #ffad66; }
+:root[data-contrast="high"] .scene-bg__scanlines, :root[data-contrast="high"] .sprite-field { display: none; }
+:root[data-contrast="high"] button, :root[data-contrast="high"] .rosco-letter { border-width: 2px; border-color: #fff; }
+:root[data-contrast="high"] .primary-button { border-color: #fff; background: var(--blue); color: #000; }
+:root[data-contrast="high"] .panel, :root[data-contrast="high"] .difficulty-card, :root[data-contrast="high"] .timer-box { background: #000; backdrop-filter: none; }
+@media (forced-colors: active) { button, a, .panel, .rosco-letter { border: 2px solid ButtonText; } button:focus-visible, a:focus-visible { outline: 3px solid Highlight; } }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }

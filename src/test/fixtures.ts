@@ -21,7 +21,8 @@ export function preguntaDePrueba(letter: string, difficulty: Difficulty = "begin
     rule: "starts_with",
     question: `Pregunta de la ${letter}`,
     options: ["a", "b", "c", "d"].map((id) => ({ id, text: `Opción ${id.toUpperCase()} de la ${letter}` })),
-    correctOptionId: "a"
+    correctOptionId: "a",
+    explanation: `Explicación de la ${letter}`
   };
 }
 

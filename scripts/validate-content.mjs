@@ -1,4 +1,5 @@
 import { access, readFile } from "node:fs/promises";
+import { buildClue, letterKey, preparePokemon, satisfiesClue } from "./lib/pistas.mjs";
 
 const dataUrl = (name) => new URL(`../public/data/${name}`, import.meta.url);
 // Packs editoriales antiguos (respaldo manual): no se publican, viven en data/.
@@ -7,6 +8,8 @@ const errors = [];
 const expectedLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 const globalIds = new Set();
 const globalQuestions = new Set();
+// Restos de los identificadores de PokéAPI que no deben llegar al jugador («Basculin-Red-Striped», «Tornadus-Incarnate»…).
+const formSuffix = /-(male|female|incarnate|therian|altered|origin|standard|normal|plant|land|sky|ordinary|aria|shield|average|baile|midday|solo|meteor|disguised|amped|ice|belly|strike|four|plumage|zero|curly|segment|striped|\d+)$/i;
 
 function normalize(value) {
   return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/\s+/g, " ").trim();
@@ -24,6 +27,38 @@ async function loadBank() {
 }
 
 const bank = await loadBank();
+
+// Datos de origen (data/, no se publica) para comprobar que ninguna opción incorrecta cumple también la pista.
+async function loadPokemonByName() {
+  try {
+    const raw = JSON.parse(await readFile(legacyUrl("pokeapi-pokemon-cache.json"), "utf8"));
+    const names = JSON.parse(await readFile(legacyUrl("pokeapi-nombres-es.json"), "utf8"));
+    return new Map(preparePokemon(raw, names).map((entry) => [entry.letterKey, entry]));
+  } catch (error) {
+    errors.push(`No se pudieron leer los datos de data/ para comprobar las pistas: ${error.message}`);
+    return null;
+  }
+}
+const pokemonByName = await loadPokemonByName();
+
+function checkClue(question, answer) {
+  if (!pokemonByName || question.source?.status !== "generated-validated") return;
+  const target = pokemonByName.get(letterKey(answer));
+  if (!target) { errors.push(`${question.id}: la respuesta «${answer}» no está en los datos de origen`); return; }
+  const variant = Number(question.id.split("-").at(-1)) - 1;
+  const clue = buildClue(target, question.difficulty, variant);
+  if (!normalize(question.question).includes(normalize(clue.text))) {
+    errors.push(`${question.id}: el enunciado no corresponde a la pista generada para ${answer}`);
+    return;
+  }
+  if (target.types.length < 2 && /\bcombina\b/i.test(question.question)) errors.push(`${question.id}: «combina» con un solo tipo`);
+  for (const option of question.options) {
+    if (option.id === question.correctOptionId) continue;
+    const candidate = pokemonByName.get(letterKey(option.text));
+    if (!candidate) errors.push(`${question.id}: la opción «${option.text}» no está en los datos de origen`);
+    else if (satisfiesClue(candidate, target, clue)) errors.push(`${question.id}: la opción incorrecta «${option.text}» también cumple la pista`);
+  }
+}
 for (const pack of bank.packs) {
   const seenLetters = new Set();
   const countsByLetter = Object.fromEntries([...expectedLetters].map((letter) => [letter, 0]));
@@ -56,6 +91,20 @@ for (const pack of bank.packs) {
     if (!answerOption) errors.push(`${question.id}: no tiene una respuesta correcta válida`);
     if (new Set(question.options.map((option) => option.id)).size !== question.options.length) errors.push(`${question.id}: IDs de opciones duplicados`);
     if (new Set(optionTexts).size !== optionTexts.length) errors.push(`${question.id}: opciones duplicadas`);
+    for (const option of question.options) {
+      if (formSuffix.test(option.text) || (option.text.match(/-/g) ?? []).length > 1 || /^[a-z]/.test(option.text)) {
+        errors.push(`${question.id}: nombre poco legible en las opciones: "${option.text}"`);
+      }
+    }
+    if (/\d\.\d/.test(question.question)) errors.push(`${question.id}: decimales con punto (en español, coma)`);
+    if (/\b[A-Z][a-z]+-[a-z]+\b/.test(question.question)) errors.push(`${question.id}: posible nombre de PokéAPI sin traducir en el enunciado`);
+    // La partida la enseña tras un fallo: obligatoria, corta y que nombre la respuesta correcta.
+    if (typeof question.explanation !== "string" || !question.explanation.trim() || question.explanation.length > 240) {
+      errors.push(`${question.id}: falta la explicación o pasa de 240 caracteres`);
+    } else if (answer && !normalize(question.explanation).includes(normalizedAnswer)) {
+      errors.push(`${question.id}: la explicación no menciona la respuesta correcta`);
+    }
+    if (answerOption) checkClue(question, answer);
     if (!question.source?.provider || !question.source?.endpoint || !question.source?.reviewedAt) errors.push(`${question.id}: fuente incompleta`);
     if (question.rule === "starts_with") {
       startsWith += 1;

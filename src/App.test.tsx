@@ -2,6 +2,7 @@
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
+import { LETTERS } from "./game";
 import { listenForInstallPrompt, setUpdateStateForTests } from "./pwa";
 import { STORAGE_KEYS } from "./storage";
 import { bancoDePrueba } from "./test/fixtures";
@@ -43,7 +44,7 @@ describe("modo práctica", () => {
   it("se recuerda, quita el tiempo de las tarjetas y la partida va sin reloj", async () => {
     render(<App />);
     fireEvent.click(screen.getByLabelText("Práctica (sin reloj)"));
-    expect(localStorage.getItem(STORAGE_KEYS.practice)).toBe("on");
+    expect(localStorage.getItem(STORAGE_KEYS.playMode)).toBe("practice");
     expect(screen.getAllByText(/Sin reloj/).length).toBeGreaterThanOrEqual(4);
     fireEvent.click(boton(/NORMAL/));
     expect(await screen.findByText("SIN RELOJ")).toBeTruthy();
@@ -61,6 +62,9 @@ describe("partida guiada", () => {
     expect(screen.getByRole("heading", { name: "Responder" })).toBeTruthy();
     fireEvent.keyDown(window, { key: "1" });
     expect(await screen.findByText(/Correcto|Era /)).toBeTruthy();
+    // Sin reloj, un fallo espera a «Siguiente ›» para dejar leer la explicación.
+    const siguiente = screen.queryByRole("button", { name: "Siguiente ›" });
+    if (siguiente) fireEvent.click(siguiente);
     expect(await screen.findByRole("heading", { name: "Pasapalabra" })).toBeTruthy();
     await waitFor(() => expect(screen.getByText(/VUELTA 1 · LETRA B/)).toBeTruthy(), { timeout: 3000 });
     fireEvent.keyDown(window, { key: "p" });
@@ -162,5 +166,172 @@ describe("aviso de versión nueva", () => {
     expect(screen.getByText("Hay una versión nueva de Roscodex.")).toBeTruthy();
     fireEvent.click(boton("Luego"));
     expect(screen.getByText("Listo para jugar sin conexión.")).toBeTruthy();
+  });
+});
+
+describe("contrarreloj", () => {
+  it("guarda el modo blitz, lo anuncia en las tarjetas y arranca con 02:00", async () => {
+    render(<App />);
+    fireEvent.click(screen.getByLabelText("Contrarreloj 2:00"));
+    expect(localStorage.getItem(STORAGE_KEYS.playMode)).toBe("blitz");
+    expect(screen.getAllByText("2:00 · Contrarreloj")).toHaveLength(4);
+    fireEvent.click(boton(/NORMAL/));
+    expect(await screen.findByText(/NORMAL · CONTRARRELOJ/)).toBeTruthy();
+    expect(screen.getByText("02:00")).toBeTruthy();
+  });
+});
+
+describe("explicación al fallar", () => {
+  it("muestra la explicación y no avanza hasta pulsar «Siguiente ›»", async () => {
+    render(<App />);
+    fireEvent.click(screen.getByLabelText("Práctica (sin reloj)"));
+    fireEvent.click(boton(/NORMAL/));
+    await screen.findByText("Pregunta de la A");
+
+    const opciones = screen.getAllByRole("button", { name: /Opción [A-D] de la A/ });
+    const incorrecta = opciones.find((opcion) => !opcion.textContent?.includes("Opción A de la A"));
+    expect(incorrecta).toBeTruthy();
+    fireEvent.click(incorrecta!);
+
+    expect(await screen.findByText("✕ Era Opción A de la A")).toBeTruthy();
+    expect(screen.getByText("Explicación de la A")).toBeTruthy();
+    expect(boton("Siguiente ›")).toBeTruthy();
+
+    vi.useFakeTimers();
+    try {
+      act(() => { vi.advanceTimersByTime(2_000); });
+      expect(screen.getByText(/VUELTA 1 · LETRA A/)).toBeTruthy();
+    } finally {
+      vi.useRealTimers();
+    }
+
+    fireEvent.click(boton("Siguiente ›"));
+    expect(await screen.findByText(/VUELTA 1 · LETRA B/)).toBeTruthy();
+  });
+});
+
+describe("estadísticas", () => {
+  it("abre la pantalla con el foco en el título, muestra el estado vacío y vuelve", async () => {
+    render(<App />);
+    fireEvent.click(boton("▤ Estadísticas"));
+    const titulo = screen.getByRole("heading", { name: "Estadísticas" });
+    await waitFor(() => expect(document.activeElement).toBe(titulo));
+    expect(screen.getByText("Aún no has terminado ninguna partida")).toBeTruthy();
+    fireEvent.click(boton("‹ Volver"));
+    expect(screen.getByRole("heading", { name: "Crear partida" })).toBeTruthy();
+  });
+
+  it("con datos muestra las fichas y las 26 casillas, y «Borrar» las elimina", () => {
+    localStorage.setItem(STORAGE_KEYS.stats, JSON.stringify({
+      games: 2, correct: 10, wrong: 2, passed: 1, bestStreak: 4,
+      byLetter: { A: { played: 2, correct: 2 } }
+    }));
+    const { container } = render(<App />);
+    fireEvent.click(boton("▤ Estadísticas"));
+    expect(screen.queryByText("Aún no has terminado ninguna partida")).toBeNull();
+    expect(container.querySelectorAll(".stats-card")).toHaveLength(6);
+    expect(container.querySelectorAll(".letter-stat")).toHaveLength(26);
+    expect(screen.getByText("Partidas")).toBeTruthy();
+
+    fireEvent.click(boton("Borrar estadísticas"));
+    const dialogo = screen.getByRole("dialog");
+    expect(within(dialogo).getByRole("heading", { name: "¿Borrar estadísticas?" })).toBeTruthy();
+    fireEvent.click(within(dialogo).getByRole("button", { name: "Borrar" }));
+
+    expect(screen.getByText("Aún no has terminado ninguna partida")).toBeTruthy();
+    expect(localStorage.getItem(STORAGE_KEYS.stats)).toBeNull();
+    expect(localStorage.getItem(STORAGE_KEYS.records)).toBeNull();
+    expect(localStorage.getItem(STORAGE_KEYS.blitzRecords)).toBeNull();
+  });
+});
+
+describe("alto contraste", () => {
+  it("alterna aria-pressed, el atributo del documento y la preferencia guardada", () => {
+    const matchMediaOriginal = window.matchMedia;
+    Object.defineProperty(window, "matchMedia", {
+      value: vi.fn(() => ({ matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn() })),
+      configurable: true,
+      writable: true
+    });
+    try {
+      render(<App />);
+      const alternar = boton("Alto contraste");
+      expect(alternar.getAttribute("aria-pressed")).toBe("false");
+      fireEvent.click(alternar);
+      expect(alternar.getAttribute("aria-pressed")).toBe("true");
+      expect(document.documentElement.dataset.contrast).toBe("high");
+      expect(localStorage.getItem(STORAGE_KEYS.contrast)).toBe("on");
+    } finally {
+      Object.defineProperty(window, "matchMedia", { value: matchMediaOriginal, configurable: true, writable: true });
+    }
+  });
+});
+
+describe("compartir el resultado", () => {
+  it("copia al portapapeles el texto del resultado al terminar una partida de práctica", async () => {
+    const navegador = globalThis.navigator;
+    const shareOriginal = Object.getOwnPropertyDescriptor(navegador, "share");
+    const clipboardOriginal = Object.getOwnPropertyDescriptor(navegador, "clipboard");
+    const writeText = vi.fn(async (_texto: string) => undefined);
+    Object.defineProperty(navegador, "share", { value: undefined, configurable: true });
+    Object.defineProperty(navegador, "clipboard", { value: { writeText }, configurable: true });
+    const restaurar = () => {
+      if (shareOriginal) Object.defineProperty(navegador, "share", shareOriginal);
+      else Reflect.deleteProperty(navegador, "share");
+      if (clipboardOriginal) Object.defineProperty(navegador, "clipboard", clipboardOriginal);
+      else Reflect.deleteProperty(navegador, "clipboard");
+    };
+    try {
+      render(<App />);
+      fireEvent.click(screen.getByLabelText("Práctica (sin reloj)"));
+      fireEvent.click(boton(/NORMAL/));
+      await screen.findByText("Pregunta de la A");
+
+      for (const letter of LETTERS) {
+        const incorrecta = await screen.findByRole("button", { name: new RegExp(`Opción B de la ${letter}`) });
+        fireEvent.click(incorrecta);
+        fireEvent.click(await screen.findByRole("button", { name: "Siguiente ›" }));
+      }
+
+      const dialogo = await screen.findByRole("dialog");
+      expect(within(dialogo).getByRole("heading", { name: "Práctica terminada" })).toBeTruthy();
+      fireEvent.click(within(dialogo).getByRole("button", { name: "Compartir resultado" }));
+      expect(await screen.findByText(/Resultado copiado/)).toBeTruthy();
+      expect(writeText).toHaveBeenCalledOnce();
+      const texto = writeText.mock.calls[0][0] as string;
+      expect(texto.startsWith("Roscodex · ")).toBe(true);
+    } finally {
+      restaurar();
+    }
+  }, 20_000);
+});
+
+describe("menú durante la transición", () => {
+  it("el menú congela el avance automático y al seguir se reprograma con el tiempo pendiente", async () => {
+    render(<App />);
+    fireEvent.click(boton(/NORMAL/));
+    await screen.findByText("Pregunta de la A");
+    vi.useFakeTimers();
+    try {
+      const incorrecta = screen.getAllByRole("button", { name: /Opción [A-D] de la A/ })
+        .find((opcion) => !opcion.textContent?.includes("Opción A de la A"));
+      fireEvent.click(incorrecta!);
+      expect(screen.getByText("Explicación de la A")).toBeTruthy();
+      act(() => { vi.advanceTimersByTime(1_000); });
+      fireEvent.click(boton("‹ Menú"));
+      expect(screen.getByRole("heading", { name: "¿Abandonar la partida?" })).toBeTruthy();
+      // Con el menú abierto no avanza aunque pase mucho más que los 2,6 s.
+      act(() => { vi.advanceTimersByTime(10_000); });
+      expect(screen.getByText(/VUELTA 1 · LETRA A/)).toBeTruthy();
+      expect(screen.getByText("Explicación de la A")).toBeTruthy();
+      fireEvent.click(boton("Seguir jugando"));
+      // Quedaban 1,6 s: a los 1,5 s sigue en la A y a los 1,7 s ya está en la B.
+      act(() => { vi.advanceTimersByTime(1_500); });
+      expect(screen.getByText(/VUELTA 1 · LETRA A/)).toBeTruthy();
+      act(() => { vi.advanceTimersByTime(200); });
+      expect(screen.getByText(/VUELTA 1 · LETRA B/)).toBeTruthy();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

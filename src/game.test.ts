@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   choosePack,
   emptyStatuses,
+  explanationFor,
   formatTime,
   isDifficulty,
   LETTERS,
@@ -126,6 +127,23 @@ describe("isDifficulty", () => {
   });
 });
 
+describe("explanationFor", () => {
+  const conExplicacion = (explanation: unknown) => ({ ...makeQuestion("A", "A-normal-0"), explanation }) as unknown as Question;
+
+  it("devuelve null si no hay una explicación de texto válida", () => {
+    expect(explanationFor(makeQuestion("A", "A-normal-0"))).toBeNull();
+    expect(explanationFor(conExplicacion(42))).toBeNull();
+    expect(explanationFor(conExplicacion(""))).toBeNull();
+    expect(explanationFor(conExplicacion("   "))).toBeNull();
+    expect(explanationFor(conExplicacion("a".repeat(241)))).toBeNull();
+  });
+
+  it("recorta la explicación y acepta hasta 240 caracteres", () => {
+    expect(explanationFor(conExplicacion("  Texto útil  "))).toBe("Texto útil");
+    expect(explanationFor(conExplicacion("a".repeat(240)))).toBe("a".repeat(240));
+  });
+});
+
 describe("loadQuestionHistory", () => {
   it("devuelve un historial vacío si no hay nada almacenado", () => {
     expect(loadQuestionHistory()).toEqual({});
@@ -150,6 +168,18 @@ describe("loadQuestionHistory", () => {
       facil: ["clave-desconocida"]
     }));
     expect(loadQuestionHistory()).toEqual({ beginner: ["A-normal-0"] });
+  });
+
+  it("descarta listas desmesuradas o IDs larguísimos (origen compartido con otras webs)", () => {
+    localStorage.setItem(CLAVE_V4, JSON.stringify({
+      beginner: Array.from({ length: 5001 }, (_, index) => `id-${index}`),
+      normal: ["x".repeat(65)],
+      hard: Array.from({ length: 5000 }, (_, index) => `id-${index}`)
+    }));
+    const historial = loadQuestionHistory();
+    expect(historial.beginner).toBeUndefined();
+    expect(historial.normal).toBeUndefined();
+    expect(historial.hard).toHaveLength(5000);
   });
 
   it("lee la clave antigua si no existe la actual", () => {
