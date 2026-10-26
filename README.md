@@ -40,13 +40,13 @@
 
 ## 📸 Capturas de pantalla
 
-| Portada: elige dificultad | Partida en marcha |
+| Portada: elige modo y dificultad | Tus estadísticas |
 | :---: | :---: |
-| <img src="doc/img/captura-portada.png" alt="Portada: elige dificultad" width="440"> | <img src="doc/img/captura-partida.png" alt="Partida en marcha" width="440"> |
+| <img src="doc/img/captura-portada.png" alt="Portada con los modos Con reloj, Contrarreloj 2:00 y Práctica, las cuatro dificultades y los botones Alto contraste y Estadísticas" width="440"> | <img src="doc/img/captura-estadisticas.png" alt="Pantalla de estadísticas con partidas, porcentaje de acierto, mejor racha y aciertos por letra" width="440"> |
 
 <p align="center">
-  <em>En el móvil</em><br>
-  <img src="doc/img/captura-movil.png" alt="En el móvil" width="300">
+  <em>En el móvil: al fallar, la respuesta correcta explicada</em><br>
+  <img src="doc/img/captura-movil.png" alt="Partida en el móvil tras un fallo: la respuesta correcta, una línea con su tipo y generación y el botón Siguiente" width="300">
 </p>
 
 ---
@@ -179,12 +179,11 @@ Elige **«Contrarreloj 2:00»**: el rosco entero en dos minutos, en cualquier di
 
 ## 🧑‍💻 Lo que tienes que hacer tú (Alberto)
 
-1. **Fusionar la PR de la fase 3** cuando la revisión dé el visto bueno: Pages se publica sola al llegar a `main` (no hay que activar nada más).
-2. **Comprobarlo en el móvil** una vez publicada: abre <https://bertmarti.github.io/Roscodex/>, juega una contrarreloj, falla a propósito para ver la explicación, pulsa «Compartir resultado» (en el móvil sale el menú de compartir del sistema), abre «Estadísticas» y prueba «Alto contraste». Ponla en modo avión para ver que sigue funcionando.
-3. **Revisión editorial del banco** de preguntas (muestreo por dificultad; ver `doc/agents/content-quality.md`). Los nombres ya salen en español oficial (Pokémon, movimientos y habilidades); lo que queda es leer preguntas y decidir si alguna es confusa.
-4. **Decidir la puntuación** pendiente en `doc/08-decisiones-abiertas.md` (penalización por fallo, bonus por completar, puntos por velocidad, si Pasapalabra resta). Ahora mismo: +10 por acierto y nada más. Cuando lo decidas, se cambia solo `answerCurrent` en `src/gameState.ts` y su test.
-5. **Derechos del contenido Pokémon y del retrato CC BY-NC** antes de pensar en tiendas de apps.
-6. Cuando la Raspberry Pi pase a **Node 22.12 o superior**, quitar la regla de Vitest en `.github/dependabot.yml` para recibir Vitest 5.
+1. **Comprobarlo en el móvil** (la versión 0.6.0 ya está publicada): abre <https://bertmarti.github.io/Roscodex/>, juega una contrarreloj, falla a propósito para ver la explicación, pulsa «Compartir resultado» (en el móvil sale el menú de compartir del sistema), abre «Estadísticas» y prueba «Alto contraste». Ponla en modo avión para ver que sigue funcionando.
+2. **Revisión editorial del banco** de preguntas (muestreo por dificultad; ver `doc/agents/content-quality.md`). Los nombres ya salen en español oficial (Pokémon, movimientos y habilidades); lo que queda es leer preguntas y decidir si alguna es confusa.
+3. **Decidir la puntuación** pendiente en `doc/08-decisiones-abiertas.md` (penalización por fallo, bonus por completar, puntos por velocidad, si Pasapalabra resta). Ahora mismo: +10 por acierto y nada más. Cuando lo decidas, se cambia solo `answerCurrent` en `src/gameState.ts` y su test.
+4. **Derechos del contenido Pokémon y del retrato CC BY-NC** antes de pensar en tiendas de apps.
+5. Cuando la Raspberry Pi pase a **Node 22.12 o superior**, quitar la regla de Vitest en `.github/dependabot.yml` para recibir Vitest 5.
 
 ---
 
@@ -200,4 +199,4 @@ Elige **«Contrarreloj 2:00»**: el rosco entero en dos minutos, en cualquier di
 
 ---
 
-¿Quieres colaborar o ver cómo está hecho? Lee la [guía de desarrollo](doc/DESARROLLO.md). Licencia [MIT](LICENSE).
+Todos los detalles para jugar están en la [guía de usuario](doc/10-guia-de-usuario.md). ¿Quieres colaborar o ver cómo está hecho? Lee la [guía de desarrollo](doc/DESARROLLO.md). Licencia [MIT](LICENSE).
