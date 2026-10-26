@@ -22,6 +22,9 @@ Primera versión estable. Resume el camino desde la 0.3.0 (septiembre de 2026) h
 - Los textos ya no llaman «demo» al juego (diálogo de créditos y aviso de banco completado).
 - Documentación de usuario al día para la 1.0 y hoja de ruta con lo que queda para «después de la 1.0».
 
+### Arreglado
+- Al cerrar los resultados con «Jugar de nuevo» o «Cambiar dificultad» el foco ya no se pierde: va al título de la pantalla (con test).
+
 ## [0.6.0] — 2026-10-26 (fase 3: lo que se nota al jugar)
 
 ### Añadido

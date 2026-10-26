@@ -403,7 +403,7 @@ function HomeScreen({ loading, error, soundEnabled, onToggleSound, onStart, onOp
       <button className="secondary-button install-button" type="button" onClick={onOpenStats}>▤ Estadísticas</button>
       {installPlatform === "prompt" && <button className="secondary-button install-button" type="button" onClick={onInstall}>⇩ Instalar app</button>}
       {installPlatform === "ios" && <button className="secondary-button install-button" type="button" onClick={onIosInstall}>Instalar en iPhone</button>}
-      <p className="home-footer">SIN CUENTAS · SIN PUBLICIDAD · FUNCIONA OFFLINE<br />VERSIÓN {APP_VERSION}</p>
+      <p className="home-footer">SIN CUENTAS · SIN PUBLICIDAD · FUNCIONA OFFLINE<br />ROSCODEX v{APP_VERSION}</p>
     </section>
   );
 }
@@ -557,6 +557,13 @@ function QuestionCard({ game, question, onAnswer, onPass, onNext, highlightAnswe
   </section>;
 }
 
+function focusScreenTitle() {
+  const title = document.querySelector<HTMLElement>(".screen h1, .screen h2");
+  if (!title) return;
+  title.tabIndex = -1;
+  title.focus();
+}
+
 function ModalShell({ children, onClose, className = "", titleId }: { children: ReactNode; onClose?: () => void; className?: string; titleId: string }) {
   const opener = useRef<HTMLElement | null>(document.activeElement as HTMLElement | null);
   const modalRef = useRef<HTMLElement>(null);
@@ -578,7 +585,14 @@ function ModalShell({ children, onClose, className = "", titleId }: { children: 
       else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
     };
     document.addEventListener("keydown", onKeyDown);
-    return () => { document.removeEventListener("keydown", onKeyDown); opener.current?.focus(); };
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      const target = opener.current;
+      if (target?.isConnected) target.focus();
+      // Si el botón que abrió el diálogo ya no existe o no admite foco (p. ej. tras «Jugar de nuevo» o
+      // «Cambiar dificultad»), el foco va al título de la pantalla para que el teclado no empiece de cero.
+      requestAnimationFrame(() => { if (!document.activeElement || document.activeElement === document.body) focusScreenTitle(); });
+    };
   }, []);
   return <div className="modal-backdrop" role="presentation" onClick={(event) => { if (event.target === event.currentTarget) onClose?.(); }}><section ref={modalRef} className={`modal ${className}`} role="dialog" aria-modal="true" aria-labelledby={titleId}>{onClose && <button className="modal__close" type="button" onClick={onClose} aria-label="Cerrar">×</button>}{children}</section></div>;
 }

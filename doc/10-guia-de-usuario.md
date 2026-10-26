@@ -65,7 +65,7 @@ La tecla `P` activa **Pasapalabra**.
 
 Las letras del rosco cambian de estado para mostrar el progreso:
 
-- Pendiente (casilla oscura).
+- Pendiente (sin color, como una Poké Ball).
 - Activa, la pregunta en curso (amarillo).
 - Correcta (verde).
 - Incorrecta (rojo).

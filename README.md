@@ -186,7 +186,7 @@ El número aparece al pie de la portada y en **«Fuentes y créditos»**. Cuando
 
 ## 🧑‍💻 Lo que tienes que hacer tú (Alberto)
 
-1. **Comprobarlo en el móvil** cuando se publique la 1.0.0: abre <https://bertmarti.github.io/Roscodex/>, comprueba que el pie de la portada dice **VERSIÓN 1.0.0** y, si no, pulsa **«Recargar»** en el aviso de versión nueva; luego juega una contrarreloj, falla a propósito para ver la explicación, pulsa «Compartir resultado» (en el móvil sale el menú de compartir del sistema), abre «Estadísticas» y prueba «Alto contraste». Ponla en modo avión para ver que sigue funcionando.
+1. **Comprobarlo en el móvil** cuando se publique la 1.0.0: abre <https://bertmarti.github.io/Roscodex/>, comprueba que el pie de la portada dice **ROSCODEX v1.0.0** y, si no, pulsa **«Recargar»** en el aviso de versión nueva; luego juega una contrarreloj, falla a propósito para ver la explicación, pulsa «Compartir resultado» (en el móvil sale el menú de compartir del sistema), abre «Estadísticas» y prueba «Alto contraste». Ponla en modo avión para ver que sigue funcionando.
 2. **Revisión editorial del banco** de preguntas (muestreo por dificultad; ver `doc/agents/content-quality.md`). Los nombres ya salen en español oficial (Pokémon, movimientos y habilidades); lo que queda es leer preguntas y decidir si alguna es confusa.
 3. **Decidir la puntuación** pendiente en `doc/08-decisiones-abiertas.md` (penalización por fallo, bonus por completar, puntos por velocidad, si Pasapalabra resta). Ahora mismo: +10 por acierto y nada más. Cuando lo decidas, se cambia solo `answerCurrent` en `src/gameState.ts` y su test.
 4. **Derechos del contenido Pokémon y del retrato CC BY-NC** antes de pensar en tiendas de apps.

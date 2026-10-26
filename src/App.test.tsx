@@ -45,7 +45,7 @@ describe("versión", () => {
   it("la portada y «Fuentes y créditos» muestran la versión de package.json", () => {
     render(<App />);
     expect(packageJson.version).toMatch(/^\d+\.\d+\.\d+$/);
-    expect(screen.getByText(new RegExp(`VERSIÓN ${packageJson.version.replace(/\./g, "\\.")}`))).toBeTruthy();
+    expect(screen.getByText(new RegExp(`ROSCODEX v${packageJson.version.replace(/\./g, "\\.")}`))).toBeTruthy();
     fireEvent.click(boton("Fuentes y créditos"));
     expect(within(screen.getByRole("dialog")).getByText(`Roscodex versión ${packageJson.version}.`)).toBeTruthy();
   });
@@ -314,6 +314,42 @@ describe("compartir el resultado", () => {
     } finally {
       restaurar();
     }
+  }, 20_000);
+});
+
+describe("foco al cerrar los resultados", () => {
+  it("«Cambiar dificultad» deja el foco en el título de la portada", async () => {
+    render(<App />);
+    fireEvent.click(boton("Ya sé jugar"));
+    fireEvent.click(screen.getByLabelText("Práctica (sin reloj)"));
+    fireEvent.click(boton(/NORMAL/));
+    await screen.findByText("Pregunta de la A");
+    for (const letter of LETTERS) {
+      fireEvent.click(await screen.findByRole("button", { name: new RegExp(`Opción B de la ${letter}`) }));
+      fireEvent.click(await screen.findByRole("button", { name: "Siguiente ›" }));
+    }
+    const dialogo = await screen.findByRole("dialog");
+    fireEvent.click(within(dialogo).getByRole("button", { name: "Cambiar dificultad" }));
+    await waitFor(() => expect(document.activeElement?.id).toBe("home-title"));
+  }, 20_000);
+
+  it("«Jugar de nuevo» deja el foco en el título de la partida nueva", async () => {
+    render(<App />);
+    fireEvent.click(boton("Ya sé jugar"));
+    fireEvent.click(screen.getByLabelText("Práctica (sin reloj)"));
+    fireEvent.click(boton(/NORMAL/));
+    await screen.findByText("Pregunta de la A");
+    for (const letter of LETTERS) {
+      fireEvent.click(await screen.findByRole("button", { name: new RegExp(`Opción B de la ${letter}`) }));
+      fireEvent.click(await screen.findByRole("button", { name: "Siguiente ›" }));
+    }
+    const dialogo = await screen.findByRole("dialog");
+    // El banco de prueba tiene un solo rosco por dificultad: se olvida la rotación para que haya partida nueva.
+    localStorage.removeItem(STORAGE_KEYS.questionHistory);
+    fireEvent.click(within(dialogo).getByRole("button", { name: "Jugar de nuevo" }));
+    await screen.findByText("Pregunta de la A");
+    await waitFor(() => expect(document.activeElement?.closest(".screen-game")?.tagName).toBe("SECTION"));
+    expect(document.activeElement?.tagName).toBe("H2");
   }, 20_000);
 });
 

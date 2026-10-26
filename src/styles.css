@@ -161,6 +161,8 @@ h1 b { color: var(--ink); font-weight: 400; }
 .stats-screen h2 { margin: 0 0 20px; font-size: clamp(16px, 4vw, 22px); line-height: 1.4; text-transform: uppercase; }
 .stats-screen h2:focus { outline: none; }
 .stats-screen h2:focus-visible { outline: 3px solid var(--yellow); outline-offset: 4px; }
+.screen h1[tabindex="-1"]:focus, .screen h2[tabindex="-1"]:focus { outline: none; }
+.screen h1[tabindex="-1"]:focus-visible, .screen h2[tabindex="-1"]:focus-visible { outline: 3px solid var(--yellow); outline-offset: 4px; }
 .empty-stats { padding: 24px; text-align: center; }
 .empty-stats p { margin: 0; font-family: "Press Start 2P", monospace; font-size: 10px; line-height: 1.7; }
 .empty-stats span { display: block; margin: 12px 0 20px; color: var(--muted); font-size: 12px; line-height: 1.6; }
