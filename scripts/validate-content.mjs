@@ -65,8 +65,11 @@ for (const pack of bank.packs) {
     }
     if (/\d\.\d/.test(question.question)) errors.push(`${question.id}: decimales con punto (en español, coma)`);
     if (/\b[A-Z][a-z]+-[a-z]+\b/.test(question.question)) errors.push(`${question.id}: posible nombre de PokéAPI sin traducir en el enunciado`);
-    if (question.explanation !== undefined && (typeof question.explanation !== "string" || !question.explanation.trim() || question.explanation.length > 240)) {
-      errors.push(`${question.id}: explicación vacía o de más de 240 caracteres`);
+    // La partida la enseña tras un fallo: obligatoria, corta y que nombre la respuesta correcta.
+    if (typeof question.explanation !== "string" || !question.explanation.trim() || question.explanation.length > 240) {
+      errors.push(`${question.id}: falta la explicación o pasa de 240 caracteres`);
+    } else if (answer && !normalize(question.explanation).includes(normalizedAnswer)) {
+      errors.push(`${question.id}: la explicación no menciona la respuesta correcta`);
     }
     if (!question.source?.provider || !question.source?.endpoint || !question.source?.reviewedAt) errors.push(`${question.id}: fuente incompleta`);
     if (question.rule === "starts_with") {

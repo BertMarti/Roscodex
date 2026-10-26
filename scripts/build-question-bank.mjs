@@ -365,9 +365,13 @@ async function loadSpanishNames(pokemon) {
   return cached;
 }
 
+// Si PokéAPI no tiene el nombre en español de algo, se añade aquí a mano (nombre oficial de España), p. ej.
+// moves: { "nuevo-movimiento": "Nombre oficial" }. Sin nombre, el generador se para: nada de slugs en el banco.
+const NAME_OVERRIDES = { species: {}, moves: {}, abilities: {} };
+
 const missingNames = new Set();
 function translated(group, key, names) {
-  const name = names[group][key];
+  const name = NAME_OVERRIDES[group][key] ?? names[group][key];
   if (name) return name;
   missingNames.add(`${group}/${key}`);
   return readableSlug(key);
@@ -385,7 +389,9 @@ const pokemon = rawPokemon.map((entry) => {
     movesEs: entry.moves.map((slug) => translated("moves", slug, names))
   };
 });
-if (missingNames.size) console.warn(`Sin nombre oficial en español (se usa uno legible): ${[...missingNames].join(", ")}`);
+if (missingNames.size) {
+  throw new Error(`Sin nombre oficial en español: ${[...missingNames].join(", ")}. Añádelos a NAME_OVERRIDES en scripts/build-question-bank.mjs.`);
+}
 const duplicatedNames = pokemon.filter((entry, index) => pokemon.findIndex((other) => other.letterKey === entry.letterKey) !== index);
 if (duplicatedNames.length) throw new Error(`Nombres repetidos tras normalizar: ${duplicatedNames.map((entry) => entry.displayName).join(", ")}`);
 const usedQuestionTexts = new Set();

@@ -170,6 +170,18 @@ describe("loadQuestionHistory", () => {
     expect(loadQuestionHistory()).toEqual({ beginner: ["A-normal-0"] });
   });
 
+  it("descarta listas desmesuradas o IDs larguísimos (origen compartido con otras webs)", () => {
+    localStorage.setItem(CLAVE_V4, JSON.stringify({
+      beginner: Array.from({ length: 5001 }, (_, index) => `id-${index}`),
+      normal: ["x".repeat(65)],
+      hard: Array.from({ length: 5000 }, (_, index) => `id-${index}`)
+    }));
+    const historial = loadQuestionHistory();
+    expect(historial.beginner).toBeUndefined();
+    expect(historial.normal).toBeUndefined();
+    expect(historial.hard).toHaveLength(5000);
+  });
+
   it("lee la clave antigua si no existe la actual", () => {
     localStorage.setItem(CLAVE_V3, JSON.stringify({ hard: ["H-hard-0"] }));
     expect(loadQuestionHistory()).toEqual({ hard: ["H-hard-0"] });

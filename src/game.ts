@@ -39,6 +39,9 @@ const QUESTION_HISTORY_KEY = STORAGE_KEYS.questionHistory;
 // Nombre antiguo del proyecto: se lee una vez para migrar y se borra al guardar (origen compartido con otras webs).
 const LEGACY_QUESTION_HISTORY_KEY = "pokereto-question-history-v3";
 
+// Cada dificultad tiene 520 preguntas: con margen para bancos futuros, nunca hace falta más.
+const MAX_HISTORY_PER_DIFFICULTY = 5000;
+
 export class QuestionBankExhaustedError extends Error {
   difficulty: Difficulty;
 
@@ -72,8 +75,10 @@ export function loadQuestionHistory(): Record<Difficulty, string[]> {
     const valid = {} as Record<Difficulty, string[]>;
     if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return valid;
     // Se descarta lo que no tenga la forma esperada (dificultad conocida → lista de IDs) sin perder el resto.
+    // Límites: el origen es compartido con otras webs y una lista enorme haría lenta cada partida.
     for (const [key, value] of Object.entries(parsed)) {
-      if (isDifficulty(key) && Array.isArray(value) && value.every((item) => typeof item === "string")) valid[key] = value;
+      if (isDifficulty(key) && Array.isArray(value) && value.length <= MAX_HISTORY_PER_DIFFICULTY
+        && value.every((item) => typeof item === "string" && item.length <= 64)) valid[key] = value;
     }
     return valid;
   } catch {

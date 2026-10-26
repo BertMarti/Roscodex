@@ -24,6 +24,8 @@ Memoria del proyecto para personas y agentes: decisiones, por qué se tomaron y 
 | Partida guiada = Principiante sin reloj + consejos | Enseña jugando, sin presión; los consejos no son modales y no roban el foco (los atajos siguen funcionando). |
 | Estadísticas y contrarreloj en claves nuevas (`roscodex-stats-v1`, `roscodex-blitz-records-v1`, `roscodex-play-mode-v1`, `roscodex-contrast-v1`) validadas al leer | Origen compartido: prefijo obligatorio y nada de confiar en lo guardado (otra web del mismo origen podría escribirlo). |
 | Explicación tras fallar = tipo y generación | Es un dato fiable de PokéAPI y no repite los números del enunciado; textos más ricos necesitarían revisión editorial. |
+| La racha cuenta aciertos sin fallos de por medio; Pasapalabra no la rompe | Pasar no es responder (igual que en el concurso). La revisión cruzada lo marcó como fallo: es una decisión, cámbiese en `passCurrent` si Alberto prefiere lo contrario. |
+| El generador se para si falta un nombre en español | Nada de slugs de PokéAPI en el banco: se añade el nombre oficial a `NAME_OVERRIDES`. |
 | La partida guiada no cuenta en estadísticas | Es un tutorial: no debe estropear el porcentaje de acierto. |
 | `vitest.config.ts` separado | Evita cargar el plugin PWA (lento) al pasar los tests. Entorno `node`; `localStorage` se simula con `vi.stubGlobal`. |
 | CSP inyectada por plugin solo en build | El servidor de Vite usa scripts en línea para HMR; una meta CSP fija en `index.html` rompería `npm run dev`. |
