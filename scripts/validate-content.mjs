@@ -7,6 +7,8 @@ const errors = [];
 const expectedLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 const globalIds = new Set();
 const globalQuestions = new Set();
+// Restos de los identificadores de PokéAPI que no deben llegar al jugador («Basculin-Red-Striped», «Tornadus-Incarnate»…).
+const formSuffix = /-(male|female|incarnate|therian|altered|origin|standard|normal|plant|land|sky|ordinary|aria|shield|average|baile|midday|solo|meteor|disguised|amped|ice|belly|strike|four|plumage|zero|curly|segment|striped|\d+)$/i;
 
 function normalize(value) {
   return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/\s+/g, " ").trim();
@@ -56,6 +58,16 @@ for (const pack of bank.packs) {
     if (!answerOption) errors.push(`${question.id}: no tiene una respuesta correcta válida`);
     if (new Set(question.options.map((option) => option.id)).size !== question.options.length) errors.push(`${question.id}: IDs de opciones duplicados`);
     if (new Set(optionTexts).size !== optionTexts.length) errors.push(`${question.id}: opciones duplicadas`);
+    for (const option of question.options) {
+      if (formSuffix.test(option.text) || (option.text.match(/-/g) ?? []).length > 1 || /^[a-z]/.test(option.text)) {
+        errors.push(`${question.id}: nombre poco legible en las opciones: "${option.text}"`);
+      }
+    }
+    if (/\d\.\d/.test(question.question)) errors.push(`${question.id}: decimales con punto (en español, coma)`);
+    if (/\b[A-Z][a-z]+-[a-z]+\b/.test(question.question)) errors.push(`${question.id}: posible nombre de PokéAPI sin traducir en el enunciado`);
+    if (question.explanation !== undefined && (typeof question.explanation !== "string" || !question.explanation.trim() || question.explanation.length > 240)) {
+      errors.push(`${question.id}: explicación vacía o de más de 240 caracteres`);
+    }
     if (!question.source?.provider || !question.source?.endpoint || !question.source?.reviewedAt) errors.push(`${question.id}: fuente incompleta`);
     if (question.rule === "starts_with") {
       startsWith += 1;
