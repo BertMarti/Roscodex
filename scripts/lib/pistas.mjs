@@ -41,6 +41,12 @@ export function highestStat(pokemon) {
   return pokemon.stats.reduce((best, current) => current.value > best.value ? current : best, pokemon.stats[0]);
 }
 
+/** ¿Comparte otra estadística el valor máximo? Entonces no se puede decir «su estadística más alta es X». */
+export function highestStatIsTied(pokemon) {
+  const max = highestStat(pokemon).value;
+  return pokemon.stats.filter((stat) => stat.value === max).length > 1;
+}
+
 export function statTotal(pokemon) {
   return pokemon.stats.reduce((total, stat) => total + stat.value, 0);
 }
@@ -113,8 +119,8 @@ const TEMPLATES = {
       (f) => `tiene ${f.ability} como habilidad y es de tipo ${f.types}`,
       (f) => `tiene ${f.ability} como habilidad y pertenece a la ${f.generation} generación`,
       (f) => `tiene ${f.baseExperience} puntos de experiencia base y es de tipo ${f.types}`,
-      (f) => `tiene ${f.statHigh} como estadística más alta`,
-      (f) => `es de tipo ${f.types} y tiene ${f.statHigh} como estadística más alta`,
+      (f) => `${f.tieneStatHigh}`,
+      (f) => `es de tipo ${f.types} y ${f.tieneStatHigh}`,
       (f) => `pertenece a la ${f.generation} generación y tiene ${f.baseExperience} puntos de experiencia base`,
       (f) => `${f.combina} y pesa ${f.weightKg} kg`,
       (f) => `${f.combina} y tiene ${f.ability} como habilidad`,
@@ -123,17 +129,17 @@ const TEMPLATES = {
     ],
     hard: [
       (f) => `${f.combina}, pesa ${f.weightKg} kg y pertenece a la generación ${f.generationNumber}`,
-      (f) => `tiene ${f.statHigh} como estadística más alta, con ${f.statValue} puntos, y mide ${f.heightM} m`,
+      (f) => `${f.tieneStatHigh}, con ${f.statValue} puntos, y mide ${f.heightM} m`,
       (f) => `tiene ${f.ability} como habilidad y suma ${f.total} puntos de estadísticas base`,
       (f) => `puede aprender el movimiento ${f.move} y pertenece a la generación ${f.generationNumber}`,
       (f) => `tiene ${f.baseExperience} puntos de experiencia base y es de tipo ${f.types}`,
       (f) => `es de tipo ${f.types}, mide ${f.heightM} m y tiene ${f.ability} como habilidad`,
-      (f) => `pertenece a la generación ${f.generationNumber}, pesa ${f.weightKg} kg y tiene ${f.statHigh} como estadística más alta`,
+      (f) => `pertenece a la generación ${f.generationNumber}, pesa ${f.weightKg} kg y ${f.tieneStatHigh}`,
       (f) => `aprende ${f.move}, tiene ${f.baseExperience} puntos de experiencia base y es de tipo ${f.types}`,
       (f) => `suma ${f.total} puntos de estadísticas base, pesa ${f.weightKg} kg y pertenece a la generación ${f.generationNumber}`,
       (f) => `mide ${f.heightM} m, tiene ${f.ability} como habilidad y alcanza ${f.statValue} puntos en ${f.statIn}`,
       (f) => `${f.combina}, aprende ${f.move} y tiene ${f.baseExperience} puntos de experiencia base`,
-      (f) => `es de tipo ${f.types}, pesa ${f.weightKg} kg y su estadística más alta es ${f.statHigh}`,
+      (f) => `es de tipo ${f.types}, pesa ${f.weightKg} kg y ${f.suStatHigh}`,
       (f) => `pertenece a la generación ${f.generationNumber}, aprende ${f.move} y suma ${f.total} puntos de estadísticas base`,
       (f) => `tiene ${f.ability} como habilidad, mide ${f.heightM} m y pesa ${f.weightKg} kg`,
       (f) => `alcanza ${f.statValue} puntos en ${f.statIn}, tiene ${f.baseExperience} puntos de experiencia base y es de tipo ${f.types}`,
@@ -141,11 +147,11 @@ const TEMPLATES = {
       (f) => `mide ${f.heightM} m, es de tipo ${f.types} y suma ${f.total} puntos de estadísticas base`,
       (f) => `tiene ${f.ability} como habilidad, pertenece a la generación ${f.generationNumber} y alcanza ${f.statValue} puntos en ${f.statIn}`,
       (f) => `aprende ${f.move}, mide ${f.heightM} m y pesa ${f.weightKg} kg`,
-      (f) => `es de tipo ${f.types}, tiene ${f.baseExperience} puntos de experiencia base y su estadística más alta es ${f.statHigh}`
+      (f) => `es de tipo ${f.types}, tiene ${f.baseExperience} puntos de experiencia base y ${f.suStatHigh}`
     ],
     extreme: [
       (f) => `${f.combinaCorto}, pesa ${f.weightKg} kg y tiene ${f.baseExperience} puntos de experiencia base`,
-      (f) => `mide ${f.heightM} m, suma ${f.total} puntos base y su estadística más alta es ${f.statHigh}`,
+      (f) => `mide ${f.heightM} m, suma ${f.total} puntos base y ${f.suStatHigh}`,
       (f) => `tiene ${f.ability} como habilidad, aprende ${f.move} y pertenece a la generación ${f.generationNumber}`,
       (f) => `pertenece a la generación ${f.generationNumber}, pesa ${f.weightKg} kg y alcanza ${f.statValue} puntos en ${f.statIn}`,
       (f) => `es de tipo ${f.types}, mide ${f.heightM} m y suma ${f.total} puntos de estadísticas base`,
@@ -153,16 +159,16 @@ const TEMPLATES = {
       (f) => `pesa ${f.weightKg} kg, tiene ${f.ability} como habilidad y suma ${f.total} puntos de estadísticas base`,
       (f) => `mide ${f.heightM} m, aprende ${f.move} y tiene ${f.baseExperience} puntos de experiencia base`,
       (f) => `pertenece a la generación ${f.generationNumber}, ${f.combinaCorto} y aprende ${f.move}`,
-      (f) => `tiene ${f.ability} como habilidad, pesa ${f.weightKg} kg y su estadística más alta es ${f.statHigh}`,
+      (f) => `tiene ${f.ability} como habilidad, pesa ${f.weightKg} kg y ${f.suStatHigh}`,
       (f) => `es de tipo ${f.types}, alcanza ${f.statValue} puntos en ${f.statIn} y tiene ${f.baseExperience} puntos de experiencia base`,
       (f) => `suma ${f.total} puntos de estadísticas base, mide ${f.heightM} m y pertenece a la generación ${f.generationNumber}`,
       (f) => `aprende ${f.move}, pesa ${f.weightKg} kg y es de tipo ${f.types}`,
       (f) => `tiene ${f.ability} como habilidad, mide ${f.heightM} m y pertenece a la generación ${f.generationNumber}`,
-      (f) => `${f.combinaCorto}, pesa ${f.weightKg} kg y su estadística más alta es ${f.statHigh}`,
+      (f) => `${f.combinaCorto}, pesa ${f.weightKg} kg y ${f.suStatHigh}`,
       (f) => `alcanza ${f.statValue} puntos en ${f.statIn}, aprende ${f.move} y suma ${f.total} puntos de estadísticas base`,
       (f) => `es de tipo ${f.types}, pertenece a la generación ${f.generationNumber} y tiene ${f.ability} como habilidad`,
       (f) => `tiene ${f.baseExperience} puntos de experiencia base, mide ${f.heightM} m y pesa ${f.weightKg} kg`,
-      (f) => `pertenece a la generación ${f.generationNumber}, aprende ${f.move} y su estadística más alta es ${f.statHigh}`,
+      (f) => `pertenece a la generación ${f.generationNumber}, aprende ${f.move} y ${f.suStatHigh}`,
       (f) => `${f.combinaCorto}, tiene ${f.ability} como habilidad y suma ${f.total} puntos de estadísticas base`,
       (f) => `pesa ${f.weightKg} kg, alcanza ${f.statValue} puntos en ${f.statIn} y aprende ${f.move}`
     ]
@@ -172,7 +178,7 @@ const TEMPLATES = {
 const FIELD_FACT = {
   types: "types", combina: "types", combinaCorto: "types", generation: "generation", generationNumber: "generation",
   heightM: "heightM", weightKg: "weightKg", baseExperience: "baseExperience", ability: "ability", move: "move",
-  statHigh: "statHigh", statIn: null, statValue: "statValue", total: "total"
+  statHigh: "statHigh", tieneStatHigh: "statHigh", suStatHigh: "statHigh", statIn: null, statValue: "statValue", total: "total"
 };
 
 function fieldsFor(pokemon, variant) {
@@ -180,6 +186,8 @@ function fieldsFor(pokemon, variant) {
   const stat = highestStat(pokemon);
   const statName = statNames[stat.name] || stat.name;
   const mono = pokemon.types.length < 2;
+  // Con empate en el máximo (p. ej. Sunkern: todas valen 30) solo es cierto «una de sus estadísticas más altas».
+  const tied = highestStatIsTied(pokemon);
   return {
     types,
     // «Combina los tipos Fuego» con un solo tipo no tiene sentido: entonces «es de tipo Fuego».
@@ -192,7 +200,10 @@ function fieldsFor(pokemon, variant) {
     baseExperience: pokemon.baseExperience,
     ability: pokemon.abilitiesEs[variant % pokemon.abilitiesEs.length] || "habilidad registrada",
     move: pokemon.movesEs[variant % pokemon.movesEs.length] || "un movimiento registrado",
-    statHigh: statName, statIn: statName, statValue: stat.value, total: statTotal(pokemon)
+    statHigh: statName,
+    tieneStatHigh: tied ? `tiene ${statName} como una de sus estadísticas más altas` : `tiene ${statName} como estadística más alta`,
+    suStatHigh: tied ? `una de sus estadísticas más altas es ${statName}` : `su estadística más alta es ${statName}`,
+    statIn: statName, statValue: stat.value, total: statTotal(pokemon)
   };
 }
 

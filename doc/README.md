@@ -2,13 +2,13 @@
 
 ## Propósito
 
-Roscodex es una demo de un rosco de preguntas inspirado en el formato de “pasapalabra”, con temática fan de Pokémon y estética pixel-art.
+Roscodex es un juego de preguntas tipo rosco inspirado en el formato de “pasapalabra”, con temática fan de Pokémon y estética pixel-art.
 
 El objetivo es mantener una aplicación jugable, offline, gratuita y verificable en web y móvil.
 
 ## Principios del proyecto
 
-1. **Coste cero para la demo:** sin servidores, cuentas de pago, dominios, bases de datos alojadas ni servicios obligatorios.
+1. **Coste cero:** sin servidores, cuentas de pago, dominios, bases de datos alojadas ni servicios obligatorios.
 2. **Offline-first:** las preguntas, configuración y recursos necesarios para jugar se empaquetan localmente.
 3. **Fuentes separadas del juego:** las APIs se usan para recopilar o actualizar datos, no para bloquear una partida.
 4. **Identidad visual propia:** estilo pixel-art original; no copiar logotipos, música, interfaz ni material promocional oficial.
@@ -17,14 +17,14 @@ El objetivo es mantener una aplicación jugable, offline, gratuita y verificable
 
 ## Decisión técnica inicial
 
-| Área | Decisión para la demo | Motivo |
+| Área | Decisión | Motivo |
 |---|---|---|
 | Aplicación | React + TypeScript + Vite | Base web moderna, tipada y optimizada |
 | PWA/móvil | Vite PWA + Capacitor | Web instalable y empaquetado móvil desde la misma build |
 | Editor | VS Code | Ligero y suficiente para TypeScript |
 | SDK Android/iOS | Opcional para la PWA; Android Studio/Xcode para Capacitor | Solo necesario al preparar builds nativas |
 | Datos | JSON local | Cero coste, fácil de versionar y funciona sin conexión |
-| Imágenes | Pixel-art propio o sprites cacheados para demo | Evitar dependencia de red durante el juego |
+| Imágenes | Pixel-art propio o sprites cacheados | Evitar dependencia de red durante el juego |
 | Fuentes de datos | PokéAPI para datos estructurados | No existe necesidad de consultar preguntas en directo |
 | Persistencia local | `localStorage` del navegador | Historial de preguntas y preferencia de sonido |
 | Backend | Ninguno en el MVP | Mantiene el coste y la complejidad a cero |
@@ -50,7 +50,7 @@ La decisión completa y sus límites están documentados en [11-modernizacion-st
 
 ## Aplicación actual
 
-La aplicación se construye desde `src/` con Vite y publica una PWA estática. El artefacto de GitHub Pages se genera en `dist/`; no se mantiene una copia manual de la demo compilada dentro del repositorio.
+La aplicación se construye desde `src/` con Vite y publica una PWA estática. El artefacto de GitHub Pages se genera en `dist/`; no se mantiene una copia manual del juego compilado dentro del repositorio.
 
 ## Agentes
 
@@ -82,7 +82,7 @@ Incluido:
 - Pantalla de inicio.
 - Mensaje de proyecto fan con botón de información expandible.
 - Selección de principiante, normal, difícil y extremo.
-- Rosco A-Z para la primera demo.
+- Rosco A-Z en la primera versión.
 - Preguntas de “Empieza por…” y “Contiene…”.
 - Cuatro respuestas y botón “Pasapalabra”.
 - Temporizador global.
@@ -105,4 +105,4 @@ Fuera del MVP:
 
 Es un proyecto fan no oficial. Pokémon, sus nombres, personajes, imágenes y otros elementos pueden estar protegidos por derechos de propiedad intelectual de sus titulares. La [información legal de Pokémon](https://www.pokemon.com/es/legal/informacion) y la [política de uso de material de Pokémon](https://support.pokemon.com/hc/en-us/articles/360000634094-Can-I-use-Pok%C3%A9mon-images-or-materials) deben revisarse antes de compartirlo públicamente.
 
-La demo se documenta como local, no comercial y sin afiliación. No se debe presentar como producto oficial ni utilizar el logotipo, música, capturas o recursos promocionales oficiales.
+El juego se documenta como no comercial y sin afiliación. No se debe presentar como producto oficial ni utilizar el logotipo, música, capturas o recursos promocionales oficiales.

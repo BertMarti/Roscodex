@@ -20,7 +20,7 @@ Roscodex es un juego fan, gratuito y no oficial de preguntas tipo rosco (inspira
 | `src/stats.ts` / `src/share.ts` / `src/contrast.ts` | Estadísticas (validadas al leer), texto y envío del resultado (Web Share → portapapeles), tema de alto contraste |
 | `src/pwa.ts` | Instalar la app y aviso de versión nueva (el registro del SW está en `main.tsx`) |
 | `src/styles.css` | Estética pixel-art; paleta en `:root` |
-| `src/*.test.ts(x)` | Tests de Vitest junto al archivo que prueban; los `.tsx` usan happy-dom + Testing Library |
+| `src/*.test.ts(x)`, `scripts/lib/*.test.mjs` | Tests de Vitest junto al archivo que prueban; los `.tsx` usan happy-dom + Testing Library; los `.mjs` vigilan las pistas del banco |
 | `public/data/question-bank.json` | Banco publicado (2.080 preguntas) |
 | `data/` | Caché de PokéAPI, nombres oficiales en español (`pokeapi-nombres-es.json`) y packs antiguos; **no se publica** |
 | `scripts/` | `build-question-bank.mjs`, `validate-content.mjs`, `simulate-games.mjs` |

@@ -2,7 +2,7 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). Versionado semántico.
 
-## [1.0.0] - 2026-10-26
+## [1.0.0] — 2026-10-26
 
 Primera versión estable. Resume el camino desde la 0.3.0 (septiembre de 2026) hasta hoy; el detalle de cada paso está en las entradas de abajo.
 
@@ -24,6 +24,7 @@ Primera versión estable. Resume el camino desde la 0.3.0 (septiembre de 2026) h
 
 ### Arreglado
 - Al cerrar los resultados con «Jugar de nuevo» o «Cambiar dificultad» el foco ya no se pierde: va al título de la pantalla (con test).
+- **Corregido: pistas de estadística empatada.** 44 de las 260 preguntas con «estadística más alta» daban como única una estadística que empataba con otras (p. ej. Sunkern, con todas a 30; Jirachi, Deoxys, Melmetal). Ahora dicen «una de sus estadísticas más altas». Solo cambia el enunciado de esas 44 (mismos IDs, respuestas y opciones); el validador y un test impiden que vuelva a pasar.
 
 ## [0.6.0] — 2026-10-26 (fase 3: lo que se nota al jugar)
 
