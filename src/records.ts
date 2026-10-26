@@ -10,9 +10,10 @@ function validRecord(value: unknown): value is DifficultyRecord {
     && typeof (value as DifficultyRecord).games === "number" && Number.isFinite((value as DifficultyRecord).games);
 }
 
-export function loadRecords(): Partial<Record<Difficulty, DifficultyRecord>> {
+export type RecordKind = "timed" | "blitz";
+export function loadRecords(kind: RecordKind = "timed"): Partial<Record<Difficulty, DifficultyRecord>> {
   try {
-    const parsed: unknown = JSON.parse(readStorage(STORAGE_KEYS.records) ?? "{}");
+    const parsed: unknown = JSON.parse(readStorage(kind === "blitz" ? STORAGE_KEYS.blitzRecords : STORAGE_KEYS.records) ?? "{}");
     if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
     const result: Partial<Record<Difficulty, DifficultyRecord>> = {};
     for (const difficulty of ["beginner", "normal", "hard", "extreme"] as Difficulty[]) {
@@ -23,8 +24,8 @@ export function loadRecords(): Partial<Record<Difficulty, DifficultyRecord>> {
   } catch { return {}; }
 }
 
-export function registerResult(difficulty: Difficulty, score: number, correct: number): { record: DifficultyRecord; isNewRecord: boolean; previousBest: number | null } {
-  const records = loadRecords();
+export function registerResult(difficulty: Difficulty, score: number, correct: number, kind: RecordKind = "timed"): { record: DifficultyRecord; isNewRecord: boolean; previousBest: number | null } {
+  const records = loadRecords(kind);
   const previous = records[difficulty];
   const previousBest = previous?.bestScore ?? null;
   const isNewRecord = previous ? score > previous.bestScore : score > 0;
@@ -34,6 +35,6 @@ export function registerResult(difficulty: Difficulty, score: number, correct: n
     games: (previous?.games ?? 0) + 1
   };
   records[difficulty] = record;
-  writeStorage(STORAGE_KEYS.records, JSON.stringify(records));
+  writeStorage(kind === "blitz" ? STORAGE_KEYS.blitzRecords : STORAGE_KEYS.records, JSON.stringify(records));
   return { record, isNewRecord, previousBest };
 }

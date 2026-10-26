@@ -12,17 +12,21 @@ import {
   type Difficulty,
   type Question,
   type QuestionPack,
-  type RoscoStatus
+  type RoscoStatus,
+  explanationFor
 } from "./game";
 import { playSound } from "./audio";
 import { answerCurrent, advance, createGameState, finish, isTimed, passCurrent, resumeAfterPause, type GameMode, type GameState } from "./gameState";
-import { readStorage, STORAGE_KEYS, writeStorage } from "./storage";
+import { parsePlayMode, readStorage, removeStorage, STORAGE_KEYS, writeStorage } from "./storage";
 import { currentTip, tutorialTips, type TutorialTip } from "./tutorial";
 import { loadRecords, registerResult, type DifficultyRecord } from "./records";
+import { accuracyPercent, loadStats, recordGame, resetStats, type PlayerStats } from "./stats";
+import { buildShareText, shareResult } from "./share";
+import { applyContrast, isHighContrast, loadContrast, saveContrast, systemPrefersMoreContrast, type ContrastPreference } from "./contrast";
 import { useInstallPrompt, useUpdateState, type InstallPlatform } from "./pwa";
 
-type Screen = "home" | "game";
-type Modal = "credits" | "help" | "ios-install" | "exhausted" | "results" | "abandon" | null;
+type Screen = "home" | "game" | "stats";
+type Modal = "credits" | "help" | "ios-install" | "exhausted" | "results" | "abandon" | "reset-stats" | null;
 
 const difficultyOrder: Difficulty[] = ["beginner", "normal", "hard", "extreme"];
 const baseUrl = (path: string) => `${import.meta.env.BASE_URL}${path}`;
@@ -38,9 +42,22 @@ function App() {
   const [lastDifficulty, setLastDifficulty] = useState<Difficulty>("normal");
   const [lastMode, setLastMode] = useState<GameMode>("timed");
   const [soundEnabled, setSoundEnabled] = useState(() => readStorage(STORAGE_KEYS.audio) !== "off");
-  const [practice, setPractice] = useState(() => readStorage(STORAGE_KEYS.practice) === "on");
+  const [playMode, setPlayMode] = useState<GameMode>(() => parsePlayMode(readStorage(STORAGE_KEYS.playMode), readStorage(STORAGE_KEYS.practice)));
   const [onboarding, setOnboarding] = useState(() => readStorage(STORAGE_KEYS.onboarding) !== "done");
   const [records, setRecords] = useState(() => loadRecords());
+  const [blitzRecords, setBlitzRecords] = useState(() => loadRecords("blitz"));
+  const [stats, setStats] = useState<PlayerStats>(() => loadStats());
+  const [contrast, setContrast] = useState<ContrastPreference>(() => loadContrast());
+  const [systemContrast, setSystemContrast] = useState(() => systemPrefersMoreContrast());
+  const contrastActive = isHighContrast(contrast, systemContrast);
+  useEffect(() => { applyContrast(contrastActive); }, [contrastActive]);
+  useEffect(() => {
+    if (contrast !== "auto" || typeof window.matchMedia !== "function") return undefined;
+    const query = window.matchMedia("(prefers-contrast: more)");
+    const updateContrast = () => setSystemContrast(query.matches);
+    query.addEventListener?.("change", updateContrast);
+    return () => query.removeEventListener?.("change", updateContrast);
+  }, [contrast]);
   const [newRecord, setNewRecord] = useState(false);
   const [acknowledged, setAcknowledged] = useState<ReadonlySet<TutorialTip>>(new Set());
   const { platform, promptInstall } = useInstallPrompt();
@@ -100,10 +117,12 @@ function App() {
     if (!game?.finished || resultRegistered.current) return;
     resultRegistered.current = true;
     if (isTimed(game)) {
-      const result = registerResult(game.difficulty, game.score, game.correct);
+      const result = registerResult(game.difficulty, game.score, game.correct, game.mode === "blitz" ? "blitz" : "timed");
       setNewRecord(result.isNewRecord);
-      setRecords((previous) => ({ ...previous, [game.difficulty]: result.record }));
+      if (game.mode === "blitz") setBlitzRecords((previous) => ({ ...previous, [game.difficulty]: result.record }));
+      else setRecords((previous) => ({ ...previous, [game.difficulty]: result.record }));
     }
+    setStats(recordGame(game));
     if (game.mode === "guided") { writeStorage(STORAGE_KEYS.onboarding, "done"); setOnboarding(false); }
   }, [game]);
 
@@ -111,20 +130,21 @@ function App() {
 
   const nextQuestion = useCallback(() => {
     setGame((previous) => {
-      if (!previous || previous.finished) return previous;
+      if (!previous || previous.finished || previous.acceptingInput) return previous;
       return advance(previous);
     });
   }, []);
 
-  const scheduleNext = useCallback(() => {
+  const scheduleNext = useCallback((delay: number | null) => {
+    if (delay === null) return;
     clearTransition();
     transitionRef.current = window.setTimeout(() => {
       transitionRef.current = null;
       nextQuestion();
-    }, 850);
+    }, delay);
   }, [clearTransition, nextQuestion]);
 
-  const startGame = useCallback(async (difficulty: Difficulty, mode: GameMode = practice ? "practice" : "timed") => {
+  const startGame = useCallback(async (difficulty: Difficulty, mode: GameMode = playMode) => {
     setLastDifficulty(difficulty);
     setLastMode(mode);
     clearTransition();
@@ -156,7 +176,7 @@ function App() {
     } finally {
       setLoading(false);
     }
-  }, [clearTransition, packs, practice, soundEnabled]);
+  }, [clearTransition, packs, playMode, soundEnabled]);
 
   const answerQuestion = useCallback((optionId: string) => {
     if (!game || !question || !game.acceptingInput) return;
@@ -167,14 +187,14 @@ function App() {
       return result.state;
     });
     playSound(isCorrect ? "correct" : "wrong", soundEnabled);
-    scheduleNext();
+    scheduleNext(isCorrect ? 850 : (game.mode === "timed" || game.mode === "blitz" ? 2600 : null));
   }, [game, question, scheduleNext, soundEnabled]);
 
   const passQuestion = useCallback(() => {
     if (!game || !question || !game.acceptingInput) return;
     setGame((previous) => previous ? passCurrent(previous) : previous);
     playSound("pass", soundEnabled);
-    scheduleNext();
+    scheduleNext(850);
   }, [game, question, scheduleNext, soundEnabled]);
 
   const pauseForMenu = useCallback(() => {
@@ -216,17 +236,20 @@ function App() {
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (!game || modal || !game.acceptingInput || event.repeat || event.ctrlKey || event.metaKey || event.altKey) return;
+      if (!game || modal || event.repeat || event.ctrlKey || event.metaKey || event.altKey) return;
       if (event.target instanceof HTMLElement && ["INPUT", "TEXTAREA", "SELECT"].includes(event.target.tagName)) return;
-      if (/^[1-4]$/.test(event.key) && question) {
+      if (game.acceptingInput && /^[1-4]$/.test(event.key) && question) {
         // Las opciones ya vienen barajadas al crear la partida: el número coincide con el orden en pantalla.
         const option = question.options[Number(event.key) - 1];
         if (option) { event.preventDefault(); answerQuestion(option.id); }
-      } else if (event.key.toLowerCase() === "p") { event.preventDefault(); passQuestion(); }
+      } else if (event.key === "Enter" && game.feedback.kind === "is-wrong" && !game.acceptingInput) {
+        // Intro = «Siguiente ›», salvo con el foco en un botón o enlace (su propio Intro ya actúa: no avanzar dos veces).
+        if (!(event.target instanceof HTMLElement && ["BUTTON", "A"].includes(event.target.tagName))) { event.preventDefault(); nextQuestion(); }
+      } else if (game.acceptingInput && event.key.toLowerCase() === "p") { event.preventDefault(); passQuestion(); }
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [answerQuestion, game, modal, passQuestion, question]);
+  }, [answerQuestion, game, modal, nextQuestion, passQuestion, question]);
 
   return (
     <>
@@ -244,16 +267,19 @@ function App() {
             onStartGuided={() => void startGame("beginner", "guided")}
             onboarding={onboarding}
             onDismissOnboarding={() => { writeStorage(STORAGE_KEYS.onboarding, "done"); setOnboarding(false); }}
-            practice={practice}
-            onPracticeChange={(value) => { setPractice(value); writeStorage(STORAGE_KEYS.practice, value ? "on" : "off"); }}
-            records={records}
+            playMode={playMode}
+            onPlayModeChange={(value) => { setPlayMode(value); writeStorage(STORAGE_KEYS.playMode, value); removeStorage(STORAGE_KEYS.practice); }}
+            records={playMode === "blitz" ? blitzRecords : records}
             installPlatform={platform}
             onInstall={() => void promptInstall()}
             onIosInstall={() => setModal("ios-install")}
             creditsButtonRef={creditsButtonRef}
             onRetry={() => void startGame(lastDifficulty, lastMode)}
+            contrastActive={contrastActive}
+            onToggleContrast={() => { const next: ContrastPreference = contrastActive ? "off" : "on"; setContrast(next); saveContrast(next); }}
+            onOpenStats={() => setScreen("stats")}
           />
-        ) : (
+        ) : screen === "stats" ? <StatsScreen stats={stats} records={records} blitzRecords={blitzRecords} onHome={() => setScreen("home")} onReset={() => setModal("reset-stats")} /> : (
           <GameScreen
             game={game}
             question={question}
@@ -263,6 +289,7 @@ function App() {
             onToggleSound={() => setSoundEnabled((enabled) => !enabled)}
             onAnswer={answerQuestion}
             onPass={passQuestion}
+            onNextQuestion={nextQuestion}
             onMenu={pauseForMenu}
             menuButtonRef={menuButtonRef}
             guidedTip={guidedTip}
@@ -274,8 +301,9 @@ function App() {
       {modal === "help" && <HelpModal onClose={() => setModal(null)} onStartGuided={() => { setModal(null); void startGame("beginner", "guided"); }} />}
       {modal === "ios-install" && <IosInstallModal onClose={() => setModal(null)} />}
       {modal === "exhausted" && <ExhaustedModal onClose={showHome} onReset={resetRotation} />}
-      {modal === "results" && game && <ResultsModal game={game} record={records[game.difficulty]} newRecord={newRecord} onRestart={() => void startGame(game.difficulty, game.mode === "guided" ? "timed" : game.mode)} onHome={showHome} />}
+      {modal === "results" && game && <ResultsModal game={game} record={(game.mode === "blitz" ? blitzRecords : records)[game.difficulty]} newRecord={newRecord} onRestart={() => void startGame(game.difficulty, game.mode === "guided" ? "timed" : game.mode)} onHome={showHome} />}
       {modal === "abandon" && <AbandonModal timed={game ? isTimed(game) : true} onClose={resumeGame} onHome={showHome} />}
+      {modal === "reset-stats" && <ConfirmResetModal onCancel={() => setModal(null)} onConfirm={() => { resetStats(); setStats(loadStats()); setRecords(loadRecords()); setBlitzRecords(loadRecords("blitz")); setModal(null); }} />}
       <UpdateToast visible={screen === "home" && modal === null} update={update} />
     </>
   );
@@ -308,17 +336,20 @@ interface HomeScreenProps {
   onStartGuided: () => void;
   onboarding: boolean;
   onDismissOnboarding: () => void;
-  practice: boolean;
-  onPracticeChange: (value: boolean) => void;
+  playMode: GameMode;
+  onPlayModeChange: (value: GameMode) => void;
   records: Partial<Record<Difficulty, DifficultyRecord>>;
   installPlatform: InstallPlatform;
   onInstall: () => void;
   onIosInstall: () => void;
   creditsButtonRef: RefObject<HTMLButtonElement | null>;
   onRetry: () => void;
+  contrastActive: boolean;
+  onToggleContrast: () => void;
+  onOpenStats: () => void;
 }
 
-function HomeScreen({ loading, error, soundEnabled, onToggleSound, onStart, onOpenCredits, onOpenHelp, onStartGuided, onboarding, onDismissOnboarding, practice, onPracticeChange, records, installPlatform, onInstall, onIosInstall, creditsButtonRef, onRetry }: HomeScreenProps) {
+function HomeScreen({ loading, error, soundEnabled, onToggleSound, onStart, onOpenCredits, onOpenHelp, onStartGuided, onboarding, onDismissOnboarding, playMode, onPlayModeChange, records, installPlatform, onInstall, onIosInstall, creditsButtonRef, onRetry, contrastActive, onToggleContrast, onOpenStats }: HomeScreenProps) {
   return (
     <section className="screen screen-home" aria-labelledby="home-title">
       <header className="brand-lockup">
@@ -334,14 +365,14 @@ function HomeScreen({ loading, error, soundEnabled, onToggleSound, onStart, onOp
       <section className="panel setup-panel" aria-labelledby="setup-title">
         <div className="panel-heading"><div><span className="panel-kicker">ENTRENADOR // 01</span><h2 id="setup-title">Crear partida</h2></div><span className="panel-mark" aria-hidden="true">✦</span></div>
         <div className="panel-rule" />
-        <fieldset className="mode-selector"><legend>Modo de juego</legend><label className={!practice ? "is-selected" : ""}><input type="radio" name="mode" checked={!practice} onChange={() => onPracticeChange(false)} />Con reloj</label><label className={practice ? "is-selected" : ""}><input type="radio" name="mode" checked={practice} onChange={() => onPracticeChange(true)} />Práctica (sin reloj)</label></fieldset>
+        <fieldset className="mode-selector"><legend>Modo de juego</legend>{(["timed", "blitz", "practice"] as const).map((mode) => <label className={playMode === mode ? "is-selected" : ""} key={mode}><input type="radio" name="mode" checked={playMode === mode} onChange={() => onPlayModeChange(mode)} />{mode === "timed" ? "Con reloj" : mode === "blitz" ? "Contrarreloj 2:00" : "Práctica (sin reloj)"}</label>)}</fieldset>
         <p className="field-label">Elige tu dificultad</p>
         <div className="difficulty-grid">
           {difficultyOrder.map((difficulty, index) => (
             <button className={`difficulty-card difficulty-card--${["green", "blue", "orange", "red"][index]}`} data-difficulty={difficulty} type="button" key={difficulty} disabled={loading} onClick={() => onStart(difficulty)}>
               <span className="difficulty-card__badge">0{index + 1}</span>
               <strong>{difficultyConfig[difficulty].label}</strong>
-              <small>{practice ? "Sin reloj" : difficultyConfig[difficulty].description}{records[difficulty] ? ` · Récord ${records[difficulty]?.bestScore}` : ""}</small>
+              <small>{playMode === "practice" ? "Sin reloj" : playMode === "blitz" ? "2:00 · Contrarreloj" : difficultyConfig[difficulty].description}{records[difficulty] ? ` · Récord ${records[difficulty]?.bestScore}` : ""}</small>
             </button>
           ))}
         </div>
@@ -352,10 +383,11 @@ function HomeScreen({ loading, error, soundEnabled, onToggleSound, onStart, onOp
       <div className="fan-note">
         <span className="fan-note__icon" aria-hidden="true"><img src={baseUrl("assets/spritecollab/pikachu-happy.png")} alt="" /></span>
         <div><strong>Proyecto fan no oficial</strong><p>Pokémon y sus personajes pertenecen a sus respectivos titulares.</p></div>
-        <div className="fan-note__actions"><button ref={creditsButtonRef} id="open-credits" className="link-button" type="button" onClick={onOpenCredits}>Fuentes y créditos</button><button className="link-button" type="button" onClick={onOpenHelp}>Cómo se juega</button><button className="sound-toggle" type="button" onClick={onToggleSound} aria-pressed={soundEnabled}>{soundEnabled ? "♫ SONIDO" : "× SILENCIO"}</button></div>
+        <div className="fan-note__actions"><button ref={creditsButtonRef} id="open-credits" className="link-button" type="button" onClick={onOpenCredits}>Fuentes y créditos</button><button className="link-button" type="button" onClick={onOpenHelp}>Cómo se juega</button><button className="sound-toggle" type="button" onClick={onToggleSound} aria-pressed={soundEnabled}>{soundEnabled ? "♫ SONIDO" : "× SILENCIO"}</button><button className="sound-toggle" type="button" onClick={onToggleContrast} aria-pressed={contrastActive}>Alto contraste</button></div>
       </div>
       {installPlatform === "prompt" && <button className="secondary-button install-button" type="button" onClick={onInstall}>⇩ Instalar app</button>}
       {installPlatform === "ios" && <button className="secondary-button install-button" type="button" onClick={onIosInstall}>Instalar en iPhone</button>}
+      <button className="secondary-button install-button" type="button" onClick={onOpenStats}>▤ Estadísticas</button>
       <p className="home-footer">SIN CUENTAS · SIN PUBLICIDAD · FUNCIONA OFFLINE</p>
     </section>
   );
@@ -370,13 +402,14 @@ interface GameScreenProps {
   onToggleSound: () => void;
   onAnswer: (optionId: string) => void;
   onPass: () => void;
+  onNextQuestion: () => void;
   onMenu: () => void;
   menuButtonRef: RefObject<HTMLButtonElement | null>;
   guidedTip: TutorialTip | null;
   onAcknowledgeTip: (tip: TutorialTip) => void;
 }
 
-function GameScreen({ game, question, remaining, timeIsDangerous, soundEnabled, onToggleSound, onAnswer, onPass, onMenu, menuButtonRef, guidedTip, onAcknowledgeTip }: GameScreenProps) {
+function GameScreen({ game, question, remaining, timeIsDangerous, soundEnabled, onToggleSound, onAnswer, onPass, onNextQuestion, onMenu, menuButtonRef, guidedTip, onAcknowledgeTip }: GameScreenProps) {
   const config = game ? difficultyConfig[game.difficulty] : difficultyConfig.normal;
   const timed = game ? isTimed(game) : true;
   const [announcement, setAnnouncement] = useState("");
@@ -401,14 +434,14 @@ function GameScreen({ game, question, remaining, timeIsDangerous, soundEnabled, 
         <button className="game-sound-toggle" type="button" onClick={onToggleSound} aria-pressed={soundEnabled}>{soundEnabled ? "♫ SONIDO" : "× SILENCIO"}</button>
       </div>
       <header className="game-header">
-        <div className="brand-mini"><div className="brand-orb brand-orb--small" aria-hidden="true"><span>RX</span></div><div><p className="eyebrow">ROSCODEX // <span>{config.label} · {game?.mode === "guided" ? "GUIADA" : game?.mode === "practice" ? "PRÁCTICA" : "CON RELOJ"}</span></p><h2 id="game-title">Completa el rosco</h2></div></div>
+        <div className="brand-mini"><div className="brand-orb brand-orb--small" aria-hidden="true"><span>RX</span></div><div><p className="eyebrow">ROSCODEX // <span>{config.label} · {game?.mode === "guided" ? "GUIADA" : game?.mode === "practice" ? "PRÁCTICA" : game?.mode === "blitz" ? "CONTRARRELOJ" : "CON RELOJ"}</span></p><h2 id="game-title">Completa el rosco</h2></div></div>
         <div className={`timer-box${timed && timeIsDangerous ? " is-danger" : ""}`}><span className="timer-box__label">{timed ? "TIEMPO" : "MODO"}</span><span className={`timer-box__value${timed ? "" : " timer-box__value--untimed"}`}>{timed ? formatTime(remaining) : "SIN RELOJ"}</span></div>
       </header>
       <div className="game-meta"><span>VUELTA {game?.round ?? 1} · LETRA {question?.letter ?? "A"}</span><span><b>{game?.score ?? 0}</b> PUNTOS</span></div>
       <Rosco statuses={game?.statuses ?? emptyStatuses()} questions={game?.questions ?? []} highlighted={guidedTip === "rosco"} />
       <div className="rosco-legend" aria-label="Leyenda de estados"><Legend status="pending" label="Pendiente" /><Legend status="correct" label="Acierto" /><Legend status="wrong" label="Fallada" /><Legend status="passed" label="Pasada" /><Legend status="expired" label="Tiempo" /></div>
       {guidedTip && <section className="coach-card" aria-live="polite" aria-label="Guía de la partida"><span className="panel-kicker">GUÍA</span><h3>{tutorialTips[guidedTip].title}</h3><p>{tutorialTips[guidedTip].text}</p><button className="secondary-button" type="button" onClick={() => onAcknowledgeTip(guidedTip)}>Entendido</button></section>}
-      <QuestionCard game={game} question={question} onAnswer={onAnswer} onPass={onPass} highlightAnswer={guidedTip === "answer"} highlightPass={guidedTip === "pass"} />
+      <QuestionCard game={game} question={question} onAnswer={onAnswer} onPass={onPass} onNext={() => onNextQuestion?.()} highlightAnswer={guidedTip === "answer"} highlightPass={guidedTip === "pass"} />
       <div className="sr-only" aria-live="polite">{announcement}</div>
     </section>
   );
@@ -436,9 +469,59 @@ function Legend({ status, label }: { status: RoscoStatus; label: string }) {
   return <span><i className={`rosco-legend__dot rosco-legend__dot--${status}`} />{label}</span>;
 }
 
-function QuestionCard({ game, question, onAnswer, onPass, highlightAnswer, highlightPass }: { game: GameState | null; question: Question | null; onAnswer: (optionId: string) => void; onPass: () => void; highlightAnswer: boolean; highlightPass: boolean }) {
+type RecordTable = Partial<Record<Difficulty, DifficultyRecord>>;
+
+function StatsScreen({ stats, records, blitzRecords, onHome, onReset }: { stats: PlayerStats; records: RecordTable; blitzRecords: RecordTable; onHome: () => void; onReset: () => void }) {
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  // Al entrar, el foco va al título: el lector de pantalla anuncia la pantalla nueva.
+  useEffect(() => { titleRef.current?.focus(); }, []);
+  const accuracy = accuracyPercent(stats.correct, stats.correct + stats.wrong);
+  const hardest = LETTERS
+    .map((letter) => ({ letter, percent: (stats.byLetter[letter]?.played ?? 0) >= 2 ? accuracyPercent(stats.byLetter[letter].correct, stats.byLetter[letter].played) : null }))
+    .filter((entry): entry is { letter: string; percent: number } => entry.percent !== null && entry.percent < 100)
+    .sort((a, b) => a.percent - b.percent)[0];
+  const cards: [string, string | number][] = [
+    ["Partidas", stats.games], ["Aciertos totales", stats.correct], ["% de acierto", accuracy === null ? "—" : `${accuracy} %`],
+    ["Mejor racha", `${stats.bestStreak} seguidos`], ["Falladas", stats.wrong], ["Pasadas", stats.passed]
+  ];
+  return <section className="screen stats-screen" aria-labelledby="stats-title">
+    <div className="game-toolbar"><button className="game-menu-button" type="button" onClick={onHome}>‹ Volver</button></div>
+    <p className="eyebrow">ENTRENADOR // HISTORIAL</p>
+    <h2 id="stats-title" tabIndex={-1} ref={titleRef}>Estadísticas</h2>
+    {stats.games === 0 ? <div className="panel empty-stats">
+      <p>Aún no has terminado ninguna partida</p>
+      <span>Juega un rosco y aquí verás tus aciertos, tu mejor racha y qué letras se te atragantan.</span>
+      <button className="primary-button" type="button" onClick={onHome}>Jugar ahora</button>
+    </div> : <>
+      <div className="stats-cards">{cards.map(([label, value]) => <div className="stats-card" key={label}><strong>{value}</strong><span>{label}</span></div>)}</div>
+      <section className="panel stats-panel" aria-labelledby="letters-title">
+        <h3 id="letters-title">Aciertos por letra</h3>
+        <ul className="letter-stats" aria-label="Aciertos por letra">{LETTERS.map((letter) => {
+          const item = stats.byLetter[letter] ?? { played: 0, correct: 0 };
+          const percent = accuracyPercent(item.correct, item.played);
+          const level = percent === null ? "empty" : percent >= 70 ? "high" : percent >= 40 ? "medium" : "low";
+          return <li className={`letter-stat letter-stat--${level}`} key={letter}>
+            <b aria-hidden="true">{letter}</b><span aria-hidden="true">{item.correct}/{item.played}</span><small aria-hidden="true">{percent === null ? "—" : `${percent} %`}</small>
+            <span className="sr-only">{percent === null ? `${letter}: sin datos` : `${letter}: ${item.correct} aciertos de ${item.played}, ${percent} %`}</span>
+          </li>;
+        })}</ul>
+        {hardest && <p className="stats-hint">Tu letra más difícil: <b>{hardest.letter}</b> ({hardest.percent} %)</p>}
+      </section>
+      <table className="records-table panel"><caption>Récords por dificultad</caption>
+        <thead><tr><th scope="col">Dificultad</th><th scope="col">Con reloj</th><th scope="col">Contrarreloj</th></tr></thead>
+        <tbody>{difficultyOrder.map((difficulty) => <tr key={difficulty}><th scope="row">{difficultyConfig[difficulty].label}</th><td>{records[difficulty]?.bestScore ?? "—"}</td><td>{blitzRecords[difficulty]?.bestScore ?? "—"}</td></tr>)}</tbody>
+      </table>
+      <button className="secondary-button" type="button" onClick={onReset}>Borrar estadísticas</button>
+    </>}
+  </section>;
+}
+
+function ConfirmResetModal({ onCancel, onConfirm }: { onCancel: () => void; onConfirm: () => void }) { const titleId = useId(); return <ModalShell titleId={titleId} onClose={onCancel}><p className="eyebrow">ESTADÍSTICAS</p><h2 id={titleId}>¿Borrar estadísticas?</h2><p>Se borran tus estadísticas y récords de este dispositivo. No se puede deshacer.</p><button className="primary-button" type="button" onClick={onConfirm}>Borrar</button><button className="secondary-button" type="button" onClick={onCancel}>Cancelar</button></ModalShell>; }
+
+function QuestionCard({ game, question, onAnswer, onPass, onNext, highlightAnswer, highlightPass }: { game: GameState | null; question: Question | null; onAnswer: (optionId: string) => void; onPass: () => void; onNext: () => void; highlightAnswer: boolean; highlightPass: boolean }) {
   const options = question?.options ?? [];
   const correctId = question?.correctOptionId;
+  const wrongExplanation = game?.feedback.kind === "is-wrong" && question ? explanationFor(question) : null;
   return <section className="panel question-card">
     <div className="question-card__topline"><span className="panel-kicker">DESAFÍO ACTIVO</span><span className="question-rule">{question?.rule === "contains" ? `CONTIENE LA LETRA ${question.letter}` : `EMPIEZA POR LA LETRA ${question?.letter ?? "A"}`}</span></div>
     <h3>{question?.question ?? "Cargando pregunta..."}</h3>
@@ -454,7 +537,8 @@ function QuestionCard({ game, question, onAnswer, onPass, highlightAnswer, highl
     })}</div>
     <button className={`pass-button${highlightPass ? " is-coached" : ""}`} type="button" disabled={!game?.acceptingInput} onClick={onPass}>↻ Pasapalabra</button>
     <small className="shortcut-help">Atajos: 1–4 responder · P pasapalabra</small>
-    <p className={`feedback ${game?.feedback.kind ?? ""}`} role="status">{game?.feedback.text ?? ""}</p>
+    <div className={`feedback ${game?.feedback.kind ?? ""}`} role="status"><span>{game?.feedback.text ?? ""}</span>{wrongExplanation && <small>{wrongExplanation}</small>}</div>
+    {game?.feedback.kind === "is-wrong" && <button className="next-button" type="button" onClick={onNext}>Siguiente ›</button>}
   </section>;
 }
 
@@ -498,12 +582,22 @@ function ResultsModal({ game, record, newRecord, onRestart, onHome }: { game: Ga
   const titleId = useId();
   const practice = game.mode === "practice";
   const guided = game.mode === "guided";
-  return <ModalShell titleId={titleId}><p className="eyebrow">PARTIDA TERMINADA</p><h2 id={titleId}>{guided ? "¡Ya sabes jugar!" : practice ? "Práctica terminada" : game.finishReason === "time" ? "Tiempo agotado" : "Reto completado"}</h2><div className="result-score"><span>{game.score}</span><small> PUNTOS</small></div>{!practice && !guided && record && <p className="record-message">{newRecord ? "¡Nuevo récord!" : `Récord: ${record.bestScore}`}</p>}{practice && <p>Prueba ahora una partida con reloj.</p>}<div className="result-grid"><div><strong>{game.correct}</strong><span>Correctas</span></div><div><strong>{game.wrong}</strong><span>Falladas</span></div><div><strong>{game.passed}</strong><span>Pasadas</span></div></div><button className="primary-button" type="button" onClick={onRestart}>{guided ? "Jugar con reloj" : "Jugar de nuevo"}</button><button className="secondary-button" type="button" onClick={onHome}>Cambiar dificultad</button></ModalShell>;
+  const [shareMessage, setShareMessage] = useState("");
+  const [manualText, setManualText] = useState("");
+  const manualRef = useRef<HTMLTextAreaElement>(null);
+  useEffect(() => { if (manualText) { manualRef.current?.focus(); manualRef.current?.select(); } }, [manualText]);
+  const share = async () => {
+    const text = buildShareText(game);
+    const result = await shareResult(text);
+    setShareMessage(result === "shared" ? "¡Compartido!" : result === "copied" ? "Resultado copiado. Pégalo donde quieras." : result === "unavailable" ? "Tu navegador no deja compartir. Copia el texto:" : "");
+    if (result === "unavailable") setManualText(text);
+  };
+  return <ModalShell titleId={titleId}><p className="eyebrow">PARTIDA TERMINADA</p><h2 id={titleId}>{guided ? "¡Ya sabes jugar!" : practice ? "Práctica terminada" : game.finishReason === "time" ? "Tiempo agotado" : "Reto completado"}</h2><div className="result-score"><span>{game.score}</span><small> PUNTOS</small></div>{!practice && !guided && record && <p className="record-message">{newRecord ? "¡Nuevo récord!" : `Récord: ${record.bestScore}`}</p>}{practice && <p>Prueba ahora una partida con reloj.</p>}{game.bestStreak > 1 && <p className="streak-message">Mejor racha: {game.bestStreak} aciertos seguidos</p>}<div className="result-grid"><div><strong>{game.correct}</strong><span>Correctas</span></div><div><strong>{game.wrong}</strong><span>Falladas</span></div><div><strong>{game.passed}</strong><span>Pasadas</span></div></div>{!guided && <><button className="secondary-button" type="button" onClick={() => void share()}>Compartir resultado</button>{shareMessage && <p className="inline-status" role="status">{shareMessage}</p>}{manualText && <><label className="share-fallback-label" htmlFor="share-fallback">Texto para compartir</label><textarea ref={manualRef} className="share-fallback" id="share-fallback" readOnly rows={5} value={manualText} /></>}</>}<button className="primary-button" type="button" onClick={onRestart}>{guided ? "Jugar con reloj" : "Jugar de nuevo"}</button><button className="secondary-button" type="button" onClick={onHome}>Cambiar dificultad</button></ModalShell>;
 }
 
 function HelpModal({ onClose, onStartGuided }: { onClose: () => void; onStartGuided: () => void }) {
   const titleId = useId();
-  return <ModalShell titleId={titleId} onClose={onClose}><p className="eyebrow">MANUAL // ROSCODEX</p><h2 id={titleId}>Cómo se juega</h2><p><strong>El rosco:</strong> 26 letras. La respuesta empieza por la letra o la contiene, según indique la pregunta.</p><p><strong>Responder:</strong> toca una opción o pulsa 1–4. Cada acierto suma 10 puntos.</p><p><strong>Pasapalabra:</strong> usa el botón o P para dejarla para la segunda vuelta.</p><p><strong>El reloj:</strong> cada dificultad tiene un tiempo distinto. También puedes practicar sin reloj.</p><button className="primary-button" type="button" onClick={onStartGuided}>Jugar partida guiada</button></ModalShell>;
+  return <ModalShell titleId={titleId} onClose={onClose}><p className="eyebrow">MANUAL // ROSCODEX</p><h2 id={titleId}>Cómo se juega</h2><p><strong>El rosco:</strong> 26 letras. La respuesta empieza por la letra o la contiene, según indique la pregunta.</p><p><strong>Responder:</strong> toca una opción o pulsa 1–4. Cada acierto suma 10 puntos.</p><p><strong>Pasapalabra:</strong> usa el botón o P para dejarla para la segunda vuelta.</p><p><strong>El reloj:</strong> cada dificultad tiene un tiempo distinto. La contrarreloj da 2 minutos para todo el rosco. También puedes practicar sin reloj.</p><button className="primary-button" type="button" onClick={onStartGuided}>Jugar partida guiada</button></ModalShell>;
 }
 
 function IosInstallModal({ onClose }: { onClose: () => void }) {

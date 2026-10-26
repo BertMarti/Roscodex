@@ -43,7 +43,7 @@ describe("modo práctica", () => {
   it("se recuerda, quita el tiempo de las tarjetas y la partida va sin reloj", async () => {
     render(<App />);
     fireEvent.click(screen.getByLabelText("Práctica (sin reloj)"));
-    expect(localStorage.getItem(STORAGE_KEYS.practice)).toBe("on");
+    expect(localStorage.getItem(STORAGE_KEYS.playMode)).toBe("practice");
     expect(screen.getAllByText(/Sin reloj/).length).toBeGreaterThanOrEqual(4);
     fireEvent.click(boton(/NORMAL/));
     expect(await screen.findByText("SIN RELOJ")).toBeTruthy();
@@ -61,6 +61,9 @@ describe("partida guiada", () => {
     expect(screen.getByRole("heading", { name: "Responder" })).toBeTruthy();
     fireEvent.keyDown(window, { key: "1" });
     expect(await screen.findByText(/Correcto|Era /)).toBeTruthy();
+    // Sin reloj, un fallo espera a «Siguiente ›» para dejar leer la explicación.
+    const siguiente = screen.queryByRole("button", { name: "Siguiente ›" });
+    if (siguiente) fireEvent.click(siguiente);
     expect(await screen.findByRole("heading", { name: "Pasapalabra" })).toBeTruthy();
     await waitFor(() => expect(screen.getByText(/VUELTA 1 · LETRA B/)).toBeTruthy(), { timeout: 3000 });
     fireEvent.keyDown(window, { key: "p" });

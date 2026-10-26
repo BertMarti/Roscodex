@@ -19,6 +19,7 @@ export interface Question {
   question: string;
   options: AnswerOption[];
   correctOptionId: string;
+  explanation?: string;
 }
 
 export interface QuestionPack {
@@ -121,6 +122,12 @@ export function choosePack(packs: QuestionPack[], difficulty: Difficulty, persis
 export function formatTime(milliseconds: number): string {
   const seconds = Math.max(0, Math.ceil(milliseconds / 1000));
   return `${Math.floor(seconds / 60).toString().padStart(2, "0")}:${(seconds % 60).toString().padStart(2, "0")}`;
+}
+
+export function explanationFor(question: Question): string | null {
+  if (typeof question.explanation !== "string") return null;
+  const explanation = question.explanation.trim();
+  return explanation.length >= 1 && explanation.length <= 240 ? explanation : null;
 }
 
 export async function loadQuestionPacks(): Promise<QuestionPack[]> {
