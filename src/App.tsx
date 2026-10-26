@@ -385,9 +385,9 @@ function HomeScreen({ loading, error, soundEnabled, onToggleSound, onStart, onOp
         <div><strong>Proyecto fan no oficial</strong><p>Pokémon y sus personajes pertenecen a sus respectivos titulares.</p></div>
         <div className="fan-note__actions"><button ref={creditsButtonRef} id="open-credits" className="link-button" type="button" onClick={onOpenCredits}>Fuentes y créditos</button><button className="link-button" type="button" onClick={onOpenHelp}>Cómo se juega</button><button className="sound-toggle" type="button" onClick={onToggleSound} aria-pressed={soundEnabled}>{soundEnabled ? "♫ SONIDO" : "× SILENCIO"}</button><button className="sound-toggle" type="button" onClick={onToggleContrast} aria-pressed={contrastActive}>Alto contraste</button></div>
       </div>
+      <button className="secondary-button install-button" type="button" onClick={onOpenStats}>▤ Estadísticas</button>
       {installPlatform === "prompt" && <button className="secondary-button install-button" type="button" onClick={onInstall}>⇩ Instalar app</button>}
       {installPlatform === "ios" && <button className="secondary-button install-button" type="button" onClick={onIosInstall}>Instalar en iPhone</button>}
-      <button className="secondary-button install-button" type="button" onClick={onOpenStats}>▤ Estadísticas</button>
       <p className="home-footer">SIN CUENTAS · SIN PUBLICIDAD · FUNCIONA OFFLINE</p>
     </section>
   );
