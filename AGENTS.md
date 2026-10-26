@@ -11,6 +11,7 @@ Roscodex es un juego fan, gratuito y no oficial de preguntas tipo rosco (inspira
 | Ruta | Contenido |
 |---|---|
 | `src/App.tsx` | Interfaz: portada, partida, rosco, pregunta, modales, atajos de teclado |
+| `src/version.ts` | Versión visible, sale de `package.json` |
 | `src/gameState.ts` | Transiciones **puras** de la partida (sin React ni efectos) |
 | `src/game.ts` | Tipos, dificultades, carga del banco, selección sin repetir, historial en `localStorage` |
 | `src/audio.ts` | Sonidos 8-bit con Web Audio |

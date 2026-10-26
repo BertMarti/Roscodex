@@ -43,13 +43,13 @@ Pendiente decidir:
 Para la demo se recomienda:
 
 - [x] Pixel-art original y placeholders.
-- [ ] Sprites de PokéAPI cacheados.
+- [x] Sprites de PokéAPI cacheados.
 - [ ] Ilustraciones de terceros con licencia explícita.
 
 ## Distribución
 
 - [x] Ejecución local.
-- [ ] Demo web estática.
+- [x] Web estática en GitHub Pages (PWA instalable, v1.0.0).
 - [ ] APK compartible.
 - [ ] Publicación en tiendas.
 
