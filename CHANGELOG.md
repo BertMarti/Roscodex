@@ -2,6 +2,23 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). Versionado semántico.
 
+## [0.6.0] — 2026-10-26 (fase 3: lo que se nota al jugar)
+
+### Añadido
+- **Estadísticas** en una pantalla propia: partidas, aciertos totales, % de acierto, mejor racha de aciertos seguidos, falladas, pasadas, aciertos por letra (con la letra que más cuesta) y récords por dificultad. Se pueden borrar (con confirmación).
+- **Compartir el resultado** con el menú del sistema (Web Share API) o, si no lo hay, copiándolo al portapapeles; si tampoco, se ofrece el texto para copiar a mano. Solo puntos, contadores y una fila 🟩🟥⬜: nada personal.
+- **Explicación tras fallar**: la respuesta correcta y una línea de contexto (tipo y generación). Botón «Siguiente ›» e `Intro`; con reloj avanza solo a los 2,6 s, sin reloj espera.
+- **Contrarreloj de 2 minutos** en cualquier dificultad, con récords propios.
+- **Alto contraste**: se activa solo con `prefers-contrast: more` y se puede forzar o quitar con el interruptor de la portada. Ajustes mínimos para `forced-colors`.
+
+### Cambiado
+- **Banco de preguntas con nombres oficiales en español** (PokéAPI, idioma «es»): Pokémon («Colmilargo», «Código Cero», «Mr. Mime» en vez de «Great-Tusk», «Type-Null», «Mr-Mime»; «Basculin» en vez de «Basculin-Red-Striped»), movimientos y habilidades («Nevada» en vez de «Snow Warning»). Alturas y pesos con coma decimal. Los nombres se guardan en `data/pokeapi-nombres-es.json` para no volver a pedirlos.
+- El validador del banco rechaza nombres de forma de PokéAPI, decimales con punto y explicaciones vacías o largas.
+- El modo elegido se guarda en `roscodex-play-mode-v1` (se migra el antiguo `roscodex-practice-v1`, que se borra).
+
+### Notas
+- Los IDs de las preguntas se mantienen: quien ya tenía preguntas «vistas» conserva su rotación (algunas de esas preguntas han cambiado de contenido).
+
 ## [0.5.0] — 2026-10-24 (fase 2: facilidad de uso)
 
 ### Añadido

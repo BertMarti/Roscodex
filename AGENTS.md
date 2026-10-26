@@ -15,12 +15,13 @@ Roscodex es un juego fan, gratuito y no oficial de preguntas tipo rosco (inspira
 | `src/game.ts` | Tipos, dificultades, carga del banco, selección sin repetir, historial en `localStorage` |
 | `src/audio.ts` | Sonidos 8-bit con Web Audio |
 | `src/storage.ts` | **Todas** las claves de `localStorage` (prefijo `roscodex-`) y lectura/escritura que nunca lanza |
-| `src/tutorial.ts` / `src/records.ts` | Partida guiada (`currentTip`) y récords locales |
+| `src/tutorial.ts` / `src/records.ts` | Partida guiada (`currentTip`) y récords locales (con reloj y contrarreloj) |
+| `src/stats.ts` / `src/share.ts` / `src/contrast.ts` | Estadísticas (validadas al leer), texto y envío del resultado (Web Share → portapapeles), tema de alto contraste |
 | `src/pwa.ts` | Instalar la app y aviso de versión nueva (el registro del SW está en `main.tsx`) |
 | `src/styles.css` | Estética pixel-art; paleta en `:root` |
 | `src/*.test.ts(x)` | Tests de Vitest junto al archivo que prueban; los `.tsx` usan happy-dom + Testing Library |
 | `public/data/question-bank.json` | Banco publicado (2.080 preguntas) |
-| `data/` | Caché de PokéAPI y packs antiguos; **no se publica** |
+| `data/` | Caché de PokéAPI, nombres oficiales en español (`pokeapi-nombres-es.json`) y packs antiguos; **no se publica** |
 | `scripts/` | `build-question-bank.mjs`, `validate-content.mjs`, `simulate-games.mjs` |
 | `doc/` | Diseño, auditorías, roles (`doc/agents/`) y [doc/DESARROLLO.md](doc/DESARROLLO.md) |
 | `.github/workflows/` | `ci.yml` (PRs) y `deploy-pages.yml` (Pages) |
@@ -55,6 +56,7 @@ Despliegue: push a `main` → `deploy-pages.yml` publica en GitHub Pages. Tambi�
 - `question-bank.json` no se edita a mano: se cambia el generador y se ejecuta `npm run build:bank`.
 - Después, siempre `npm run validate:content` y `npm run simulate:games` (2.080 preguntas, 20 por letra, 18 «empieza por» + 8 «contiene» por rosco).
 - En Principiante no puede haber datos numéricos ni técnicos (lo comprueba el validador).
+- Nombres siempre en español oficial (de `data/pokeapi-nombres-es.json`) y cifras con coma decimal; el validador rechaza nombres de forma de PokéAPI («-Incarnate», «-Male»…) y decimales con punto.
 
 ## Seguridad y privacidad
 

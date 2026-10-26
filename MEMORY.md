@@ -1,9 +1,10 @@
 # MEMORY.md — Roscodex
 
-Memoria del proyecto para personas y agentes: decisiones, por qué se tomaron y trampas conocidas. Fecha del último repaso: **24/10/2026**.
+Memoria del proyecto para personas y agentes: decisiones, por qué se tomaron y trampas conocidas. Fecha del último repaso: **26/10/2026**.
 
-## Estado actual (24/10/2026)
+## Estado actual (26/10/2026)
 
+- Versión 0.6.0 (fase 3, PR desde `fase3-2026-10-25`): nombres en español en el banco, estadísticas, compartir, explicación tras fallar, contrarreloj y alto contraste.
 - Versión 0.5.0 (fase 2, PR desde `fase2-2026-10-24`): partida guiada, modo práctica, récords, instalar la app y aviso de versión nueva.
 - Versión 0.4.0 publicada en <https://bertmarti.github.io/Roscodex/> con `deploy-pages.yml` (push a `main` + manual).
 - `npm audit`: 0 vulnerabilidades. `npm run check` y `npm run build` en verde.
@@ -21,6 +22,9 @@ Memoria del proyecto para personas y agentes: decisiones, por qué se tomaron y 
 | happy-dom (no jsdom) para tests de componentes | jsdom 30 exige Node ≥ 22.22; happy-dom 21 funciona con Node 20. |
 | Claves de `localStorage` centralizadas en `src/storage.ts` | Todas las webs de Pages de BertMarti comparten origen: prefijo `roscodex-` obligatorio (test) y la clave antigua `pokereto-*` se borra tras migrar. |
 | Partida guiada = Principiante sin reloj + consejos | Enseña jugando, sin presión; los consejos no son modales y no roban el foco (los atajos siguen funcionando). |
+| Estadísticas y contrarreloj en claves nuevas (`roscodex-stats-v1`, `roscodex-blitz-records-v1`, `roscodex-play-mode-v1`, `roscodex-contrast-v1`) validadas al leer | Origen compartido: prefijo obligatorio y nada de confiar en lo guardado (otra web del mismo origen podría escribirlo). |
+| Explicación tras fallar = tipo y generación | Es un dato fiable de PokéAPI y no repite los números del enunciado; textos más ricos necesitarían revisión editorial. |
+| La partida guiada no cuenta en estadísticas | Es un tutorial: no debe estropear el porcentaje de acierto. |
 | `vitest.config.ts` separado | Evita cargar el plugin PWA (lento) al pasar los tests. Entorno `node`; `localStorage` se simula con `vi.stubGlobal`. |
 | CSP inyectada por plugin solo en build | El servidor de Vite usa scripts en línea para HMR; una meta CSP fija en `index.html` rompería `npm run dev`. |
 | `overrides` de `uuid` ^11 para `xcode` | `@capacitor/cli` → `xcode` arrastraba `uuid@7` (aviso moderado). `xcode` solo usa `uuid.v4()`, compatible con la 11 (CJS). |
@@ -43,7 +47,11 @@ Memoria del proyecto para personas y agentes: decisiones, por qué se tomaron y 
 - **PWA**: no repitas en `includeAssets` archivos que ya cubre `workbox.globPatterns`; Workbox los duplica con otra revisión y el service worker no se instala (pasó hasta la v0.3.0: la web publicada no funcionaba offline).
 - **CSP y `style={{…}}`**: React aplica los estilos por CSSOM (`element.style`), que `style-src 'self'` no bloquea; el rosco posicionado con `left/top` funciona con la CSP (comprobado en Chromium). Un revisor automático lo marcó como fallo: es un falso positivo.
 - **Press Start 2P** sí tiene «Í», pero en mayúsculas pequeñas parece una «í»: no es un fallo de la fuente.
-- **Nombres de Pokémon con forma** (p. ej. «Basculin-Red-Striped», «Tornadus-Incarnate») salen tal cual de PokéAPI; pendiente de normalizar en el generador.
+- **Nombres del banco**: salen de `data/pokeapi-nombres-es.json` (idioma «es» de PokéAPI; especie por número, movimiento y habilidad por identificador). Las reglas del rosco («empieza por», «contiene») se calculan sobre el nombre en español sin tildes, igual que el validador. Si falta un nombre, el generador avisa y usa uno legible; si dos Pokémon quedan con el mismo nombre, falla.
+- **IDs de pregunta reutilizados** en la v0.6.0: el contenido de ~880 preguntas cambió con los nombres en español, pero se mantuvo `roscodex-question-history-v4` para no reiniciar la rotación de nadie.
+- **Tras un fallo** la partida espera (`acceptingInput` false): `nextQuestion` solo avanza si la partida NO acepta respuestas, así el temporizador de 2,6 s y el botón «Siguiente ›» no avanzan dos veces. `Intro` no actúa si el foco está en un botón.
+- **Alto contraste**: `main.tsx` pone `data-contrast` en `<html>` antes de pintar (no hay scripts en línea por la CSP). `App` guarda el estado de `prefers-contrast` del sistema para que `aria-pressed` no se quede viejo.
+- **Compartir**: `SHARE_URL` es fija (en Capacitor `location` no es la web pública). Chromium sin cabeza en Linux no tiene `navigator.share` ni portapapeles: sale el texto para copiar a mano (es lo esperado).
 - Hay documentación histórica en `doc/` que menciona Flutter o `demo/`: es contexto de diseño, la app actual es React + Vite.
 
 ## Quién hizo qué (24/10/2026)
