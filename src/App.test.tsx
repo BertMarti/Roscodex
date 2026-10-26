@@ -5,6 +5,7 @@ import App from "./App";
 import { LETTERS } from "./game";
 import { listenForInstallPrompt, setUpdateStateForTests } from "./pwa";
 import { STORAGE_KEYS } from "./storage";
+import packageJson from "../package.json";
 import { bancoDePrueba } from "./test/fixtures";
 
 vi.mock("./audio", () => ({ playSound: vi.fn() }));
@@ -37,6 +38,16 @@ describe("primera visita", () => {
     expect(within(dialogo).getByRole("heading", { name: "Cómo se juega" })).toBeTruthy();
     fireEvent.keyDown(document, { key: "Escape" });
     expect(screen.queryByRole("dialog")).toBeNull();
+  });
+});
+
+describe("versión", () => {
+  it("la portada y «Fuentes y créditos» muestran la versión de package.json", () => {
+    render(<App />);
+    expect(packageJson.version).toMatch(/^\d+\.\d+\.\d+$/);
+    expect(screen.getByText(new RegExp(`VERSIÓN ${packageJson.version.replace(/\./g, "\\.")}`))).toBeTruthy();
+    fireEvent.click(boton("Fuentes y créditos"));
+    expect(within(screen.getByRole("dialog")).getByText(`Roscodex versión ${packageJson.version}.`)).toBeTruthy();
   });
 });
 
