@@ -189,6 +189,7 @@ h1 b { color: var(--ink); font-weight: 400; }
 .records-table thead th { color: var(--muted); font-weight: 700; }
 .records-table tbody th { font-family: "Press Start 2P", monospace; font-size: 8px; font-weight: 400; }
 .streak-message { color: var(--green) !important; }
+.modal .share-status { font-size: 9px; line-height: 1.7; }
 .share-fallback-label { display: block; margin-top: 10px; color: var(--muted); font-size: 11px; text-align: left; }
 .share-fallback { width: 100%; margin-top: 6px; padding: 10px; border: 2px solid var(--line); border-radius: 8px; background: #0d101c; color: var(--ink); font: 12px/1.5 ui-monospace, monospace; resize: vertical; }
 
