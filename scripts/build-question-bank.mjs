@@ -1,4 +1,5 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { buildClue, generationNames, preparePokemon, satisfiesClue, typeLabel } from "./lib/pistas.mjs";
 
 const API = "https://pokeapi.co/api/v2";
 const DATA_DIR = new URL("../public/data/", import.meta.url);
@@ -19,22 +20,6 @@ const DIFFICULTY_OFFSETS = { beginner: 0, normal: 5, hard: 11, extreme: 17 };
 const QUESTIONS_PER_LETTER = 20;
 const REVIEWED_AT = new Date().toISOString().slice(0, 10);
 
-const typeNames = {
-  bug: "Bicho", dark: "Siniestro", dragon: "Dragón", electric: "Eléctrico", fairy: "Hada",
-  fighting: "Lucha", fire: "Fuego", flying: "Volador", ghost: "Fantasma", grass: "Planta",
-  ground: "Tierra", ice: "Hielo", normal: "Normal", poison: "Veneno", psychic: "Psíquico",
-  rock: "Roca", steel: "Acero", water: "Agua"
-};
-
-const statNames = {
-  hp: "PS", attack: "Ataque", defense: "Defensa", "special-attack": "Ataque especial",
-  "special-defense": "Defensa especial", speed: "Velocidad"
-};
-
-const generationNames = {
-  1: "primera", 2: "segunda", 3: "tercera", 4: "cuarta", 5: "quinta",
-  6: "sexta", 7: "séptima", 8: "octava", 9: "novena"
-};
 
 const sourceFieldsByDifficulty = {
   beginner: ["types", "generation"],
@@ -101,135 +86,7 @@ function generationForId(id) {
   return 9;
 }
 
-// Clave para las reglas del rosco: igual que el validador (sin tildes ni diéresis, en minúsculas).
-function letterKey(name) {
-  return name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-}
 
-// Último recurso si PokéAPI no tiene nombre en español: «basculin-red-striped» → «Basculin Red Striped».
-function readableSlug(slug) {
-  return slug.split("-").filter(Boolean).map((part) => `${part[0].toUpperCase()}${part.slice(1)}`).join(" ");
-}
-
-// Cifras con coma decimal, como se escriben en España (0,7 m; 6,9 kg).
-function decimal(value) {
-  return String(value).replace(".", ",");
-}
-
-function typeLabel(pokemon) {
-  return pokemon.types.map((type) => typeNames[type] || type).join(" y ");
-}
-
-function highestStat(pokemon) {
-  return pokemon.stats.reduce((best, current) => current.value > best.value ? current : best, pokemon.stats[0]);
-}
-
-function statTotal(pokemon) {
-  return pokemon.stats.reduce((total, stat) => total + stat.value, 0);
-}
-
-function buildClue(pokemon, difficulty, variant) {
-  const types = typeLabel(pokemon);
-  const stat = highestStat(pokemon);
-  const total = statTotal(pokemon);
-  const ability = pokemon.abilitiesEs[variant % pokemon.abilitiesEs.length] || "habilidad registrada";
-  const move = pokemon.movesEs[variant % pokemon.movesEs.length] || "un movimiento registrado";
-  const heightM = decimal(pokemon.heightM);
-  const weightKg = decimal(pokemon.weightKg);
-  const generation = generationNames[pokemon.generation] || `generación ${pokemon.generation}`;
-  const templates = {
-    beginner: [
-      `es de tipo ${types}`,
-      `pertenece al tipo ${types}`,
-      `es un Pokémon de tipo ${types}`,
-      `su tipo es ${types}`,
-      `se clasifica como Pokémon de tipo ${types}`,
-      `su afinidad elemental es ${types}`,
-      `en la Pokédex figura como Pokémon de tipo ${types}`,
-      `es una especie de tipo ${types}`,
-      `forma parte del grupo de tipo ${types}`,
-      `se reconoce por ser de tipo ${types}`,
-      `fue introducido en la ${generation} generación`,
-      `pertenece a la ${generation} generación`,
-      `apareció por primera vez en la ${generation} generación`,
-      `forma parte de la ${generation} generación`,
-      `su debut corresponde a la ${generation} generación`,
-      `se incorporó en la ${generation} generación`,
-      `es una especie de la ${generation} generación`,
-      `su origen está en la ${generation} generación`,
-      `figura desde la ${generation} generación`,
-      `se estrenó durante la ${generation} generación`
-    ],
-    normal: [
-      `combina los tipos ${types} y pertenece a la ${generation} generación`,
-      `es de tipo ${types} y mide ${heightM} m`,
-      `es de tipo ${types} y pesa ${weightKg} kg`,
-      `es de tipo ${types} y tiene ${pokemon.baseExperience} puntos de experiencia base`,
-      `pertenece a la ${generation} generación y mide ${heightM} m`,
-      `pertenece a la ${generation} generación y pesa ${weightKg} kg`,
-      `pertenece a la ${generation} generación y tiene ${ability} como habilidad`,
-      `mide ${heightM} m y pesa ${weightKg} kg`,
-      `mide ${heightM} m y tiene ${pokemon.baseExperience} puntos de experiencia base`,
-      `pesa ${weightKg} kg y tiene ${pokemon.baseExperience} puntos de experiencia base`,
-      `tiene ${ability} como habilidad y es de tipo ${types}`,
-      `tiene ${ability} como habilidad y pertenece a la ${generation} generación`,
-      `tiene ${pokemon.baseExperience} puntos de experiencia base y es de tipo ${types}`,
-      `tiene ${statNames[stat.name] || stat.name} como estadística más alta`,
-      `es de tipo ${types} y tiene ${statNames[stat.name] || stat.name} como estadística más alta`,
-      `pertenece a la ${generation} generación y tiene ${pokemon.baseExperience} puntos de experiencia base`,
-      `combina los tipos ${types} y pesa ${weightKg} kg`,
-      `combina los tipos ${types} y tiene ${ability} como habilidad`,
-      `es de tipo ${types} y aprende el movimiento ${move}`,
-      `pertenece a la ${generation} generación y aprende el movimiento ${move}`
-    ],
-    hard: [
-      `combina los tipos ${types}, pesa ${weightKg} kg y pertenece a la generación ${pokemon.generation}`,
-      `tiene ${statNames[stat.name] || stat.name} como estadística más alta, con ${stat.value} puntos, y mide ${heightM} m`,
-      `tiene ${ability} como habilidad y suma ${total} puntos de estadísticas base`,
-      `puede aprender el movimiento ${move} y pertenece a la generación ${pokemon.generation}`,
-      `tiene ${pokemon.baseExperience} puntos de experiencia base y es de tipo ${types}`,
-      `es de tipo ${types}, mide ${heightM} m y tiene ${ability} como habilidad`,
-      `pertenece a la generación ${pokemon.generation}, pesa ${weightKg} kg y tiene ${statNames[stat.name] || stat.name} como estadística más alta`,
-      `aprende ${move}, tiene ${pokemon.baseExperience} puntos de experiencia base y es de tipo ${types}`,
-      `suma ${total} puntos de estadísticas base, pesa ${weightKg} kg y pertenece a la generación ${pokemon.generation}`,
-      `mide ${heightM} m, tiene ${ability} como habilidad y alcanza ${stat.value} puntos en ${statNames[stat.name] || stat.name}`,
-      `combina los tipos ${types}, aprende ${move} y tiene ${pokemon.baseExperience} puntos de experiencia base`,
-      `es de tipo ${types}, pesa ${weightKg} kg y su estadística más alta es ${statNames[stat.name] || stat.name}`,
-      `pertenece a la generación ${pokemon.generation}, aprende ${move} y suma ${total} puntos de estadísticas base`,
-      `tiene ${ability} como habilidad, mide ${heightM} m y pesa ${weightKg} kg`,
-      `alcanza ${stat.value} puntos en ${statNames[stat.name] || stat.name}, tiene ${pokemon.baseExperience} puntos de experiencia base y es de tipo ${types}`,
-      `pesa ${weightKg} kg, aprende ${move} y pertenece a la generación ${pokemon.generation}`,
-      `mide ${heightM} m, es de tipo ${types} y suma ${total} puntos de estadísticas base`,
-      `tiene ${ability} como habilidad, pertenece a la generación ${pokemon.generation} y alcanza ${stat.value} puntos en ${statNames[stat.name] || stat.name}`,
-      `aprende ${move}, mide ${heightM} m y pesa ${weightKg} kg`,
-      `es de tipo ${types}, tiene ${pokemon.baseExperience} puntos de experiencia base y su estadística más alta es ${statNames[stat.name] || stat.name}`
-    ],
-    extreme: [
-      `combina ${types}, pesa ${weightKg} kg y tiene ${pokemon.baseExperience} puntos de experiencia base`,
-      `mide ${heightM} m, suma ${total} puntos base y su estadística más alta es ${statNames[stat.name] || stat.name}`,
-      `tiene ${ability} como habilidad, aprende ${move} y pertenece a la generación ${pokemon.generation}`,
-      `pertenece a la generación ${pokemon.generation}, pesa ${weightKg} kg y alcanza ${stat.value} puntos en ${statNames[stat.name] || stat.name}`,
-      `es de tipo ${types}, mide ${heightM} m y suma ${total} puntos de estadísticas base`,
-      `combina ${types}, aprende ${move} y alcanza ${stat.value} puntos en ${statNames[stat.name] || stat.name}`,
-      `pesa ${weightKg} kg, tiene ${ability} como habilidad y suma ${total} puntos de estadísticas base`,
-      `mide ${heightM} m, aprende ${move} y tiene ${pokemon.baseExperience} puntos de experiencia base`,
-      `pertenece a la generación ${pokemon.generation}, combina ${types} y aprende ${move}`,
-      `tiene ${ability} como habilidad, pesa ${weightKg} kg y su estadística más alta es ${statNames[stat.name] || stat.name}`,
-      `es de tipo ${types}, alcanza ${stat.value} puntos en ${statNames[stat.name] || stat.name} y tiene ${pokemon.baseExperience} puntos de experiencia base`,
-      `suma ${total} puntos de estadísticas base, mide ${heightM} m y pertenece a la generación ${pokemon.generation}`,
-      `aprende ${move}, pesa ${weightKg} kg y es de tipo ${types}`,
-      `tiene ${ability} como habilidad, mide ${heightM} m y pertenece a la generación ${pokemon.generation}`,
-      `combina ${types}, pesa ${weightKg} kg y su estadística más alta es ${statNames[stat.name] || stat.name}`,
-      `alcanza ${stat.value} puntos en ${statNames[stat.name] || stat.name}, aprende ${move} y suma ${total} puntos de estadísticas base`,
-      `es de tipo ${types}, pertenece a la generación ${pokemon.generation} y tiene ${ability} como habilidad`,
-      `tiene ${pokemon.baseExperience} puntos de experiencia base, mide ${heightM} m y pesa ${weightKg} kg`,
-      `pertenece a la generación ${pokemon.generation}, aprende ${move} y su estadística más alta es ${statNames[stat.name] || stat.name}`,
-      `combina ${types}, tiene ${ability} como habilidad y suma ${total} puntos de estadísticas base`,
-      `pesa ${weightKg} kg, alcanza ${stat.value} puntos en ${statNames[stat.name] || stat.name} y aprende ${move}`
-    ]
-  };
-  return templates[difficulty][variant % templates[difficulty].length];
-}
 
 function chooseTargets(pokemon, letter, rule, count) {
   const normalizedLetter = letter.toLowerCase();
@@ -241,14 +98,16 @@ function chooseTargets(pokemon, letter, rule, count) {
   return Array.from({ length: count }, (_, index) => eligible[(index * 7 + index * index) % eligible.length]);
 }
 
-function buildOptions(pokemon, target, letter, rule, variant, difficultyOffset) {
+function buildOptions(pokemon, target, letter, rule, variant, difficultyOffset, clue) {
   const normalizedLetter = letter.toLowerCase();
+  // Un distractor nunca puede cumplir también la pista: si no, habría dos respuestas válidas.
+  const valid = (entry) => entry.id !== target.id && !satisfiesClue(entry, target, clue);
   const sameRule = pokemon.filter((entry) => {
     const starts = entry.letterKey.startsWith(normalizedLetter);
-    return rule === "starts_with" ? starts : entry.letterKey.includes(normalizedLetter) && !starts;
+    return valid(entry) && (rule === "starts_with" ? starts : entry.letterKey.includes(normalizedLetter) && !starts);
   });
-  const fallback = pokemon.filter((entry) => entry.id !== target.id);
-  const pool = sameRule.length >= 4 ? sameRule : fallback;
+  // Si con la misma letra no hay tres distractores válidos, se completa con otros (la letra ya los descarta).
+  const pool = sameRule.length >= 3 ? sameRule : [...sameRule, ...pokemon.filter((entry) => valid(entry) && !sameRule.includes(entry))];
   const distractors = [];
   for (let offset = 0; distractors.length < 3 && offset < pool.length * 2; offset += 1) {
     const candidate = pool[((variant + difficultyOffset) * 13 + offset) % pool.length];
@@ -265,7 +124,8 @@ function buildQuestion(pokemon, difficulty, letter, variant, usedQuestionTexts) 
   const difficultyOffset = DIFFICULTY_OFFSETS[difficulty];
   const rule = CONTAINS_LETTERS_BY_DIFFICULTY[difficulty].has(letter) ? "contains" : "starts_with";
   const target = chooseTargets(pokemon, letter, rule, QUESTIONS_PER_LETTER)[(variant + difficultyOffset) % QUESTIONS_PER_LETTER];
-  const clue = buildClue(target, difficulty, variant);
+  const clueInfo = buildClue(target, difficulty, variant);
+  const clue = clueInfo.text;
   const formattedClue = `${clue[0].toUpperCase()}${clue.slice(1)}`;
   const ruleHint = rule === "contains" ? `Contiene la letra ${letter}.` : `Empieza por la letra ${letter}.`;
   let disambiguatorIndex = -1;
@@ -277,7 +137,7 @@ function buildQuestion(pokemon, difficulty, letter, variant, usedQuestionTexts) 
   }
   if (usedQuestionTexts.has(question)) throw new Error(`Pregunta repetida: ${question}`);
   usedQuestionTexts.add(question);
-  const options = buildOptions(pokemon, target, letter, rule, variant, difficultyOffset);
+  const options = buildOptions(pokemon, target, letter, rule, variant, difficultyOffset, clueInfo);
   const correctOptionId = options.find((option) => option.pokemonId === target.id).id;
   for (const option of options) delete option.pokemonId;
   return {
@@ -364,36 +224,8 @@ async function loadSpanishNames(pokemon) {
   }
   return cached;
 }
-
-// Si PokéAPI no tiene el nombre en español de algo, se añade aquí a mano (nombre oficial de España), p. ej.
-// moves: { "nuevo-movimiento": "Nombre oficial" }. Sin nombre, el generador se para: nada de slugs en el banco.
-const NAME_OVERRIDES = { species: {}, moves: {}, abilities: {} };
-
-const missingNames = new Set();
-function translated(group, key, names) {
-  const name = NAME_OVERRIDES[group][key] ?? names[group][key];
-  if (name) return name;
-  missingNames.add(`${group}/${key}`);
-  return readableSlug(key);
-}
-
 const rawPokemon = await loadPokemon();
-const names = await loadSpanishNames(rawPokemon);
-const pokemon = rawPokemon.map((entry) => {
-  const displayName = translated("species", String(entry.id), names);
-  return {
-    ...entry,
-    displayName,
-    letterKey: letterKey(displayName),
-    abilitiesEs: entry.abilities.map((slug) => translated("abilities", slug, names)),
-    movesEs: entry.moves.map((slug) => translated("moves", slug, names))
-  };
-});
-if (missingNames.size) {
-  throw new Error(`Sin nombre oficial en español: ${[...missingNames].join(", ")}. Añádelos a NAME_OVERRIDES en scripts/build-question-bank.mjs.`);
-}
-const duplicatedNames = pokemon.filter((entry, index) => pokemon.findIndex((other) => other.letterKey === entry.letterKey) !== index);
-if (duplicatedNames.length) throw new Error(`Nombres repetidos tras normalizar: ${duplicatedNames.map((entry) => entry.displayName).join(", ")}`);
+const pokemon = preparePokemon(rawPokemon, await loadSpanishNames(rawPokemon));
 const usedQuestionTexts = new Set();
 const packs = [];
 

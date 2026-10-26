@@ -212,7 +212,8 @@ h1 b { color: var(--ink); font-weight: 400; }
 .result-grid strong { font-family: "Press Start 2P", monospace; font-size: 14px; }
 .result-grid span { margin-top: 7px; color: var(--muted); font-size: 9px; }
 .primary-button, .secondary-button { width: 100%; padding: 14px; font-family: "Press Start 2P", monospace; font-size: 8px; }
-.primary-button { border-color: var(--blue); border-bottom-width: 5px; background: var(--blue); color: white; }
+/* Azul algo más oscuro que --blue solo aquí: el texto blanco necesita ≥ 4,5:1 (5,5:1 con #3f5ed8; --blue daba 3,9:1). */
+.primary-button { border-color: #3f5ed8; border-bottom-width: 5px; background: #3f5ed8; color: white; }
 .secondary-button { margin-top: 9px; background: transparent; color: var(--muted); }
 .primary-button:hover, .secondary-button:hover { transform: translateY(-1px); }
 .install-button { width: min(100%, 690px); margin-top: 14px; }
@@ -272,6 +273,7 @@ h1 b { color: var(--ink); font-weight: 400; }
 :root[data-contrast="high"] { --bg: #000; --ink: #fff; --muted: #e8e8e8; --panel: #000; --line: #fff; --line-soft: #fff; --yellow: #ffe500; --green: #55ff91; --red: #ff6675; --blue: #8da0ff; --orange: #ffad66; }
 :root[data-contrast="high"] .scene-bg__scanlines, :root[data-contrast="high"] .sprite-field { display: none; }
 :root[data-contrast="high"] button, :root[data-contrast="high"] .rosco-letter { border-width: 2px; border-color: #fff; }
+:root[data-contrast="high"] .primary-button { border-color: #fff; background: var(--blue); color: #000; }
 :root[data-contrast="high"] .panel, :root[data-contrast="high"] .difficulty-card, :root[data-contrast="high"] .timer-box { background: #000; backdrop-filter: none; }
 @media (forced-colors: active) { button, a, .panel, .rosco-letter { border: 2px solid ButtonText; } button:focus-visible, a:focus-visible { outline: 3px solid Highlight; } }
 

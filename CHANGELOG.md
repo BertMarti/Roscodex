@@ -14,7 +14,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). V
 ### Cambiado
 - **Banco de preguntas con nombres oficiales en español** (PokéAPI, idioma «es»): Pokémon («Colmilargo», «Código Cero», «Mr. Mime» en vez de «Great-Tusk», «Type-Null», «Mr-Mime»; «Basculin» en vez de «Basculin-Red-Striped»), movimientos y habilidades («Nevada» en vez de «Snow Warning»). Alturas y pesos con coma decimal. Los nombres se guardan en `data/pokeapi-nombres-es.json` para no volver a pedirlos.
 - El validador del banco rechaza nombres de forma de PokéAPI, decimales con punto y explicaciones vacías o largas.
+- **Una sola respuesta válida por pregunta**: los distractores ya no pueden cumplir también la pista (antes 235 preguntas tenían más de una opción válida, 178 en Principiante). La lógica de pistas vive en `scripts/lib/pistas.mjs` y el validador la comprueba en las 2.080 preguntas. IDs y respuestas correctas se conservan.
+- «Combina los tipos X» con un solo tipo pasa a «es de tipo X» (103 enunciados).
+- Botón principal con más contraste (texto blanco sobre #3f5ed8, 5,5:1; antes 3,9:1) y texto negro en alto contraste (8,6:1).
 - El modo elegido se guarda en `roscodex-play-mode-v1` (se migra el antiguo `roscodex-practice-v1`, que se borra).
+
+### Arreglado
+- Con «¿Abandonar la partida?» abierto la partida ya no avanza sola a la pregunta siguiente (ni desaparece la explicación); al seguir jugando, el avance pendiente se reprograma con el tiempo que le quedaba.
+- Aciertos por letra: solo cuentan las letras acertadas o falladas (no las pendientes ni las que se quedan sin tiempo).
 
 ### Notas
 - Los IDs de las preguntas se mantienen: quien ya tenía preguntas «vistas» conserva su rotación (algunas de esas preguntas han cambiado de contenido).

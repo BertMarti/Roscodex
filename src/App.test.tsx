@@ -305,3 +305,33 @@ describe("compartir el resultado", () => {
     }
   }, 20_000);
 });
+
+describe("menú durante la transición", () => {
+  it("el menú congela el avance automático y al seguir se reprograma con el tiempo pendiente", async () => {
+    render(<App />);
+    fireEvent.click(boton(/NORMAL/));
+    await screen.findByText("Pregunta de la A");
+    vi.useFakeTimers();
+    try {
+      const incorrecta = screen.getAllByRole("button", { name: /Opción [A-D] de la A/ })
+        .find((opcion) => !opcion.textContent?.includes("Opción A de la A"));
+      fireEvent.click(incorrecta!);
+      expect(screen.getByText("Explicación de la A")).toBeTruthy();
+      act(() => { vi.advanceTimersByTime(1_000); });
+      fireEvent.click(boton("‹ Menú"));
+      expect(screen.getByRole("heading", { name: "¿Abandonar la partida?" })).toBeTruthy();
+      // Con el menú abierto no avanza aunque pase mucho más que los 2,6 s.
+      act(() => { vi.advanceTimersByTime(10_000); });
+      expect(screen.getByText(/VUELTA 1 · LETRA A/)).toBeTruthy();
+      expect(screen.getByText("Explicación de la A")).toBeTruthy();
+      fireEvent.click(boton("Seguir jugando"));
+      // Quedaban 1,6 s: a los 1,5 s sigue en la A y a los 1,7 s ya está en la B.
+      act(() => { vi.advanceTimersByTime(1_500); });
+      expect(screen.getByText(/VUELTA 1 · LETRA A/)).toBeTruthy();
+      act(() => { vi.advanceTimersByTime(200); });
+      expect(screen.getByText(/VUELTA 1 · LETRA B/)).toBeTruthy();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});

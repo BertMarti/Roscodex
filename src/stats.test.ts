@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { accuracyPercent, applyGame, emptyStats, loadStats, parseStats, recordGame, resetStats } from "./stats";
-import { advance, answerCurrent, createGameState, passCurrent } from "./gameState";
-import { LETTERS } from "./game";
+import { advance, answerCurrent, createGameState, finish, passCurrent } from "./gameState";
 import { STORAGE_KEYS } from "./storage";
 import { crearAlmacenFalso, roscoDePrueba } from "./test/fixtures";
 
@@ -52,15 +51,22 @@ describe("parseStats", () => {
 });
 
 describe("applyGame", () => {
-  it("suma la partida y cuenta una jugada por cada letra del rosco", () => {
+  it("suma la partida y solo cuenta como jugadas las letras acertadas o falladas", () => {
     const partida = partidaConResultados();
     const resultado = applyGame(emptyStats(), partida);
     expect(resultado).toMatchObject({ games: 1, correct: 1, wrong: 1, passed: 1, bestStreak: 1 });
-    expect(Object.keys(resultado.byLetter)).toHaveLength(LETTERS.length);
     expect(resultado.byLetter.A).toEqual({ played: 1, correct: 1 });
     expect(resultado.byLetter.B).toEqual({ played: 1, correct: 0 });
-    expect(resultado.byLetter.C).toEqual({ played: 1, correct: 0 });
-    expect(resultado.byLetter.Z).toEqual({ played: 1, correct: 0 });
+    // C se pasó y el resto quedó pendiente: no cuentan.
+    expect(resultado.byLetter.C).toBeUndefined();
+    expect(resultado.byLetter.Z).toBeUndefined();
+    expect(Object.keys(resultado.byLetter)).toEqual(["A", "B"]);
+  });
+
+  it("las letras que se quedan sin tiempo tampoco cuentan", () => {
+    const partida = finish(createGameState("beginner", roscoDePrueba(), 1_000, "timed"), "time");
+    expect(partida.statuses.A).toBe("expired");
+    expect(applyGame(emptyStats(), partida).byLetter).toEqual({});
   });
 
   it("conserva la mejor racha histórica si la partida no la supera", () => {

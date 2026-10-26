@@ -9,6 +9,7 @@ Archivos:
 - `scripts/build-question-bank.mjs` — generador (plantillas, traducciones, reparto por letra y dificultad).
 - `data/pokeapi-pokemon-cache.json` — caché de PokéAPI (no se publica). Si existe, el generador no llama a la API.
 - `data/pokeapi-nombres-es.json` — nombres oficiales en español (especies por número, movimientos y habilidades). El generador solo pide a PokéAPI los que falten; si alguno no tiene nombre «es», avisa y usa uno legible.
+- `scripts/lib/pistas.mjs` — plantillas de pistas, nombres (`NAME_OVERRIDES`) y `satisfiesClue`; la usan el generador (distractores que no cumplan la pista) y el validador.
 - `public/data/question-bank.json` — resultado que se publica y que carga la partida.
 
 Pasos:

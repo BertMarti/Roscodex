@@ -66,6 +66,9 @@ function App() {
   // Momento en que se abrió «¿Abandonar la partida?»: mientras no sea null, el reloj está en pausa.
   const [pausedAt, setPausedAt] = useState<number | null>(null);
   const transitionRef = useRef<number | null>(null);
+  // Momento en que saltará el avance automático pendiente y, con el menú abierto, cuánto le quedaba.
+  const transitionDueRef = useRef<number | null>(null);
+  const pausedTransitionRef = useRef<number | null>(null);
   const creditsButtonRef = useRef<HTMLButtonElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const resultRegistered = useRef(false);
@@ -78,6 +81,7 @@ function App() {
   const clearTransition = useCallback(() => {
     if (transitionRef.current !== null) window.clearTimeout(transitionRef.current);
     transitionRef.current = null;
+    transitionDueRef.current = null;
   }, []);
 
   const finishGame = useCallback((reason: "time" | "complete") => {
@@ -138,8 +142,10 @@ function App() {
   const scheduleNext = useCallback((delay: number | null) => {
     if (delay === null) return;
     clearTransition();
+    transitionDueRef.current = Date.now() + delay;
     transitionRef.current = window.setTimeout(() => {
       transitionRef.current = null;
+      transitionDueRef.current = null;
       nextQuestion();
     }, delay);
   }, [clearTransition, nextQuestion]);
@@ -198,9 +204,13 @@ function App() {
   }, [game, question, scheduleNext, soundEnabled]);
 
   const pauseForMenu = useCallback(() => {
-    setPausedAt(Date.now());
+    const pausedNow = Date.now();
+    // Con «¿Abandonar?» abierto la partida se congela del todo: tampoco avanza sola (ni se pierde la explicación).
+    pausedTransitionRef.current = transitionDueRef.current === null ? null : Math.max(0, transitionDueRef.current - pausedNow);
+    clearTransition();
+    setPausedAt(pausedNow);
     setModal("abandon");
-  }, []);
+  }, [clearTransition]);
 
   const resumeGame = useCallback(() => {
     const resumedAt = Date.now();
@@ -208,10 +218,14 @@ function App() {
     setPausedAt(null);
     setNow(resumedAt);
     setModal(null);
-  }, [pausedAt]);
+    const pendingDelay = pausedTransitionRef.current;
+    pausedTransitionRef.current = null;
+    if (pendingDelay !== null) scheduleNext(pendingDelay);
+  }, [pausedAt, scheduleNext]);
 
   const showHome = useCallback(() => {
     clearTransition();
+    pausedTransitionRef.current = null;
     setPausedAt(null);
     setGame(null);
     setExhaustedDifficulty(null);

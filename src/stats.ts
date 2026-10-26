@@ -24,7 +24,7 @@ export function parseStats(raw: string | null): PlayerStats {
 export function applyGame(stats: PlayerStats, game: GameState): PlayerStats {
   const next = parseStats(JSON.stringify(stats));
   next.games += 1; next.correct += game.correct; next.wrong += game.wrong; next.passed += game.passed; next.bestStreak = Math.max(next.bestStreak, game.bestStreak);
-  for (const question of game.questions) { const status = game.statuses[question.letter]; const item = next.byLetter[question.letter] ?? { played: 0, correct: 0 }; item.played += 1; if (status === "correct") item.correct += 1; next.byLetter[question.letter] = item; }
+  for (const question of game.questions) { const status = game.statuses[question.letter]; if (status !== "correct" && status !== "wrong") continue; /* Solo cuentan las letras respondidas: pendientes o sin tiempo no. */ const item = next.byLetter[question.letter] ?? { played: 0, correct: 0 }; item.played += 1; if (status === "correct") item.correct += 1; next.byLetter[question.letter] = item; }
   return next;
 }
 export function accuracyPercent(correct: number, total: number): number | null { return total > 0 ? Math.round(correct / total * 100) : null; }
