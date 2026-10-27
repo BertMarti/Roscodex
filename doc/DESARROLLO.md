@@ -52,6 +52,7 @@ src/
   App.tsx          interfaz: portada, partida, rosco, tarjeta de pregunta y modales
   gameState.ts     transiciones puras de la partida (crear, responder, pasar, avanzar, terminar)
   game.ts          tipos, dificultades, carga del banco, selección sin repetir e historial
+  version.ts       versión visible, importada desde package.json
   audio.ts         efectos 8-bit generados con Web Audio (sin archivos de audio)
   styles.css       estética pixel-art; la paleta vive en :root
   storage.ts       claves de localStorage (prefijo roscodex-) y lectura/escritura segura
@@ -103,6 +104,7 @@ doc/               documentación de diseño, roles de agentes y esta guía
 ## Publicación en GitHub Pages
 
 - `.github/workflows/deploy-pages.yml` se ejecuta en cada push a `main` y a mano (`workflow_dispatch`): `npm ci` → `npm run check` → `npm run build` → sube `dist/` y despliega.
+- La versión visible sale de `package.json` (`src/version.ts` la importa; Vite solo mete el campo `version` en el bundle). Para una versión nueva: subir `version` en `package.json` y `package-lock.json` (`npm version --no-git-tag-version X.Y.Z`), entrada en `CHANGELOG.md` y PR; la release y la etiqueta las crea Alberto. Hay dos sitios con la versión escrita a mano que también hay que cambiar: la insignia «Versión» de `README.md` y el apartado «Estado actual del proyecto» de `doc/10-guia-de-usuario.md`.
 - La base es `/Roscodex/` (con **R** mayúscula) en `vite.config.ts`. GitHub Pages distingue mayúsculas.
 - Para probar como en producción: `npm run build && npm run preview` y abre `http://localhost:4173/Roscodex/`.
 - La PWA avisa de las versiones nuevas (`registerType: "prompt"`): `src/main.tsx` registra el service worker con `virtual:pwa-register` y `src/pwa.ts` guarda el estado; la interfaz muestra «Hay una versión nueva» (nunca en mitad de una partida) y comprueba si hay actualización cada hora.

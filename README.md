@@ -13,6 +13,7 @@
   <img src="https://img.shields.io/badge/PWA-Sin_conexi%C3%B3n-35cf78?style=for-the-badge" alt="PWA sin conexión">
   <img src="https://img.shields.io/badge/Gratis-Sin_anuncios-5874ff?style=for-the-badge" alt="Gratis sin anuncios">
   <img src="https://img.shields.io/badge/Idioma-Espa%C3%B1ol-e86f00?style=for-the-badge" alt="Idioma Español">
+  <img src="https://img.shields.io/badge/Versi%C3%B3n-1.0.0-35cf78?style=for-the-badge" alt="Versión 1.0.0">
   <a href="LICENSE"><img src="https://img.shields.io/badge/Licencia-MIT-ef5262?style=for-the-badge" alt="Licencia MIT"></a>
 </p>
 
@@ -175,11 +176,17 @@ Sí. En la portada elige **«Práctica (sin reloj)»** antes de la dificultad. L
 Elige **«Contrarreloj 2:00»**: el rosco entero en dos minutos, en cualquier dificultad. Tiene sus propios récords, que verás en las tarjetas de dificultad y en «Estadísticas».
 </details>
 
+<details>
+<summary><strong>¿Qué versión tengo?</strong></summary>
+
+El número aparece al pie de la portada y en **«Fuentes y créditos»**. Cuando hay una nueva, la app avisa con **«Hay una versión nueva de Roscodex»** y basta pulsar **«Recargar»**.
+</details>
+
 ---
 
 ## 🧑‍💻 Lo que tienes que hacer tú (Alberto)
 
-1. **Comprobarlo en el móvil** (la versión 0.6.0 ya está publicada): abre <https://bertmarti.github.io/Roscodex/>, juega una contrarreloj, falla a propósito para ver la explicación, pulsa «Compartir resultado» (en el móvil sale el menú de compartir del sistema), abre «Estadísticas» y prueba «Alto contraste». Ponla en modo avión para ver que sigue funcionando.
+1. **Comprobarlo en el móvil** cuando se publique la 1.0.0: abre <https://bertmarti.github.io/Roscodex/>, comprueba que el pie de la portada dice **ROSCODEX v1.0.0** y, si no, pulsa **«Recargar»** en el aviso de versión nueva; luego juega una contrarreloj, falla a propósito para ver la explicación, pulsa «Compartir resultado» (en el móvil sale el menú de compartir del sistema), abre «Estadísticas» y prueba «Alto contraste». Ponla en modo avión para ver que sigue funcionando.
 2. **Revisión editorial del banco** de preguntas (muestreo por dificultad; ver `doc/agents/content-quality.md`). Los nombres ya salen en español oficial (Pokémon, movimientos y habilidades); lo que queda es leer preguntas y decidir si alguna es confusa.
 3. **Decidir la puntuación** pendiente en `doc/08-decisiones-abiertas.md` (penalización por fallo, bonus por completar, puntos por velocidad, si Pasapalabra resta). Ahora mismo: +10 por acierto y nada más. Cuando lo decidas, se cambia solo `answerCurrent` en `src/gameState.ts` y su test.
 4. **Derechos del contenido Pokémon y del retrato CC BY-NC** antes de pensar en tiendas de apps.

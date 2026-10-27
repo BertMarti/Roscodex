@@ -1,5 +1,5 @@
 import { access, readFile } from "node:fs/promises";
-import { buildClue, letterKey, preparePokemon, satisfiesClue } from "./lib/pistas.mjs";
+import { buildClue, highestStatIsTied, letterKey, preparePokemon, satisfiesClue } from "./lib/pistas.mjs";
 
 const dataUrl = (name) => new URL(`../public/data/${name}`, import.meta.url);
 // Packs editoriales antiguos (respaldo manual): no se publican, viven en data/.
@@ -52,6 +52,8 @@ function checkClue(question, answer) {
     return;
   }
   if (target.types.length < 2 && /\bcombina\b/i.test(question.question)) errors.push(`${question.id}: «combina» con un solo tipo`);
+  // Con empate en el máximo solo vale «una de sus estadísticas más altas» (Sunkern, Jirachi, Deoxys, Melmetal…).
+  if (highestStatIsTied(target) && /estadística más alta/i.test(question.question)) errors.push(`${question.id}: da como única una estadística empatada`);
   for (const option of question.options) {
     if (option.id === question.correctOptionId) continue;
     const candidate = pokemonByName.get(letterKey(option.text));

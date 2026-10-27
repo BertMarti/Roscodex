@@ -9,7 +9,7 @@ Estas decisiones deben cerrarse antes de ampliar el MVP.
 
 ## Alfabeto
 
-- [x] A-Z para la primera demo.
+- [x] A-Z en la primera versión.
 - [ ] A-Ñ como alfabeto español completo.
 
 ## Pasapalabra
@@ -40,16 +40,16 @@ Pendiente decidir:
 
 ## Fuente de imágenes
 
-Para la demo se recomienda:
+Para la 1.0 se recomienda:
 
 - [x] Pixel-art original y placeholders.
-- [ ] Sprites de PokéAPI cacheados.
+- [x] Sprites de PokéAPI cacheados.
 - [ ] Ilustraciones de terceros con licencia explícita.
 
 ## Distribución
 
 - [x] Ejecución local.
-- [ ] Demo web estática.
+- [x] Web estática en GitHub Pages (PWA instalable, v1.0.0).
 - [ ] APK compartible.
 - [ ] Publicación en tiendas.
 

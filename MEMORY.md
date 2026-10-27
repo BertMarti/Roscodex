@@ -4,6 +4,7 @@ Memoria del proyecto para personas y agentes: decisiones, por qué se tomaron y 
 
 ## Estado actual (26/10/2026)
 
+- **Versión 1.0.0** (fase 5, PR desde `v1-2026-10-26`): primera versión estable. Versión visible en la portada y en «Fuentes y créditos» (`src/version.ts` la lee de `package.json`). La release y la etiqueta `v1.0.0` las publica Alberto/el orquestador tras fusionar.
 - Versión 0.6.0 (fase 3, PR desde `fase3-2026-10-25`): nombres en español en el banco, estadísticas, compartir, explicación tras fallar, contrarreloj y alto contraste.
 - Versión 0.5.0 (fase 2, PR desde `fase2-2026-10-24`): partida guiada, modo práctica, récords, instalar la app y aviso de versión nueva.
 - Versión 0.4.0 publicada en <https://bertmarti.github.io/Roscodex/> con `deploy-pages.yml` (push a `main` + manual).
@@ -27,6 +28,7 @@ Memoria del proyecto para personas y agentes: decisiones, por qué se tomaron y 
 | La racha cuenta aciertos sin fallos de por medio; Pasapalabra no la rompe | Pasar no es responder (igual que en el concurso). La revisión cruzada lo marcó como fallo: es una decisión, cámbiese en `passCurrent` si Alberto prefiere lo contrario. |
 | El generador se para si falta un nombre en español | Nada de slugs de PokéAPI en el banco: se añade el nombre oficial a `NAME_OVERRIDES`. |
 | La partida guiada no cuenta en estadísticas | Es un tutorial: no debe estropear el porcentaje de acierto. |
+| Versión visible importada de `package.json` (`import { version }`) | Una sola fuente de verdad; la importación con nombre de JSON hace que Vite solo meta ese campo en el bundle (comprobado en `dist/`). |
 | `vitest.config.ts` separado | Evita cargar el plugin PWA (lento) al pasar los tests. Entorno `node`; `localStorage` se simula con `vi.stubGlobal`. |
 | CSP inyectada por plugin solo en build | El servidor de Vite usa scripts en línea para HMR; una meta CSP fija en `index.html` rompería `npm run dev`. |
 | `overrides` de `uuid` ^11 para `xcode` | `@capacitor/cli` → `xcode` arrastraba `uuid@7` (aviso moderado). `xcode` solo usa `uuid.v4()`, compatible con la 11 (CJS). |
@@ -51,6 +53,7 @@ Memoria del proyecto para personas y agentes: decisiones, por qué se tomaron y 
 - **Press Start 2P** sí tiene «Í», pero en mayúsculas pequeñas parece una «í»: no es un fallo de la fuente.
 - **Nombres del banco**: salen de `data/pokeapi-nombres-es.json` (idioma «es» de PokéAPI; especie por número, movimiento y habilidad por identificador). Las reglas del rosco («empieza por», «contiene») se calculan sobre el nombre en español sin tildes, igual que el validador. Si falta un nombre, el generador avisa y usa uno legible; si dos Pokémon quedan con el mismo nombre, falla.
 - **Distractores**: `scripts/lib/pistas.mjs` define las plantillas como funciones y sabe qué hechos usa cada una (tipos, generación, altura, peso, experiencia, habilidad, movimiento, estadística, total). `satisfiesClue` es prudente (tipos: los de la pista están entre los del candidato; empates en la estadística más alta cuentan). Límite conocido: la caché solo guarda los 20 primeros movimientos de cada Pokémon, así que un distractor podría aprender el movimiento citado más allá de esos 20.
+- **Estadística más alta empatada**: `highestStat` se queda con la primera del máximo; si hay empate (`highestStatIsTied`), las plantillas dicen «una de sus estadísticas más altas» (campos `tieneStatHigh`/`suStatHigh`). El validador y `scripts/lib/pistas.test.mjs` lo vigilan. `npm run build:bank` es determinista (solo cambia `generatedAt`).
 - **Menú en mitad de una transición**: `pauseForMenu` cancela el avance pendiente y guarda lo que le quedaba; `resumeGame` lo reprograma.
 - **IDs de pregunta reutilizados** en la v0.6.0: el contenido de ~880 preguntas cambió con los nombres en español, pero se mantuvo `roscodex-question-history-v4` para no reiniciar la rotación de nadie.
 - **Tras un fallo** la partida espera (`acceptingInput` false): `nextQuestion` solo avanza si la partida NO acepta respuestas, así el temporizador de 2,6 s y el botón «Siguiente ›» no avanzan dos veces. `Intro` no actúa si el foco está en un botón.

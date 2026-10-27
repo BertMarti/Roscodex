@@ -92,7 +92,7 @@ h1 b { color: var(--ink); font-weight: 400; }
 .fan-note strong { display: block; margin-bottom: 4px; font-size: 11px; }
 .fan-note p { margin: 0; color: var(--muted); font-size: 10px; }
 .link-button { padding: 0; border: 0; background: transparent; color: var(--yellow); font-family: "Press Start 2P", monospace; font-size: 8px; line-height: 1.5; text-decoration: underline; text-underline-offset: 4px; }
-.home-footer { margin: 21px 0 0; color: var(--muted); font-family: "Press Start 2P", monospace; font-size: 8px; letter-spacing: .05em; text-align: center; }
+.home-footer { margin: 21px 0 0; color: var(--muted); font-family: "Press Start 2P", monospace; font-size: 8px; letter-spacing: .05em; text-align: center; line-height: 2; }
 
 .screen-game { position: relative; padding-top: 8px; }
 .game-header { display: flex; align-items: center; justify-content: space-between; gap: 18px; }
@@ -161,6 +161,8 @@ h1 b { color: var(--ink); font-weight: 400; }
 .stats-screen h2 { margin: 0 0 20px; font-size: clamp(16px, 4vw, 22px); line-height: 1.4; text-transform: uppercase; }
 .stats-screen h2:focus { outline: none; }
 .stats-screen h2:focus-visible { outline: 3px solid var(--yellow); outline-offset: 4px; }
+.screen h1[tabindex="-1"]:focus, .screen h2[tabindex="-1"]:focus { outline: none; }
+.screen h1[tabindex="-1"]:focus-visible, .screen h2[tabindex="-1"]:focus-visible { outline: 3px solid var(--yellow); outline-offset: 4px; }
 .empty-stats { padding: 24px; text-align: center; }
 .empty-stats p { margin: 0; font-family: "Press Start 2P", monospace; font-size: 10px; line-height: 1.7; }
 .empty-stats span { display: block; margin: 12px 0 20px; color: var(--muted); font-size: 12px; line-height: 1.6; }

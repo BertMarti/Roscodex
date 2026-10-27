@@ -24,6 +24,7 @@ import { accuracyPercent, loadStats, recordGame, resetStats, type PlayerStats } 
 import { buildShareText, shareResult } from "./share";
 import { applyContrast, isHighContrast, loadContrast, saveContrast, systemPrefersMoreContrast, type ContrastPreference } from "./contrast";
 import { useInstallPrompt, useUpdateState, type InstallPlatform } from "./pwa";
+import { APP_VERSION } from "./version";
 
 type Screen = "home" | "game" | "stats";
 type Modal = "credits" | "help" | "ios-install" | "exhausted" | "results" | "abandon" | "reset-stats" | null;
@@ -402,7 +403,7 @@ function HomeScreen({ loading, error, soundEnabled, onToggleSound, onStart, onOp
       <button className="secondary-button install-button" type="button" onClick={onOpenStats}>▤ Estadísticas</button>
       {installPlatform === "prompt" && <button className="secondary-button install-button" type="button" onClick={onInstall}>⇩ Instalar app</button>}
       {installPlatform === "ios" && <button className="secondary-button install-button" type="button" onClick={onIosInstall}>Instalar en iPhone</button>}
-      <p className="home-footer">SIN CUENTAS · SIN PUBLICIDAD · FUNCIONA OFFLINE</p>
+      <p className="home-footer">SIN CUENTAS · SIN PUBLICIDAD · FUNCIONA OFFLINE<br />ROSCODEX v{APP_VERSION}</p>
     </section>
   );
 }
@@ -556,6 +557,13 @@ function QuestionCard({ game, question, onAnswer, onPass, onNext, highlightAnswe
   </section>;
 }
 
+function focusScreenTitle() {
+  const title = document.querySelector<HTMLElement>(".screen h1, .screen h2");
+  if (!title) return;
+  title.tabIndex = -1;
+  title.focus();
+}
+
 function ModalShell({ children, onClose, className = "", titleId }: { children: ReactNode; onClose?: () => void; className?: string; titleId: string }) {
   const opener = useRef<HTMLElement | null>(document.activeElement as HTMLElement | null);
   const modalRef = useRef<HTMLElement>(null);
@@ -577,19 +585,26 @@ function ModalShell({ children, onClose, className = "", titleId }: { children: 
       else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
     };
     document.addEventListener("keydown", onKeyDown);
-    return () => { document.removeEventListener("keydown", onKeyDown); opener.current?.focus(); };
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      const target = opener.current;
+      if (target?.isConnected) target.focus();
+      // Si el botón que abrió el diálogo ya no existe o no admite foco (p. ej. tras «Jugar de nuevo» o
+      // «Cambiar dificultad»), el foco va al título de la pantalla para que el teclado no empiece de cero.
+      requestAnimationFrame(() => { if (!document.activeElement || document.activeElement === document.body) focusScreenTitle(); });
+    };
   }, []);
   return <div className="modal-backdrop" role="presentation" onClick={(event) => { if (event.target === event.currentTarget) onClose?.(); }}><section ref={modalRef} className={`modal ${className}`} role="dialog" aria-modal="true" aria-labelledby={titleId}>{onClose && <button className="modal__close" type="button" onClick={onClose} aria-label="Cerrar">×</button>}{children}</section></div>;
 }
 
 function CreditsModal({ onClose }: { onClose: () => void }) {
   const titleId = useId();
-  return <ModalShell titleId={titleId} onClose={onClose}><p className="eyebrow">INFO // FUENTES</p><h2 id={titleId}>Proyecto fan</h2><p>Roscodex es una demo fan no oficial creada con fines educativos y de experimentación. No está afiliada, patrocinada ni aprobada por Nintendo, Creatures Inc., GAME FREAK inc. ni The Pokémon Company.</p><p>Pokémon y los nombres de sus personajes pertenecen a sus respectivos titulares.</p><h3>Fuentes consultadas</h3><ul className="source-list"><li><a href="https://pokeapi.co/" target="_blank" rel="noopener noreferrer">PokéAPI</a> — datos estructurados.</li><li><a href="https://github.com/PokeAPI/sprites" target="_blank" rel="noopener noreferrer">PokéAPI Sprites</a> — sprites cacheados.</li><li><a href="https://github.com/PMDCollab/SpriteCollab" target="_blank" rel="noopener noreferrer">SpriteCollab</a> — retrato decorativo atribuido a su comunidad bajo CC BY-NC 4.0.</li><li><a href="https://fonts.google.com/specimen/Press+Start+2P" target="_blank" rel="noopener noreferrer">Press Start 2P</a> — tipografía de interfaz.</li><li>Efectos de sonido: tonos 8-bit generados localmente con Web Audio.</li></ul><p className="modal__fine-print">La partida no consulta APIs en tiempo de ejecución. Los recursos necesarios se sirven desde archivos locales.</p></ModalShell>;
+  return <ModalShell titleId={titleId} onClose={onClose}><p className="eyebrow">INFO // FUENTES</p><h2 id={titleId}>Proyecto fan</h2><p>Roscodex es un juego fan no oficial, gratuito y sin ánimo de lucro. No está afiliado, patrocinado ni aprobado por Nintendo, Creatures Inc., GAME FREAK inc. ni The Pokémon Company.</p><p>Pokémon y los nombres de sus personajes pertenecen a sus respectivos titulares.</p><h3>Fuentes consultadas</h3><ul className="source-list"><li><a href="https://pokeapi.co/" target="_blank" rel="noopener noreferrer">PokéAPI</a> — datos estructurados.</li><li><a href="https://github.com/PokeAPI/sprites" target="_blank" rel="noopener noreferrer">PokéAPI Sprites</a> — sprites cacheados.</li><li><a href="https://github.com/PMDCollab/SpriteCollab" target="_blank" rel="noopener noreferrer">SpriteCollab</a> — retrato decorativo atribuido a su comunidad bajo CC BY-NC 4.0.</li><li><a href="https://fonts.google.com/specimen/Press+Start+2P" target="_blank" rel="noopener noreferrer">Press Start 2P</a> — tipografía de interfaz.</li><li>Efectos de sonido: tonos 8-bit generados localmente con Web Audio.</li></ul><p className="modal__fine-print">La partida no consulta APIs en tiempo de ejecución. Los recursos necesarios se sirven desde archivos locales.</p><p className="modal__fine-print">Roscodex versión {APP_VERSION}.</p></ModalShell>;
 }
 
 function ExhaustedModal({ onClose, onReset }: { onClose: () => void; onReset: () => void }) {
   const titleId = useId();
-  return <ModalShell titleId={titleId}><p className="eyebrow">BANCO COMPLETADO</p><h2 id={titleId}>No quedan preguntas nuevas</h2><p>Has recorrido todas las preguntas disponibles de esta dificultad. La demo no las repetirá automáticamente.</p><button className="primary-button" type="button" onClick={onReset}>Reiniciar rotación</button><button className="secondary-button" type="button" onClick={onClose}>Cambiar dificultad</button></ModalShell>;
+  return <ModalShell titleId={titleId}><p className="eyebrow">BANCO COMPLETADO</p><h2 id={titleId}>No quedan preguntas nuevas</h2><p>Has recorrido todas las preguntas disponibles de esta dificultad. No se repetirán hasta que reinicies la rotación.</p><button className="primary-button" type="button" onClick={onReset}>Reiniciar rotación</button><button className="secondary-button" type="button" onClick={onClose}>Cambiar dificultad</button></ModalShell>;
 }
 
 function ResultsModal({ game, record, newRecord, onRestart, onHome }: { game: GameState; record?: DifficultyRecord; newRecord: boolean; onRestart: () => void; onHome: () => void }) {

@@ -2,6 +2,30 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). Versionado semántico.
 
+## [1.0.0] — 2026-10-26
+
+Primera versión estable. Resume el camino desde la 0.3.0 (septiembre de 2026) hasta hoy; el detalle de cada paso está en las entradas de abajo.
+
+### Qué trae la 1.0
+- **El juego completo**: rosco de 26 letras (A–Z) con 2.080 preguntas tipo test sobre Pokémon (520 por dificultad: Principiante, Normal, Difícil y Extremo), Pasapalabra con segunda vuelta y preguntas que no se repiten hasta agotar la dificultad («Reiniciar rotación»).
+- **Tres modos**: con reloj, contrarreloj de 2 minutos y práctica sin reloj; partida guiada para la primera visita y ayuda «Cómo se juega».
+- **Banco en español oficial**: nombres de Pokémon, movimientos y habilidades como en los juegos, cifras con coma decimal, una sola respuesta válida por pregunta y una explicación breve al fallar.
+- **Tu progreso, solo en tu dispositivo**: récords por dificultad (con reloj y contrarreloj), pantalla de estadísticas (aciertos por letra, racha, porcentaje) y compartir el resultado sin datos personales.
+- **Para todo el mundo**: teclado completo (1–4, P, Intro, Escape), lectores de pantalla, alto contraste, movimiento reducido y diseño pensado primero para el móvil.
+- **App instalable que funciona sin conexión**, con aviso cuando hay una versión nueva (nunca en mitad de una partida).
+- **Segura y privada**: sin cuentas, sin anuncios, sin analítica y sin llamadas a APIs durante la partida; Content-Security-Policy estricta, datos guardados con prefijo propio y validados al leer, CI con gitleaks, auditoría de dependencias y tests.
+
+### Añadido
+- El número de versión se ve al pie de la portada y en «Fuentes y créditos» (sale de `package.json`; lo comprueba un test).
+
+### Cambiado
+- Los textos ya no llaman «demo» al juego (diálogo de créditos y aviso de banco completado).
+- Documentación de usuario al día para la 1.0 y hoja de ruta con lo que queda para «después de la 1.0».
+
+### Arreglado
+- Al cerrar los resultados con «Jugar de nuevo» o «Cambiar dificultad» el foco ya no se pierde: va al título de la pantalla (con test).
+- **Corregido: pistas de estadística empatada.** 44 de las 260 preguntas con «estadística más alta» daban como única una estadística que empataba con otras (p. ej. Sunkern, con todas a 30; Jirachi, Deoxys, Melmetal). Ahora dicen «una de sus estadísticas más altas». Solo cambia el enunciado de esas 44 (mismos IDs, respuestas y opciones); el validador y un test impiden que vuelva a pasar.
+
 ## [0.6.0] — 2026-10-26 (fase 3: lo que se nota al jugar)
 
 ### Añadido

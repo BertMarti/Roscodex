@@ -11,6 +11,7 @@ Roscodex es un juego fan, gratuito y no oficial de preguntas tipo rosco (inspira
 | Ruta | Contenido |
 |---|---|
 | `src/App.tsx` | Interfaz: portada, partida, rosco, pregunta, modales, atajos de teclado |
+| `src/version.ts` | Versión visible, sale de `package.json` |
 | `src/gameState.ts` | Transiciones **puras** de la partida (sin React ni efectos) |
 | `src/game.ts` | Tipos, dificultades, carga del banco, selección sin repetir, historial en `localStorage` |
 | `src/audio.ts` | Sonidos 8-bit con Web Audio |
@@ -19,7 +20,7 @@ Roscodex es un juego fan, gratuito y no oficial de preguntas tipo rosco (inspira
 | `src/stats.ts` / `src/share.ts` / `src/contrast.ts` | Estadísticas (validadas al leer), texto y envío del resultado (Web Share → portapapeles), tema de alto contraste |
 | `src/pwa.ts` | Instalar la app y aviso de versión nueva (el registro del SW está en `main.tsx`) |
 | `src/styles.css` | Estética pixel-art; paleta en `:root` |
-| `src/*.test.ts(x)` | Tests de Vitest junto al archivo que prueban; los `.tsx` usan happy-dom + Testing Library |
+| `src/*.test.ts(x)`, `scripts/lib/*.test.mjs` | Tests de Vitest junto al archivo que prueban; los `.tsx` usan happy-dom + Testing Library; los `.mjs` vigilan las pistas del banco |
 | `public/data/question-bank.json` | Banco publicado (2.080 preguntas) |
 | `data/` | Caché de PokéAPI, nombres oficiales en español (`pokeapi-nombres-es.json`) y packs antiguos; **no se publica** |
 | `scripts/` | `build-question-bank.mjs`, `validate-content.mjs`, `simulate-games.mjs` |

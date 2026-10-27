@@ -65,11 +65,12 @@ La tecla `P` activa **Pasapalabra**.
 
 Las letras del rosco cambian de estado para mostrar el progreso:
 
-- Pendiente.
-- Correcta.
-- Incorrecta.
-- Pasada.
-- Tiempo agotado.
+- Pendiente (sin color, como una Poké Ball).
+- Activa, la pregunta en curso (amarillo).
+- Correcta (verde).
+- Incorrecta (rojo).
+- Pasada (azul).
+- Tiempo agotado (gris).
 
 ## Usar Pasapalabra
 
@@ -151,6 +152,6 @@ Los problemas técnicos de recursos y de desarrollo se explican en la [guía de 
 
 ## Estado actual del proyecto
 
-La versión actual es la **0.6.0**. Incluye los modos con reloj, contrarreloj y práctica, partida guiada, estadísticas, récords, compartir resultado, alto contraste y una PWA instalable que funciona sin conexión.
+La versión actual es la **1.0.0**, la primera versión estable. Incluye los modos con reloj, contrarreloj y práctica, partida guiada, estadísticas, récords, compartir resultado, alto contraste y una PWA instalable que funciona sin conexión. El número de versión se ve al pie de la portada y en **«Fuentes y créditos»**.
 
 Sigue sin incluir cuentas, ranking online, multijugador ni sincronización entre dispositivos.
