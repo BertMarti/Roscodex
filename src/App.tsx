@@ -25,6 +25,7 @@ import { buildShareText, shareResult } from "./share";
 import { applyContrast, isHighContrast, loadContrast, saveContrast, systemPrefersMoreContrast, type ContrastPreference } from "./contrast";
 import { useInstallPrompt, useUpdateState, type InstallPlatform } from "./pwa";
 import { APP_VERSION } from "./version";
+import { DAILY_DIFFICULTY, buildDailyShareText, currentStreak, dailyNumber, describeCountdown, formatCountdown, hasPlayedToday, loadDaily, localDateKey, msUntilNextDay, chooseDailyQuestions, saveDaily, startDaily, updateDailyProgress, type DailyCell, type DailyData, type DailyResult } from "./daily";
 
 type Screen = "home" | "game" | "stats";
 type Modal = "credits" | "help" | "ios-install" | "exhausted" | "results" | "abandon" | "reset-stats" | null;
@@ -50,6 +51,8 @@ function App() {
   const [stats, setStats] = useState<PlayerStats>(() => loadStats());
   const [contrast, setContrast] = useState<ContrastPreference>(() => loadContrast());
   const [systemContrast, setSystemContrast] = useState(() => systemPrefersMoreContrast());
+  const [daily, setDaily] = useState<DailyData>(() => loadDaily());
+  const [todayKey, setTodayKey] = useState(() => localDateKey(new Date()));
   const contrastActive = isHighContrast(contrast, systemContrast);
   useEffect(() => { applyContrast(contrastActive); }, [contrastActive]);
   useEffect(() => {
@@ -78,6 +81,25 @@ function App() {
     if (!game || game.currentIndex === null) return null;
     return game.questions[game.currentIndex] ?? null;
   }, [game]);
+
+  // Rosco del día: el progreso se guarda con cada cambio de la partida; si se recarga a medias, el día queda jugado.
+  useEffect(() => {
+    if (game?.mode !== "daily") return;
+    const next = updateDailyProgress(loadDaily(), game, game.finished);
+    saveDaily(next);
+    setDaily(next);
+  }, [game]);
+
+  // Cambio de día: al volver la pestaña a primer plano (el móvil pudo pasar la noche dormido) o al llegar la cuenta atrás a cero.
+  const refreshDay = useCallback(() => { setTodayKey(localDateKey(new Date())); setDaily(loadDaily()); }, []);
+  useEffect(() => {
+    const onVisible = () => { if (document.visibilityState !== "hidden") refreshDay(); };
+    // Otra pestaña que empieza o juega el rosco del día: esta se pone al día (sin botón «Jugar» obsoleto).
+    const onStorage = (event: StorageEvent) => { if (event.key === STORAGE_KEYS.daily || event.key === null) refreshDay(); };
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("storage", onStorage);
+    return () => { document.removeEventListener("visibilitychange", onVisible); window.removeEventListener("storage", onStorage); };
+  }, [refreshDay]);
 
   const clearTransition = useCallback(() => {
     if (transitionRef.current !== null) window.clearTimeout(transitionRef.current);
@@ -121,7 +143,7 @@ function App() {
   useEffect(() => {
     if (!game?.finished || resultRegistered.current) return;
     resultRegistered.current = true;
-    if (isTimed(game)) {
+    if (game.mode === "timed" || game.mode === "blitz") {
       const result = registerResult(game.difficulty, game.score, game.correct, game.mode === "blitz" ? "blitz" : "timed");
       setNewRecord(result.isNewRecord);
       if (game.mode === "blitz") setBlitzRecords((previous) => ({ ...previous, [game.difficulty]: result.record }));
@@ -152,6 +174,9 @@ function App() {
   }, [clearTransition, nextQuestion]);
 
   const startGame = useCallback(async (difficulty: Difficulty, mode: GameMode = playMode) => {
+    const startDay = localDateKey(new Date());
+    setTodayKey(startDay);
+    if (mode === "daily" && hasPlayedToday(loadDaily(), startDay)) { setDaily(loadDaily()); return; }
     setLastDifficulty(difficulty);
     setLastMode(mode);
     clearTransition();
@@ -162,8 +187,14 @@ function App() {
       const availablePacks = packs ?? await loadQuestionPacks();
       if (!packs) setPacks(availablePacks);
       // La partida guiada no gasta preguntas de la rotación de Principiante.
-      const selected = choosePack(availablePacks, difficulty, mode !== "guided");
+      const selected = mode === "daily" ? { questions: chooseDailyQuestions(availablePacks, startDay) } : choosePack(availablePacks, difficulty, mode !== "guided");
       const startedAt = Date.now();
+      if (mode === "daily") {
+        // Se vuelve a mirar tras cargar el banco: otra pestaña pudo empezarlo mientras tanto.
+        const current = loadDaily();
+        if (hasPlayedToday(current, startDay)) { setDaily(current); return; }
+        const nextDaily = startDaily(current, startDay); saveDaily(nextDaily); setDaily(nextDaily);
+      }
       setGame(createGameState(difficulty, selected.questions, startedAt, mode));
       resultRegistered.current = false;
       setNewRecord(false);
@@ -228,6 +259,8 @@ function App() {
     clearTransition();
     pausedTransitionRef.current = null;
     setPausedAt(null);
+    // Abandonar el rosco del día lo deja jugado con lo que llevaba (sin borrar el «terminado» si ya había acabado).
+    if (game?.mode === "daily") { const nextDaily = updateDailyProgress(loadDaily(), game, game.finished); saveDaily(nextDaily); setDaily(nextDaily); }
     setGame(null);
     setExhaustedDifficulty(null);
     setModal(null);
@@ -277,6 +310,10 @@ function App() {
             soundEnabled={soundEnabled}
             onToggleSound={() => setSoundEnabled((enabled) => !enabled)}
             onStart={startGame}
+            daily={daily}
+            todayKey={todayKey}
+            onDayChange={refreshDay}
+            onStartDaily={() => void startGame(DAILY_DIFFICULTY, "daily")}
             onOpenCredits={() => setModal("credits")}
             onOpenHelp={() => setModal("help")}
             onStartGuided={() => void startGame("beginner", "guided")}
@@ -316,8 +353,8 @@ function App() {
       {modal === "help" && <HelpModal onClose={() => setModal(null)} onStartGuided={() => { setModal(null); void startGame("beginner", "guided"); }} />}
       {modal === "ios-install" && <IosInstallModal onClose={() => setModal(null)} />}
       {modal === "exhausted" && <ExhaustedModal onClose={showHome} onReset={resetRotation} />}
-      {modal === "results" && game && <ResultsModal game={game} record={(game.mode === "blitz" ? blitzRecords : records)[game.difficulty]} newRecord={newRecord} onRestart={() => void startGame(game.difficulty, game.mode === "guided" ? "timed" : game.mode)} onHome={showHome} />}
-      {modal === "abandon" && <AbandonModal timed={game ? isTimed(game) : true} onClose={resumeGame} onHome={showHome} />}
+      {modal === "results" && game && <ResultsModal game={game} daily={daily} todayKey={todayKey} record={(game.mode === "blitz" ? blitzRecords : records)[game.difficulty]} newRecord={newRecord} onRestart={() => void startGame(game.difficulty, game.mode === "guided" ? "timed" : game.mode)} onHome={showHome} onDayChange={refreshDay} />}
+      {modal === "abandon" && <AbandonModal timed={game ? isTimed(game) : true} daily={game?.mode === "daily"} onClose={resumeGame} onHome={showHome} />}
       {modal === "reset-stats" && <ConfirmResetModal onCancel={() => setModal(null)} onConfirm={() => { resetStats(); setStats(loadStats()); setRecords(loadRecords()); setBlitzRecords(loadRecords("blitz")); setModal(null); }} />}
       <UpdateToast visible={screen === "home" && modal === null} update={update} />
     </>
@@ -362,9 +399,13 @@ interface HomeScreenProps {
   contrastActive: boolean;
   onToggleContrast: () => void;
   onOpenStats: () => void;
+  daily: DailyData;
+  todayKey: string;
+  onDayChange: () => void;
+  onStartDaily: () => void;
 }
 
-function HomeScreen({ loading, error, soundEnabled, onToggleSound, onStart, onOpenCredits, onOpenHelp, onStartGuided, onboarding, onDismissOnboarding, playMode, onPlayModeChange, records, installPlatform, onInstall, onIosInstall, creditsButtonRef, onRetry, contrastActive, onToggleContrast, onOpenStats }: HomeScreenProps) {
+function HomeScreen({ loading, error, soundEnabled, onToggleSound, onStart, onOpenCredits, onOpenHelp, onStartGuided, onboarding, onDismissOnboarding, playMode, onPlayModeChange, records, installPlatform, onInstall, onIosInstall, creditsButtonRef, onRetry, contrastActive, onToggleContrast, onOpenStats, daily, todayKey, onDayChange, onStartDaily }: HomeScreenProps) {
   return (
     <section className="screen screen-home" aria-labelledby="home-title">
       <header className="brand-lockup">
@@ -377,6 +418,7 @@ function HomeScreen({ loading, error, soundEnabled, onToggleSound, onStart, onOp
       <p className="tagline">El desafío de las letras</p>
 
       {onboarding && <section className="panel onboarding-card" aria-labelledby="onboarding-title"><span className="panel-kicker">PRIMERA MISIÓN</span><h2 id="onboarding-title">¿Primera vez?</h2><p>Juega una partida guiada sin reloj: te explicamos el rosco, los atajos y el Pasapalabra sobre la marcha.</p><button className="primary-button" type="button" onClick={onStartGuided}>Jugar partida guiada</button><button className="secondary-button" type="button" onClick={onDismissOnboarding}>Ya sé jugar</button></section>}
+      <DailyCard daily={daily} todayKey={todayKey} loading={loading} onStart={onStartDaily} onDayChange={onDayChange} />
       <section className="panel setup-panel" aria-labelledby="setup-title">
         <div className="panel-heading"><div><span className="panel-kicker">ENTRENADOR // 01</span><h2 id="setup-title">Crear partida</h2></div><span className="panel-mark" aria-hidden="true">✦</span></div>
         <div className="panel-rule" />
@@ -406,6 +448,39 @@ function HomeScreen({ loading, error, soundEnabled, onToggleSound, onStart, onOp
       <p className="home-footer">SIN CUENTAS · SIN PUBLICIDAD · FUNCIONA OFFLINE<br />ROSCODEX v{APP_VERSION}</p>
     </section>
   );
+}
+
+// Resumen para lectores de pantalla de los cuadraditos (que van con aria-hidden).
+function DailySummary({ result }: { result: DailyResult }) {
+  const empty = result.cells.filter((cell) => cell === "empty").length;
+  return <span className="sr-only">{`${result.correct} ${result.correct === 1 ? "acierto" : "aciertos"}, ${result.wrong} ${result.wrong === 1 ? "fallo" : "fallos"}, ${result.passed} ${result.passed === 1 ? "pasada" : "pasadas"} y ${empty} sin responder`}</span>;
+}
+
+function DailyCells({ cells }: { cells: DailyCell[] }) {
+  return <div className="daily-cells" aria-hidden="true">{cells.map((cell, index) => <span className={`daily-cell daily-cell--${cell}`} key={`${index}-${cell}`} />)}</div>;
+}
+
+// Cuenta atrás hasta las 00:00 locales. A medianoche msUntilNextDay salta a 24 h, así que el cambio de día se detecta por la fecha.
+function DailyCountdown({ todayKey, onDayChange }: { todayKey: string; onDayChange: () => void }) {
+  const [remaining, setRemaining] = useState(() => msUntilNextDay(new Date()));
+  const onDayChangeRef = useRef(onDayChange);
+  onDayChangeRef.current = onDayChange;
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      const current = new Date();
+      setRemaining(msUntilNextDay(current));
+      if (localDateKey(current) !== todayKey) onDayChangeRef.current();
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [todayKey]);
+  return <p className="daily-countdown"><span aria-hidden="true">Siguiente rosco en {formatCountdown(remaining)}</span><span className="sr-only">Siguiente rosco en {describeCountdown(remaining)}</span></p>;
+}
+
+function DailyCard({ daily, todayKey, loading, onStart, onDayChange }: { daily: DailyData; todayKey: string; loading: boolean; onStart: () => void; onDayChange: () => void }) {
+  const result = daily.result;
+  const played = hasPlayedToday(daily, todayKey);
+  const streak = currentStreak(daily, todayKey);
+  return <section className="panel daily-card" aria-labelledby="daily-title"><span className="panel-kicker">ROSCO DEL DÍA // #{played && result ? result.number : dailyNumber(todayKey)}</span><h2 id="daily-title">Rosco del día</h2><p className="daily-copy">El mismo rosco para todo el mundo. Dificultad Normal, 5:00 y una sola partida al día.</p><p className="daily-streak"><span aria-hidden="true">🔥</span> Racha: {streak} {streak === 1 ? "día" : "días"} · Mejor: {daily.bestStreak}</p>{!played || !result ? <button className="primary-button" type="button" disabled={loading} onClick={onStart}>Jugar el rosco del día</button> : <><p className="daily-state">Rosco de hoy {result.finished ? "terminado" : "abandonado"}</p><DailyCells cells={result.cells} /><DailySummary result={result} /><p className="daily-score">{result.score} puntos</p><ShareButton getText={() => buildDailyShareText(result, streak)} /><DailyCountdown todayKey={todayKey} onDayChange={onDayChange} /></>}</section>;
 }
 
 interface GameScreenProps {
@@ -449,7 +524,7 @@ function GameScreen({ game, question, remaining, timeIsDangerous, soundEnabled, 
         <button className="game-sound-toggle" type="button" onClick={onToggleSound} aria-pressed={soundEnabled}>{soundEnabled ? "♫ SONIDO" : "× SILENCIO"}</button>
       </div>
       <header className="game-header">
-        <div className="brand-mini"><div className="brand-orb brand-orb--small" aria-hidden="true"><span>RX</span></div><div><p className="eyebrow">ROSCODEX // <span>{config.label} · {game?.mode === "guided" ? "GUIADA" : game?.mode === "practice" ? "PRÁCTICA" : game?.mode === "blitz" ? "CONTRARRELOJ" : "CON RELOJ"}</span></p><h2 id="game-title">Completa el rosco</h2></div></div>
+        <div className="brand-mini"><div className="brand-orb brand-orb--small" aria-hidden="true"><span>RX</span></div><div><p className="eyebrow">ROSCODEX // <span>{game?.mode === "daily" ? "NORMAL · ROSCO DEL DÍA" : `${config.label} · ${game?.mode === "guided" ? "GUIADA" : game?.mode === "practice" ? "PRÁCTICA" : game?.mode === "blitz" ? "CONTRARRELOJ" : "CON RELOJ"}`}</span></p><h2 id="game-title">Completa el rosco</h2></div></div>
         <div className={`timer-box${timed && timeIsDangerous ? " is-danger" : ""}`}><span className="timer-box__label">{timed ? "TIEMPO" : "MODO"}</span><span className={`timer-box__value${timed ? "" : " timer-box__value--untimed"}`}>{timed ? formatTime(remaining) : "SIN RELOJ"}</span></div>
       </header>
       <div className="game-meta"><span>VUELTA {game?.round ?? 1} · LETRA {question?.letter ?? "A"}</span><span><b>{game?.score ?? 0}</b> PUNTOS</span></div>
@@ -607,26 +682,31 @@ function ExhaustedModal({ onClose, onReset }: { onClose: () => void; onReset: ()
   return <ModalShell titleId={titleId}><p className="eyebrow">BANCO COMPLETADO</p><h2 id={titleId}>No quedan preguntas nuevas</h2><p>Has recorrido todas las preguntas disponibles de esta dificultad. No se repetirán hasta que reinicies la rotación.</p><button className="primary-button" type="button" onClick={onReset}>Reiniciar rotación</button><button className="secondary-button" type="button" onClick={onClose}>Cambiar dificultad</button></ModalShell>;
 }
 
-function ResultsModal({ game, record, newRecord, onRestart, onHome }: { game: GameState; record?: DifficultyRecord; newRecord: boolean; onRestart: () => void; onHome: () => void }) {
-  const titleId = useId();
-  const practice = game.mode === "practice";
-  const guided = game.mode === "guided";
+function ShareButton({ getText }: { getText: () => string }) {
+  const fallbackId = useId();
   const [shareMessage, setShareMessage] = useState("");
   const [manualText, setManualText] = useState("");
   const manualRef = useRef<HTMLTextAreaElement>(null);
   useEffect(() => { if (manualText) { manualRef.current?.focus(); manualRef.current?.select(); } }, [manualText]);
-  const share = async () => {
-    const text = buildShareText(game);
-    const result = await shareResult(text);
-    setShareMessage(result === "shared" ? "¡Compartido!" : result === "copied" ? "Resultado copiado. Pégalo donde quieras." : result === "unavailable" ? "Tu navegador no deja compartir. Copia el texto:" : "");
-    if (result === "unavailable") setManualText(text);
-  };
-  return <ModalShell titleId={titleId}><p className="eyebrow">PARTIDA TERMINADA</p><h2 id={titleId}>{guided ? "¡Ya sabes jugar!" : practice ? "Práctica terminada" : game.finishReason === "time" ? "Tiempo agotado" : "Reto completado"}</h2><div className="result-score"><span>{game.score}</span><small> PUNTOS</small></div>{!practice && !guided && record && <p className="record-message">{newRecord ? "¡Nuevo récord!" : `Récord: ${record.bestScore}`}</p>}{practice && <p>Prueba ahora una partida con reloj.</p>}{game.bestStreak > 1 && <p className="streak-message">Mejor racha: {game.bestStreak} aciertos seguidos</p>}<div className="result-grid"><div><strong>{game.correct}</strong><span>Correctas</span></div><div><strong>{game.wrong}</strong><span>Falladas</span></div><div><strong>{game.passed}</strong><span>Pasadas</span></div></div>{!guided && <><button className="secondary-button" type="button" onClick={() => void share()}>Compartir resultado</button>{shareMessage && <p className="inline-status share-status" role="status">{shareMessage}</p>}{manualText && <><label className="share-fallback-label" htmlFor="share-fallback">Texto para compartir</label><textarea ref={manualRef} className="share-fallback" id="share-fallback" readOnly rows={5} value={manualText} /></>}</>}<button className="primary-button" type="button" onClick={onRestart}>{guided ? "Jugar con reloj" : "Jugar de nuevo"}</button><button className="secondary-button" type="button" onClick={onHome}>Cambiar dificultad</button></ModalShell>;
+  const share = async () => { const result = await shareResult(getText()); setShareMessage(result === "shared" ? "¡Compartido!" : result === "copied" ? "Resultado copiado. Pégalo donde quieras." : result === "unavailable" ? "Tu navegador no deja compartir. Copia el texto:" : ""); if (result === "unavailable") setManualText(getText()); };
+  return <><button className="secondary-button" type="button" onClick={() => void share()}>Compartir resultado</button>{shareMessage && <p className="inline-status share-status" role="status">{shareMessage}</p>}{manualText && <><label className="share-fallback-label" htmlFor={fallbackId}>Texto para compartir</label><textarea ref={manualRef} className="share-fallback" id={fallbackId} readOnly rows={6} value={manualText} /></>}</>;
+}
+
+function ResultsModal({ game, daily, todayKey, record, newRecord, onRestart, onHome, onDayChange }: { game: GameState; daily: DailyData; todayKey: string; record?: DifficultyRecord; newRecord: boolean; onRestart: () => void; onHome: () => void; onDayChange: () => void }) {
+  const titleId = useId();
+  const dailyResult = game.mode === "daily" ? daily.result : null;
+  if (dailyResult) {
+    const streak = currentStreak(daily, dailyResult.date);
+    return <ModalShell titleId={titleId}><p className="eyebrow">PARTIDA TERMINADA</p><h2 id={titleId}>Rosco del día #{dailyResult.number}</h2><p>{game.finishReason === "time" ? "Tiempo agotado" : "Reto completado"}</p><div className="result-score"><span>{dailyResult.score}</span><small> PUNTOS</small></div><DailyCells cells={dailyResult.cells} /><DailySummary result={dailyResult} /><p className="streak-message"><span aria-hidden="true">🔥</span> Racha: {streak} {streak === 1 ? "día" : "días"}</p><ShareButton getText={() => buildDailyShareText(dailyResult, streak)} />{dailyResult.date === todayKey ? <DailyCountdown todayKey={todayKey} onDayChange={onDayChange} /> : <p className="daily-countdown">Ya hay un rosco del día nuevo: vuelve a la portada para jugarlo.</p>}<button className="primary-button" type="button" onClick={onHome}>Volver a la portada</button></ModalShell>;
+  }
+  const practice = game.mode === "practice";
+  const guided = game.mode === "guided";
+  return <ModalShell titleId={titleId}><p className="eyebrow">PARTIDA TERMINADA</p><h2 id={titleId}>{guided ? "¡Ya sabes jugar!" : practice ? "Práctica terminada" : game.finishReason === "time" ? "Tiempo agotado" : "Reto completado"}</h2><div className="result-score"><span>{game.score}</span><small> PUNTOS</small></div>{!practice && !guided && record && <p className="record-message">{newRecord ? "¡Nuevo récord!" : `Récord: ${record.bestScore}`}</p>}{practice && <p>Prueba ahora una partida con reloj.</p>}{game.bestStreak > 1 && <p className="streak-message">Mejor racha: {game.bestStreak} aciertos seguidos</p>}<div className="result-grid"><div><strong>{game.correct}</strong><span>Correctas</span></div><div><strong>{game.wrong}</strong><span>Falladas</span></div><div><strong>{game.passed}</strong><span>Pasadas</span></div></div>{!guided && <ShareButton getText={() => buildShareText(game)} />}<button className="primary-button" type="button" onClick={onRestart}>{guided ? "Jugar con reloj" : "Jugar de nuevo"}</button><button className="secondary-button" type="button" onClick={onHome}>Cambiar dificultad</button></ModalShell>;
 }
 
 function HelpModal({ onClose, onStartGuided }: { onClose: () => void; onStartGuided: () => void }) {
   const titleId = useId();
-  return <ModalShell titleId={titleId} onClose={onClose}><p className="eyebrow">MANUAL // ROSCODEX</p><h2 id={titleId}>Cómo se juega</h2><p><strong>El rosco:</strong> 26 letras. La respuesta empieza por la letra o la contiene, según indique la pregunta.</p><p><strong>Responder:</strong> toca una opción o pulsa 1–4. Cada acierto suma 10 puntos.</p><p><strong>Pasapalabra:</strong> usa el botón o P para dejarla para la segunda vuelta.</p><p><strong>El reloj:</strong> cada dificultad tiene un tiempo distinto. La contrarreloj da 2 minutos para todo el rosco. También puedes practicar sin reloj.</p><button className="primary-button" type="button" onClick={onStartGuided}>Jugar partida guiada</button></ModalShell>;
+  return <ModalShell titleId={titleId} onClose={onClose}><p className="eyebrow">MANUAL // ROSCODEX</p><h2 id={titleId}>Cómo se juega</h2><p><strong>El rosco:</strong> 26 letras. La respuesta empieza por la letra o la contiene, según indique la pregunta.</p><p><strong>Responder:</strong> toca una opción o pulsa 1–4. Cada acierto suma 10 puntos.</p><p><strong>Pasapalabra:</strong> usa el botón o P para dejarla para la segunda vuelta.</p><p><strong>El reloj:</strong> cada dificultad tiene un tiempo distinto. La contrarreloj da 2 minutos para todo el rosco. También puedes practicar sin reloj.</p><p><strong>Rosco del día:</strong> el mismo para todo el mundo; una partida al día y racha de días seguidos.</p><button className="primary-button" type="button" onClick={onStartGuided}>Jugar partida guiada</button></ModalShell>;
 }
 
 function IosInstallModal({ onClose }: { onClose: () => void }) {
@@ -644,9 +724,9 @@ function UpdateToast({ visible, update }: { visible: boolean; update: ReturnType
   return <div className="update-toast" role="status" aria-live="polite">{visibleRefresh ? <><span>Hay una versión nueva de Roscodex.</span><button type="button" onClick={update.reload}>Recargar</button><button type="button" onClick={update.dismissRefresh}>Luego</button></> : <><span>Listo para jugar sin conexión.</span><button type="button" onClick={update.dismissOffline}>Cerrar</button></>}</div>;
 }
 
-function AbandonModal({ timed, onClose, onHome }: { timed: boolean; onClose: () => void; onHome: () => void }) {
+function AbandonModal({ timed, daily, onClose, onHome }: { timed: boolean; daily: boolean; onClose: () => void; onHome: () => void }) {
   const titleId = useId();
-  return <ModalShell titleId={titleId} onClose={onClose}><p className="eyebrow">PARTIDA EN CURSO</p><h2 id={titleId}>¿Abandonar la partida?</h2><p>{timed ? "El reloj está en pausa mientras decides." : "Si abandonas, se pierde el progreso de esta partida."}</p><button className="primary-button" type="button" onClick={onClose}>Seguir jugando</button><button className="secondary-button" type="button" onClick={onHome}>Abandonar</button></ModalShell>;
+  return <ModalShell titleId={titleId} onClose={onClose}><p className="eyebrow">PARTIDA EN CURSO</p><h2 id={titleId}>¿Abandonar la partida?</h2><p>{daily ? "El reloj está en pausa. Si abandonas, el rosco de hoy cuenta como jugado con lo que llevas." : timed ? "El reloj está en pausa mientras decides." : "Si abandonas, se pierde el progreso de esta partida."}</p><button className="primary-button" type="button" onClick={onClose}>Seguir jugando</button><button className="secondary-button" type="button" onClick={onHome}>Abandonar</button></ModalShell>;
 }
 
 export default App;

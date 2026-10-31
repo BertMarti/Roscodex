@@ -5,6 +5,7 @@ import App from "./App";
 import { LETTERS } from "./game";
 import { listenForInstallPrompt, setUpdateStateForTests } from "./pwa";
 import { STORAGE_KEYS } from "./storage";
+import { SHARE_URL } from "./share";
 import packageJson from "../package.json";
 import { bancoDePrueba } from "./test/fixtures";
 
@@ -380,5 +381,218 @@ describe("menú durante la transición", () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+});
+
+describe("rosco del día", () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ shouldAdvanceTime: true, toFake: ["Date"] });
+    vi.setSystemTime(new Date(2026, 9, 31, 10, 0, 0));
+    localStorage.setItem(STORAGE_KEYS.onboarding, "done");
+  });
+
+  afterEach(() => {
+    cleanup();
+    vi.useRealTimers();
+  });
+
+  const resultadoVacio = (date: string, number: number) => ({
+    date,
+    number,
+    cells: Array.from({ length: 26 }, () => "empty"),
+    score: 0,
+    correct: 0,
+    wrong: 0,
+    passed: 0,
+    finished: false
+  });
+
+  async function jugarYAbandonar() {
+    fireEvent.click(boton("Jugar el rosco del día"));
+    await screen.findByText(/NORMAL · ROSCO DEL DÍA/);
+    fireEvent.keyDown(window, { key: "1" });
+    await screen.findByText(/Correcto|Era /);
+    fireEvent.click(boton("‹ Menú"));
+    fireEvent.click(boton("Abandonar"));
+    await screen.findByText("Rosco de hoy abandonado");
+  }
+
+  it("muestra el encabezado, el número y la racha en la portada", () => {
+    render(<App />);
+    expect(screen.getByRole("heading", { name: "Rosco del día" })).toBeTruthy();
+    expect(screen.getByText("ROSCO DEL DÍA // #1")).toBeTruthy();
+    expect(screen.getByText(/Racha: 0 días/)).toBeTruthy();
+    expect(boton("Jugar el rosco del día")).toBeTruthy();
+  });
+
+  it("arranca la partida diaria con 05:00 y guarda la racha sin tocar el historial", async () => {
+    render(<App />);
+    fireEvent.click(boton("Jugar el rosco del día"));
+    expect(await screen.findByText(/NORMAL · ROSCO DEL DÍA/)).toBeTruthy();
+    expect(screen.getByText("05:00")).toBeTruthy();
+    const daily = JSON.parse(localStorage.getItem(STORAGE_KEYS.daily) ?? "null") as { lastDate: string; streak: number };
+    expect(daily.lastDate).toBe("2026-10-31");
+    expect(daily.streak).toBe(1);
+    expect(localStorage.getItem(STORAGE_KEYS.questionHistory)).toBeNull();
+  });
+
+  it("responder y abandonar deja el día jugado y ofrece compartir y cuenta atrás", async () => {
+    render(<App />);
+    fireEvent.click(boton("Jugar el rosco del día"));
+    await screen.findByText(/NORMAL · ROSCO DEL DÍA/);
+    fireEvent.keyDown(window, { key: "1" });
+    expect(await screen.findByText(/Correcto|Era /)).toBeTruthy();
+    fireEvent.click(boton("‹ Menú"));
+    expect(screen.getByText(/el rosco de hoy cuenta como jugado/)).toBeTruthy();
+    fireEvent.click(boton("Abandonar"));
+    expect(await screen.findByText("Rosco de hoy abandonado")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Jugar el rosco del día" })).toBeNull();
+    expect(boton("Compartir resultado")).toBeTruthy();
+    expect(screen.getByText(/Siguiente rosco en \d\d:\d\d:\d\d/)).toBeTruthy();
+    expect(screen.getByText(/sin responder/)).toBeTruthy();
+    const daily = JSON.parse(localStorage.getItem(STORAGE_KEYS.daily) ?? "null") as { result: { cells: string[] } };
+    expect(["correct", "wrong"]).toContain(daily.result.cells[0]);
+    expect(screen.getByText(daily.result.cells[0] === "correct" ? /1 acierto/ : /1 fallo/)).toBeTruthy();
+  });
+
+  it("al recargar sigue el día abandonado y sin botón para jugar", async () => {
+    render(<App />);
+    await jugarYAbandonar();
+    cleanup();
+    render(<App />);
+    expect(await screen.findByText("Rosco de hoy abandonado")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Jugar el rosco del día" })).toBeNull();
+  });
+
+  it("al día siguiente vuelve a ofrecer el rosco, mantiene la racha y la sube al jugar", async () => {
+    localStorage.setItem(STORAGE_KEYS.daily, JSON.stringify({
+      lastDate: "2026-10-31", streak: 1, bestStreak: 1, result: resultadoVacio("2026-10-31", 1)
+    }));
+    vi.setSystemTime(new Date(2026, 10, 1, 9, 0, 0));
+    render(<App />);
+    expect(screen.getByText("ROSCO DEL DÍA // #2")).toBeTruthy();
+    expect(screen.getByText(/Racha: 1 día/)).toBeTruthy();
+    expect(boton("Jugar el rosco del día")).toBeTruthy();
+    fireEvent.click(boton("Jugar el rosco del día"));
+    await screen.findByText(/NORMAL · ROSCO DEL DÍA/);
+    fireEvent.click(boton("‹ Menú"));
+    fireEvent.click(boton("Abandonar"));
+    expect(await screen.findByText("Rosco de hoy abandonado")).toBeTruthy();
+    expect(screen.getByText(/Racha: 2 días/)).toBeTruthy();
+  });
+
+  it("pierde la racha tras dos días sin jugar pero conserva la mejor", () => {
+    localStorage.setItem(STORAGE_KEYS.daily, JSON.stringify({
+      lastDate: "2026-10-31", streak: 1, bestStreak: 1, result: resultadoVacio("2026-10-31", 1)
+    }));
+    vi.setSystemTime(new Date(2026, 10, 3, 9, 0, 0));
+    render(<App />);
+    expect(screen.getByText(/Racha: 0 días/)).toBeTruthy();
+    expect(screen.getByText(/Mejor: 1/)).toBeTruthy();
+  });
+
+  it("comparte desde la portada con textarea cuando no hay Web Share ni portapapeles", async () => {
+    localStorage.setItem(STORAGE_KEYS.daily, JSON.stringify({
+      lastDate: "2026-10-31",
+      streak: 1,
+      bestStreak: 1,
+      result: {
+        ...resultadoVacio("2026-10-31", 1),
+        cells: ["correct", ...Array.from({ length: 25 }, () => "empty")],
+        score: 10,
+        correct: 1
+      }
+    }));
+    const navegador = globalThis.navigator;
+    const shareOriginal = Object.getOwnPropertyDescriptor(navegador, "share");
+    const clipboardOriginal = Object.getOwnPropertyDescriptor(navegador, "clipboard");
+    Object.defineProperty(navegador, "share", { value: undefined, configurable: true });
+    Object.defineProperty(navegador, "clipboard", { value: undefined, configurable: true });
+    try {
+      render(<App />);
+      fireEvent.click(boton("Compartir resultado"));
+      const textarea = await screen.findByLabelText("Texto para compartir") as HTMLTextAreaElement;
+      expect(textarea.value).toContain("Rosco del día #1");
+      expect(textarea.value).toContain("🔥 Racha: 1 día");
+      expect(textarea.value.endsWith(SHARE_URL)).toBe(true);
+      expect(textarea.value).not.toContain("Pregunta de la A");
+    } finally {
+      if (shareOriginal) Object.defineProperty(navegador, "share", shareOriginal);
+      else Reflect.deleteProperty(navegador, "share");
+      if (clipboardOriginal) Object.defineProperty(navegador, "clipboard", clipboardOriginal);
+      else Reflect.deleteProperty(navegador, "clipboard");
+    }
+  });
+
+  it("abandonar no cuenta como partida terminada en las estadísticas", async () => {
+    render(<App />);
+    await jugarYAbandonar();
+    const stats = JSON.parse(localStorage.getItem(STORAGE_KEYS.stats) ?? '{"games":0}') as { games?: number };
+    expect(stats.games ?? 0).toBe(0);
+  });
+
+  it("el rosco del día no escribe récords", async () => {
+    render(<App />);
+    await jugarYAbandonar();
+    expect(localStorage.getItem(STORAGE_KEYS.records)).toBeNull();
+    expect(localStorage.getItem(STORAGE_KEYS.blitzRecords)).toBeNull();
+  });
+
+  // Añadidos por Claude en la revisión: los dos fallos que encontró (cambio de día con la app abierta y «terminado» que pasaba a
+  // «abandonado» al volver a la portada) fallan sin el arreglo.
+  it("con la portada abierta, a medianoche vuelve a ofrecer el rosco sin recargar", async () => {
+    render(<App />);
+    await jugarYAbandonar();
+    vi.setSystemTime(new Date(2026, 10, 1, 0, 0, 1));
+    expect(await screen.findByRole("button", { name: "Jugar el rosco del día" }, { timeout: 3000 })).toBeTruthy();
+    expect(screen.getByText("ROSCO DEL DÍA // #2")).toBeTruthy();
+    expect(screen.getByText(/Racha: 1 día/)).toBeTruthy();
+  });
+
+  it("si otra pestaña empieza el rosco del día, esta deja de ofrecerlo", async () => {
+    render(<App />);
+    expect(boton("Jugar el rosco del día")).toBeTruthy();
+    const resultado = { ...resultadoVacio("2026-10-31", 1) };
+    localStorage.setItem(STORAGE_KEYS.daily, JSON.stringify({ lastDate: "2026-10-31", streak: 1, bestStreak: 1, result: resultado }));
+    act(() => { window.dispatchEvent(new StorageEvent("storage", { key: STORAGE_KEYS.daily })); });
+    expect(await screen.findByText("Rosco de hoy abandonado")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Jugar el rosco del día" })).toBeNull();
+  });
+
+  it("si el resultado sigue abierto a medianoche, avisa de que ya hay rosco nuevo", async () => {
+    vi.setSystemTime(new Date(2026, 9, 31, 23, 50, 0));
+    render(<App />);
+    fireEvent.click(boton("Jugar el rosco del día"));
+    await screen.findByText(/NORMAL · ROSCO DEL DÍA/);
+    vi.setSystemTime(new Date(2026, 9, 31, 23, 56, 0));
+    const dialogo = await screen.findByRole("dialog", {}, { timeout: 3000 });
+    expect(within(dialogo).getAllByText(/Siguiente rosco en/).length).toBeGreaterThan(0);
+    vi.setSystemTime(new Date(2026, 10, 1, 0, 0, 5));
+    expect(await within(dialogo).findByText(/Ya hay un rosco del día nuevo/, {}, { timeout: 3000 })).toBeTruthy();
+    expect(within(dialogo).getByRole("heading", { name: "Rosco del día #1" })).toBeTruthy();
+    fireEvent.click(within(dialogo).getByRole("button", { name: "Volver a la portada" }));
+    expect(await screen.findByRole("button", { name: "Jugar el rosco del día" })).toBeTruthy();
+    expect(screen.getByText("ROSCO DEL DÍA // #2")).toBeTruthy();
+  });
+
+  it("al acabarse el tiempo enseña el resultado del día, cuenta en estadísticas y queda «terminado»", async () => {
+    render(<App />);
+    fireEvent.click(boton("Jugar el rosco del día"));
+    await screen.findByText(/NORMAL · ROSCO DEL DÍA/);
+    fireEvent.keyDown(window, { key: "1" });
+    await screen.findByText(/Correcto|Era /);
+    vi.setSystemTime(new Date(2026, 9, 31, 10, 6, 0));
+    const dialogo = await screen.findByRole("dialog", {}, { timeout: 3000 });
+    expect(within(dialogo).getByRole("heading", { name: "Rosco del día #1" })).toBeTruthy();
+    expect(within(dialogo).getByText("Tiempo agotado")).toBeTruthy();
+    expect(within(dialogo).getByText(/Racha: 1 día/)).toBeTruthy();
+    expect(within(dialogo).queryByRole("button", { name: "Jugar de nuevo" })).toBeNull();
+    fireEvent.click(within(dialogo).getByRole("button", { name: "Volver a la portada" }));
+    expect(await screen.findByText("Rosco de hoy terminado")).toBeTruthy();
+    const guardado = JSON.parse(localStorage.getItem(STORAGE_KEYS.daily) ?? "null") as { result: { finished: boolean } };
+    expect(guardado.result.finished).toBe(true);
+    const stats = JSON.parse(localStorage.getItem(STORAGE_KEYS.stats) ?? "null") as { games: number };
+    expect(stats.games).toBe(1);
+    expect(localStorage.getItem(STORAGE_KEYS.records)).toBeNull();
   });
 });

@@ -2,7 +2,7 @@ import { difficultyConfig, emptyStatuses, type Difficulty, type Question, type R
 
 export type FeedbackKind = "" | "is-correct" | "is-wrong" | "is-passed";
 export type FinishReason = "time" | "complete";
-export type GameMode = "timed" | "blitz" | "practice" | "guided";
+export type GameMode = "timed" | "blitz" | "practice" | "guided" | "daily";
 export const BLITZ_SECONDS = 120;
 
 export interface GameState {
@@ -34,14 +34,14 @@ export function createGameState(difficulty: Difficulty, questions: Question[], n
     difficulty, questions, queue, deferred: [], currentIndex: firstIndex ?? null, round: 1,
     score: 0, correct: 0, wrong: 0, passed: 0, streak: 0, bestStreak: 0,
     statuses: firstIndex === undefined ? emptyStatuses() : { ...emptyStatuses(), [questions[firstIndex].letter]: "active" },
-    endAt: mode === "timed" ? now + difficultyConfig[difficulty].seconds * 1000 : mode === "blitz" ? now + BLITZ_SECONDS * 1000 : Number.POSITIVE_INFINITY,
+    endAt: mode === "timed" || mode === "daily" ? now + difficultyConfig[difficulty].seconds * 1000 : mode === "blitz" ? now + BLITZ_SECONDS * 1000 : Number.POSITIVE_INFINITY,
     acceptingInput: firstIndex !== undefined, finished: false, finishReason: null,
     feedback: { text: "", kind: "" }, selectedOptionId: null, mode
   };
 }
 
 export function isTimed(state: GameState): boolean {
-  return state.mode === "timed" || state.mode === "blitz";
+  return state.mode === "timed" || state.mode === "blitz" || state.mode === "daily";
 }
 
 export function answerCurrent(state: GameState, optionId: string): { state: GameState; isCorrect: boolean } {

@@ -7,7 +7,8 @@ export const STORAGE_KEYS = {
   records: "roscodex-records-v1",
   blitzRecords: "roscodex-blitz-records-v1",
   stats: "roscodex-stats-v1",
-  contrast: "roscodex-contrast-v1"
+  contrast: "roscodex-contrast-v1",
+  daily: "roscodex-daily-v1"
 } as const;
 
 export function readStorage(key: string): string | null {
