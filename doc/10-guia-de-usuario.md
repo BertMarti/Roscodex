@@ -98,6 +98,40 @@ Desde ahí puedes pulsar **Compartir resultado**. Se abre el menú de compartir 
 
 También puedes pulsar **Jugar de nuevo** para iniciar otra partida con el mismo modo y dificultad, o **Cambiar dificultad** para volver a la pantalla inicial.
 
+## Rosco del día
+
+En la portada, entre **¿Primera vez?** y las opciones para crear una partida, aparece la tarjeta **Rosco del día**. Muestra su número, la racha y el botón **Jugar el rosco del día**.
+
+El reto diario es el mismo para todo el mundo ese día: contiene las mismas preguntas y el mismo orden de opciones. Se elige según la fecha local del dispositivo y cambia a las 00:00. Con la fecha correcta, todo el mundo recibe el mismo rosco. No necesita conexión ni cuentas, por lo que también funciona sin Internet y con la app instalada.
+
+Siempre se juega en dificultad **Normal**, con un reloj de **5:00**, y solo se puede jugar una vez al día. No consume preguntas de la rotación de las partidas normales ni modifica sus récords por dificultad. Cuando termina, sí se suma a tus estadísticas.
+
+Durante el rosco, **‹ Menú** pausa el reloj y muestra el aviso de abandono. Si abandonas, el rosco del día queda jugado con lo que hayas conseguido. Cerrar o recargar la página a mitad también guarda el progreso como resultado de hoy.
+
+Al finalizar aparece **Rosco del día #N**, la puntuación, 26 cuadraditos, la racha, **Compartir resultado**, la cuenta atrás **Siguiente rosco en HH:MM:SS** y **Volver a la portada**. En la portada, después de jugar, la tarjeta indica si el rosco está **terminado** o **sin terminar** (lo abandonaste, cerraste la página a mitad o sigue abierto en otra pestaña), conserva los cuadraditos y los puntos, y muestra la misma cuenta atrás. Al llegar el nuevo día vuelve a aparecer el botón para jugar.
+
+| Cuadradito | Significado |
+|---|---|
+| 🟩 Verde | Acierto |
+| 🟥 Rojo | Fallo |
+| 🟦 Azul | Pasada: la dejaste con Pasapalabra y ya no llegaste a responderla (si la respondes en la segunda vuelta, sale en verde o en rojo) |
+| ⬜ Gris | Sin responder |
+
+El número junto a **↻** cuenta todas las veces que pulsaste Pasapalabra, aunque luego respondieras esa letra.
+
+La racha se muestra como **🔥 Racha: N días · Mejor: M**. Suma 1 por cada día seguido en que empiezas el rosco, aunque lo abandones. Si dejas pasar un día entero sin jugar, vuelve a 0 y la siguiente partida empieza en 1. **Mejor** conserva la racha más larga. Estos datos se guardan en tu dispositivo.
+
+El resultado compartido no revela preguntas ni respuestas. En el móvil se abre el menú de compartir del sistema; si no está disponible, se copia al portapapeles y, si tampoco es posible, aparece el texto para copiarlo a mano:
+
+```text
+Roscodex · Rosco del día #1 · 31/10/2026
+✅ 19 · ❌ 4 · ↻ 2 · 🏆 190 puntos
+🟩🟩🟥🟩🟩🟦🟩🟩🟩🟥🟩🟩🟩
+🟩🟩🟥🟩🟩🟩🟦🟩🟥🟩🟩🟩⬜
+🔥 Racha: 3 días
+https://bertmarti.github.io/Roscodex/
+```
+
 ## Estadísticas
 
 El botón **▤ Estadísticas** de la portada muestra, entre otros datos:
@@ -150,8 +184,12 @@ Si quieres borrar todos los datos de Roscodex, elimina solo las claves que empie
 
 Los problemas técnicos de recursos y de desarrollo se explican en la [guía de desarrollo](DESARROLLO.md).
 
+### El rosco del día no cambia / dice que ya lo he jugado
+
+El rosco del día cambia a las 00:00 según la fecha de tu dispositivo. Si la app estaba abierta, la cuenta atrás detecta el cambio sola; al volver a la pestaña también se actualiza. Comprueba que el dispositivo tiene la fecha correcta.
+
 ## Estado actual del proyecto
 
-La versión actual es la **1.0.0**, la primera versión estable. Incluye los modos con reloj, contrarreloj y práctica, partida guiada, estadísticas, récords, compartir resultado, alto contraste y una PWA instalable que funciona sin conexión. El número de versión se ve al pie de la portada y en **«Fuentes y créditos»**.
+La versión actual es la **1.1.0** (31/10/2026). Incluye los modos con reloj, contrarreloj y práctica, partida guiada, el rosco del día, estadísticas, récords, compartir resultado, alto contraste y una PWA instalable que funciona sin conexión. El número de versión se ve al pie de la portada y en **«Fuentes y créditos»**.
 
 Sigue sin incluir cuentas, ranking online, multijugador ni sincronización entre dispositivos.

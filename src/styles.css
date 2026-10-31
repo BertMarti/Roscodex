@@ -58,6 +58,19 @@ h1 b { color: var(--ink); font-weight: 400; }
 .panel { border: 2px solid var(--line); border-radius: 18px; background: var(--panel); box-shadow: var(--shadow); backdrop-filter: blur(7px); }
 .setup-panel { width: min(100%, 690px); padding: 24px 25px 26px; }
 .onboarding-card { width: min(100%, 690px); margin-bottom: 18px; padding: 20px 22px; }
+.daily-card { width: min(100%, 690px); margin-bottom: 18px; padding: 20px 22px; }
+.daily-card h2 { margin: 0 0 10px; font-size: 16px; }
+.daily-card .daily-copy { margin: 0 0 14px; color: var(--muted); font-size: 12px; line-height: 1.6; }
+.daily-streak, .daily-score, .daily-state { margin: 10px 0 14px; font-family: "Press Start 2P", monospace; font-size: 9px; line-height: 1.7; }
+.daily-streak { color: var(--green); }
+.daily-score { color: var(--yellow); text-align: center; }
+.daily-cells { display: grid; grid-template-columns: repeat(13, minmax(0, 26px)); justify-content: center; gap: 4px; margin: 13px 0; }
+.daily-cell { width: 100%; aspect-ratio: 1; min-width: 12px; border: 2px solid var(--line); background: #3c4150; }
+.daily-cell--correct { border-color: var(--green); background: var(--green); }
+.daily-cell--wrong { border-color: var(--red); background: var(--red); }
+.daily-cell--passed { border-color: var(--blue); background: var(--blue); }
+.modal .daily-countdown { margin-bottom: 14px; }
+.daily-countdown { margin: 14px 0 0; color: var(--muted); font-family: "Press Start 2P", monospace; font-size: 8px; line-height: 1.7; text-align: center; }
 .onboarding-card h2 { margin: 0 0 10px; font-size: 16px; }
 .onboarding-card p { margin: 0 0 16px; color: var(--muted); font-size: 12px; line-height: 1.6; }
 .panel-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
@@ -276,6 +289,7 @@ h1 b { color: var(--ink); font-weight: 400; }
 :root[data-contrast="high"] .scene-bg__scanlines, :root[data-contrast="high"] .sprite-field { display: none; }
 :root[data-contrast="high"] button, :root[data-contrast="high"] .rosco-letter { border-width: 2px; border-color: #fff; }
 :root[data-contrast="high"] .primary-button { border-color: #fff; background: var(--blue); color: #000; }
+:root[data-contrast="high"] .daily-cell { border-color: #fff; }
 :root[data-contrast="high"] .panel, :root[data-contrast="high"] .difficulty-card, :root[data-contrast="high"] .timer-box { background: #000; backdrop-filter: none; }
 @media (forced-colors: active) { button, a, .panel, .rosco-letter { border: 2px solid ButtonText; } button:focus-visible, a:focus-visible { outline: 3px solid Highlight; } }
 

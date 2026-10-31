@@ -13,7 +13,7 @@
   <img src="https://img.shields.io/badge/PWA-Sin_conexi%C3%B3n-35cf78?style=for-the-badge" alt="PWA sin conexión">
   <img src="https://img.shields.io/badge/Gratis-Sin_anuncios-5874ff?style=for-the-badge" alt="Gratis sin anuncios">
   <img src="https://img.shields.io/badge/Idioma-Espa%C3%B1ol-e86f00?style=for-the-badge" alt="Idioma Español">
-  <img src="https://img.shields.io/badge/Versi%C3%B3n-1.0.0-35cf78?style=for-the-badge" alt="Versión 1.0.0">
+  <img src="https://img.shields.io/badge/Versi%C3%B3n-1.1.0-35cf78?style=for-the-badge" alt="Versión 1.1.0">
   <a href="LICENSE"><img src="https://img.shields.io/badge/Licencia-MIT-ef5262?style=for-the-badge" alt="Licencia MIT"></a>
 </p>
 
@@ -35,6 +35,7 @@
 
 - **Pasar un buen rato:** partidas rápidas, dinámicas y adictivas de entre 2 y 6 minutos (o sin reloj, a tu ritmo).
 - **Poner a prueba tus conocimientos Pokémon:** desde tipos y generaciones hasta estadísticas, habilidades y movimientos.
+- **Picarte con tus amigos:** cada día hay un rosco igual para todo el mundo con el que comparar resultados.
 - **Jugar en cualquier lugar sin conexión:** llévalo en el móvil, tableta u ordenador y juega sin consumir datos ni depender de cobertura.
 
 ---
@@ -48,6 +49,11 @@
 <p align="center">
   <em>En el móvil: al fallar, la respuesta correcta explicada</em><br>
   <img src="doc/img/captura-movil.png" alt="Partida en el móvil tras un fallo: la respuesta correcta, una línea con su tipo y generación y el botón Siguiente" width="300">
+</p>
+
+<p align="center">
+  <img src="doc/img/captura-rosco-del-dia.png" alt="Tarjeta Rosco del día en el móvil con la racha, los cuadraditos de colores y la cuenta atrás hasta el siguiente rosco" width="300"><br>
+  <em>El reto diario, tu racha y la cuenta atrás hasta el siguiente rosco</em>
 </p>
 
 ---
@@ -65,6 +71,35 @@
 7. **Segunda vuelta:** tras recorrer el abecedario de la A a la Z, volverás una vez más a las letras que hayas dejado pendientes, siempre que el temporizador no haya llegado a cero.
 8. **Consulta tu resultado:** al finalizar, la pantalla de resumen te mostrará tu puntuación, tus aciertos, tus fallos y las letras que pasaste. En las partidas con reloj verás también tu **récord** de esa dificultad (y «¡Nuevo récord!» si lo superas). Desde ahí puedes **compartir tu resultado** (un resumen con tus puntos y una fila de cuadritos 🟩🟥⬜, sin ningún dato tuyo), volver a jugar o cambiar de dificultad.
 9. **Mira tus estadísticas:** en la portada, **«▤ Estadísticas»** muestra tus partidas, aciertos totales, porcentaje de acierto, tu mejor racha de aciertos seguidos, qué letras se te dan mejor y peor, y tus récords. Todo se queda en tu dispositivo y puedes borrarlo cuando quieras.
+
+---
+
+## 📅 Rosco del día
+
+1. En la portada, pulsa **«Jugar el rosco del día»** en la tarjeta **«Rosco del día»**.
+2. Responde el mismo rosco que tiene todo el mundo ese día: dificultad Normal, 5:00 y una sola partida.
+3. Completa las 26 letras, usando **Pasapalabra** si quieres dejar alguna para después.
+4. Al terminar verás los puntos, los 26 cuadraditos, tu racha, **«Compartir resultado»** y la cuenta atrás hasta el siguiente rosco.
+5. El rosco cambia a las 00:00 según la hora local de tu dispositivo. No necesitas conexión ni una cuenta, también funciona con la app instalada.
+
+Los cuadraditos del rosco diario significan: 🟩 acierto, 🟥 fallo, 🟦 pasada (la dejaste con Pasapalabra y ya no llegaste a responderla) y ⬜ sin responder. Una letra que pasaste y luego respondiste en la segunda vuelta sale en verde o en rojo; el número junto a ↻ sí cuenta todas las veces que pulsaste Pasapalabra.
+
+Si pulsas **«‹ Menú»**, el reloj se pausa y puedes seguir jugando o abandonar. Si abandonas, el resultado de hoy queda guardado con lo que lleves. Cerrar o recargar la página a mitad también deja el rosco como jugado con el progreso alcanzado.
+
+La racha suma un día por cada día seguido en que empiezas el rosco, aunque lo abandones. Si dejas pasar un día entero sin jugar, vuelve a 0 y la siguiente partida empieza una racha nueva. **«Mejor»** conserva tu racha más larga.
+
+El texto compartido no muestra preguntas ni respuestas. Por ejemplo:
+
+```text
+Roscodex · Rosco del día #1 · 31/10/2026
+✅ 19 · ❌ 4 · ↻ 2 · 🏆 190 puntos
+🟩🟩🟥🟩🟩🟦🟩🟩🟩🟥🟩🟩🟩
+🟩🟩🟥🟩🟩🟩🟦🟩🟥🟩🟩🟩⬜
+🔥 Racha: 3 días
+https://bertmarti.github.io/Roscodex/
+```
+
+En el móvil se abre el menú de compartir del sistema. Si no está disponible, el resultado se copia al portapapeles; si tampoco es posible, aparece el texto para copiarlo a mano.
 
 ---
 
@@ -141,6 +176,24 @@ El juego cuenta con un banco local de **2.080 preguntas** (520 por cada nivel de
 </details>
 
 <details>
+<summary><strong>¿Todo el mundo tiene el mismo rosco del día?</strong></summary>
+
+Sí. El rosco diario depende de la fecha local del dispositivo, así que con la fecha correcta todo el mundo tiene las mismas preguntas y el mismo orden de opciones. Cambia a las 00:00.
+</details>
+
+<details>
+<summary><strong>¿Puedo repetir el rosco del día?</strong></summary>
+
+No. Solo hay una partida diaria. Las partidas normales sí puedes jugarlas todas las veces que quieras.
+</details>
+
+<details>
+<summary><strong>¿Cuándo se pierde la racha?</strong></summary>
+
+Si dejas pasar un día entero sin empezar el rosco diario, la racha vuelve a 0. Empezar una partida cuenta aunque la abandones.
+</details>
+
+<details>
 <summary><strong>¿Funciona sin conexión a Internet?</strong></summary>
 
 Sí. Gracias a la tecnología PWA, tras abrir la web por primera vez, el juego y sus preguntas quedan guardados en tu navegador y puedes jugar en modo avión o sin red.
@@ -186,7 +239,7 @@ El número aparece al pie de la portada y en **«Fuentes y créditos»**. Cuando
 
 ## 🧑‍💻 Lo que tienes que hacer tú (Alberto)
 
-1. **Comprobarlo en el móvil** cuando se publique la 1.0.0: abre <https://bertmarti.github.io/Roscodex/>, comprueba que el pie de la portada dice **ROSCODEX v1.0.0** y, si no, pulsa **«Recargar»** en el aviso de versión nueva; luego juega una contrarreloj, falla a propósito para ver la explicación, pulsa «Compartir resultado» (en el móvil sale el menú de compartir del sistema), abre «Estadísticas» y prueba «Alto contraste». Ponla en modo avión para ver que sigue funcionando.
+1. **Comprobarlo en el móvil** cuando se publique la 1.1.0: abre <https://bertmarti.github.io/Roscodex/>, comprueba que el pie de la portada dice **ROSCODEX v1.1.0**, juega el rosco del día, pulsa **«Compartir resultado»** y vuelve al día siguiente para comprobar que la racha pasa a 2.
 2. **Revisión editorial del banco** de preguntas (muestreo por dificultad; ver `doc/agents/content-quality.md`). Los nombres ya salen en español oficial (Pokémon, movimientos y habilidades); lo que queda es leer preguntas y decidir si alguna es confusa.
 3. **Decidir la puntuación** pendiente en `doc/08-decisiones-abiertas.md` (penalización por fallo, bonus por completar, puntos por velocidad, si Pasapalabra resta). Ahora mismo: +10 por acierto y nada más. Cuando lo decidas, se cambia solo `answerCurrent` en `src/gameState.ts` y su test.
 4. **Derechos del contenido Pokémon y del retrato CC BY-NC** antes de pensar en tiendas de apps.

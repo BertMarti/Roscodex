@@ -17,6 +17,7 @@ Roscodex es un juego fan, gratuito y no oficial de preguntas tipo rosco (inspira
 | `src/audio.ts` | Sonidos 8-bit con Web Audio |
 | `src/storage.ts` | **Todas** las claves de `localStorage` (prefijo `roscodex-`) y lectura/escritura que nunca lanza |
 | `src/tutorial.ts` / `src/records.ts` | Partida guiada (`currentTip`) y récords locales (con reloj y contrarreloj) |
+| `src/daily.ts` | Rosco del día: fecha local, semilla determinista, selección, racha, cuenta atrás, texto para compartir y su clave `roscodex-daily-v1` |
 | `src/stats.ts` / `src/share.ts` / `src/contrast.ts` | Estadísticas (validadas al leer), texto y envío del resultado (Web Share → portapapeles), tema de alto contraste |
 | `src/pwa.ts` | Instalar la app y aviso de versión nueva (el registro del SW está en `main.tsx`) |
 | `src/styles.css` | Estética pixel-art; paleta en `:root` |
@@ -45,6 +46,7 @@ Despliegue: push a `main` → `deploy-pages.yml` publica en GitHub Pages. Tambi�
 ## Convenciones
 
 - TypeScript `strict`; componentes de función; nada de `any` salvo justificación.
+- Rosco del día: nada de `Math.random` ni del historial en `chooseDailyQuestions` (lo vigila un test); si cambias la selección, cambias el rosco de todo el mundo ese día.
 - Lógica nueva de partida → función pura en `gameState.ts` con su test; `App.tsx` solo orquesta (sonido, temporizador, foco, anuncios).
 - Nada de efectos secundarios (sonido, `localStorage`, `Date.now`) dentro de los updaters de `setState`.
 - Textos de interfaz, comentarios, commits y docs en **español de España**.
