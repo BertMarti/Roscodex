@@ -20,6 +20,16 @@ afterEach(() => cleanup());
 
 const boton = (nombre: string | RegExp) => screen.getByRole("button", { name: nombre });
 
+// Responde la letra A con la tecla 1 y espera a un estado que no caduca (la casilla A acertada o fallada).
+// El atajo se engancha en un efecto tras pintar: con la máquina cargada, una sola pulsación puede llegar antes
+// y perderse, así que se repite hasta que la A cambia (una vez respondida, el «1» se ignora durante la transición).
+async function responderConTecla1() {
+  await waitFor(() => {
+    if (!screen.queryByRole("img", { name: /^A: (Acertada|Fallada)$/ })) fireEvent.keyDown(window, { key: "1" });
+    expect(screen.getByRole("img", { name: /^A: (Acertada|Fallada)$/ })).toBeTruthy();
+  }, { timeout: 5000 });
+}
+
 describe("primera visita", () => {
   it("ofrece la partida guiada y «Ya sé jugar» la oculta para siempre", () => {
     render(<App />);
@@ -72,8 +82,7 @@ describe("partida guiada", () => {
     expect(screen.getByText("SIN RELOJ")).toBeTruthy();
     fireEvent.click(boton("Entendido"));
     expect(screen.getByRole("heading", { name: "Responder" })).toBeTruthy();
-    fireEvent.keyDown(window, { key: "1" });
-    expect(await screen.findByText(/Correcto|Era /)).toBeTruthy();
+    await responderConTecla1();
     // Sin reloj, un fallo espera a «Siguiente ›» para dejar leer la explicación.
     const siguiente = screen.queryByRole("button", { name: "Siguiente ›" });
     if (siguiente) fireEvent.click(siguiente);
@@ -410,11 +419,10 @@ describe("rosco del día", () => {
   async function jugarYAbandonar() {
     fireEvent.click(boton("Jugar el rosco del día"));
     await screen.findByText(/NORMAL · ROSCO DEL DÍA/);
-    fireEvent.keyDown(window, { key: "1" });
-    await screen.findByText(/Correcto|Era /);
+    await responderConTecla1();
     fireEvent.click(boton("‹ Menú"));
     fireEvent.click(boton("Abandonar"));
-    await screen.findByText("Rosco de hoy abandonado");
+    await screen.findByText("Rosco de hoy sin terminar");
   }
 
   it("muestra el encabezado, el número y la racha en la portada", () => {
@@ -440,12 +448,11 @@ describe("rosco del día", () => {
     render(<App />);
     fireEvent.click(boton("Jugar el rosco del día"));
     await screen.findByText(/NORMAL · ROSCO DEL DÍA/);
-    fireEvent.keyDown(window, { key: "1" });
-    expect(await screen.findByText(/Correcto|Era /)).toBeTruthy();
+    await responderConTecla1();
     fireEvent.click(boton("‹ Menú"));
     expect(screen.getByText(/el rosco de hoy cuenta como jugado/)).toBeTruthy();
     fireEvent.click(boton("Abandonar"));
-    expect(await screen.findByText("Rosco de hoy abandonado")).toBeTruthy();
+    expect(await screen.findByText("Rosco de hoy sin terminar")).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Jugar el rosco del día" })).toBeNull();
     expect(boton("Compartir resultado")).toBeTruthy();
     expect(screen.getByText(/Siguiente rosco en \d\d:\d\d:\d\d/)).toBeTruthy();
@@ -455,12 +462,12 @@ describe("rosco del día", () => {
     expect(screen.getByText(daily.result.cells[0] === "correct" ? /1 acierto/ : /1 fallo/)).toBeTruthy();
   });
 
-  it("al recargar sigue el día abandonado y sin botón para jugar", async () => {
+  it("al recargar sigue el día sin terminar y sin botón para jugar", async () => {
     render(<App />);
     await jugarYAbandonar();
     cleanup();
     render(<App />);
-    expect(await screen.findByText("Rosco de hoy abandonado")).toBeTruthy();
+    expect(await screen.findByText("Rosco de hoy sin terminar")).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Jugar el rosco del día" })).toBeNull();
   });
 
@@ -477,7 +484,7 @@ describe("rosco del día", () => {
     await screen.findByText(/NORMAL · ROSCO DEL DÍA/);
     fireEvent.click(boton("‹ Menú"));
     fireEvent.click(boton("Abandonar"));
-    expect(await screen.findByText("Rosco de hoy abandonado")).toBeTruthy();
+    expect(await screen.findByText("Rosco de hoy sin terminar")).toBeTruthy();
     expect(screen.getByText(/Racha: 2 días/)).toBeTruthy();
   });
 
@@ -512,6 +519,12 @@ describe("rosco del día", () => {
       render(<App />);
       fireEvent.click(boton("Compartir resultado"));
       const textarea = await screen.findByLabelText("Texto para compartir") as HTMLTextAreaElement;
+      await waitFor(() => expect(document.activeElement).toBe(textarea));
+      // Segunda pulsación con el texto ya visible: vuelve a enfocarlo y seleccionarlo (revisión de Fable).
+      textarea.blur();
+      fireEvent.click(boton("Compartir resultado"));
+      await waitFor(() => expect(document.activeElement).toBe(textarea));
+      expect(textarea.selectionEnd - textarea.selectionStart).toBe(textarea.value.length);
       expect(textarea.value).toContain("Rosco del día #1");
       expect(textarea.value).toContain("🔥 Racha: 1 día");
       expect(textarea.value.endsWith(SHARE_URL)).toBe(true);
@@ -555,7 +568,7 @@ describe("rosco del día", () => {
     const resultado = { ...resultadoVacio("2026-10-31", 1) };
     localStorage.setItem(STORAGE_KEYS.daily, JSON.stringify({ lastDate: "2026-10-31", streak: 1, bestStreak: 1, result: resultado }));
     act(() => { window.dispatchEvent(new StorageEvent("storage", { key: STORAGE_KEYS.daily })); });
-    expect(await screen.findByText("Rosco de hoy abandonado")).toBeTruthy();
+    expect(await screen.findByText("Rosco de hoy sin terminar")).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Jugar el rosco del día" })).toBeNull();
   });
 
@@ -579,8 +592,7 @@ describe("rosco del día", () => {
     render(<App />);
     fireEvent.click(boton("Jugar el rosco del día"));
     await screen.findByText(/NORMAL · ROSCO DEL DÍA/);
-    fireEvent.keyDown(window, { key: "1" });
-    await screen.findByText(/Correcto|Era /);
+    await responderConTecla1();
     vi.setSystemTime(new Date(2026, 9, 31, 10, 6, 0));
     const dialogo = await screen.findByRole("dialog", {}, { timeout: 3000 });
     expect(within(dialogo).getByRole("heading", { name: "Rosco del día #1" })).toBeTruthy();

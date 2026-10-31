@@ -108,7 +108,7 @@ Siempre se juega en dificultad **Normal**, con un reloj de **5:00**, y solo se p
 
 Durante el rosco, **‹ Menú** pausa el reloj y muestra el aviso de abandono. Si abandonas, el rosco del día queda jugado con lo que hayas conseguido. Cerrar o recargar la página a mitad también guarda el progreso como resultado de hoy.
 
-Al finalizar aparece **Rosco del día #N**, la puntuación, 26 cuadraditos, la racha, **Compartir resultado**, la cuenta atrás **Siguiente rosco en HH:MM:SS** y **Volver a la portada**. En la portada, después de jugar, la tarjeta indica si el rosco está **terminado** o **abandonado**, conserva los cuadraditos y los puntos, y muestra la misma cuenta atrás. Al llegar el nuevo día vuelve a aparecer el botón para jugar.
+Al finalizar aparece **Rosco del día #N**, la puntuación, 26 cuadraditos, la racha, **Compartir resultado**, la cuenta atrás **Siguiente rosco en HH:MM:SS** y **Volver a la portada**. En la portada, después de jugar, la tarjeta indica si el rosco está **terminado** o **sin terminar** (lo abandonaste, cerraste la página a mitad o sigue abierto en otra pestaña), conserva los cuadraditos y los puntos, y muestra la misma cuenta atrás. Al llegar el nuevo día vuelve a aparecer el botón para jugar.
 
 | Cuadradito | Significado |
 |---|---|
