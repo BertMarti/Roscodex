@@ -1,6 +1,6 @@
 {
   "name": "roscodex",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "type": "module",
   "engines": {
@@ -25,14 +25,14 @@
     "mobile:ios": "npm run mobile:sync && cap open ios"
   },
   "dependencies": {
-    "@capacitor/core": "^8.5.2",
+    "@capacitor/core": "^8.6.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"
   },
   "devDependencies": {
-    "@capacitor/android": "^8.5.2",
-    "@capacitor/cli": "^8.5.2",
-    "@capacitor/ios": "^8.5.2",
+    "@capacitor/android": "^8.6.0",
+    "@capacitor/cli": "^8.6.0",
+    "@capacitor/ios": "^8.6.0",
     "@testing-library/dom": "^10.4.2",
     "@testing-library/react": "^16.3.3",
     "@types/react": "^19.3.0",
@@ -45,8 +45,8 @@
     "vitest": "^4.1.12"
   },
   "overrides": {
-    "xcode": {
-      "uuid": "^11.1.1"
-    }
+    "@trickfilm400/rollup-plugin-off-main-thread": "^4.0.0",
+    "glob": "^14.0.3",
+    "minimatch": "^11.0.3"
   }
 }
