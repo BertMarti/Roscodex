@@ -10,14 +10,14 @@ Todo lo técnico del proyecto: cómo arrancarlo, cómo está organizado, cómo s
 | Vite 8 | Servidor de desarrollo y build estática |
 | vite-plugin-pwa (Workbox) | PWA instalable y offline-first (precache de la build) |
 | Capacitor 8 | Empaquetado opcional para Android/iOS reutilizando la misma build |
-| Vitest 4 + happy-dom + Testing Library | Tests unitarios y de componentes (Vitest 5 exige Node ≥ 22.12: no se actualiza) |
+| Vitest 4 + happy-dom + Testing Library | Tests unitarios y de componentes (Vitest 5 exige Node ≥ 22.12: probado el 31/10/2026 con Node 22 y pasa todo; no se actualiza mientras la Pi tenga Node 20) |
 | Scripts Node (`scripts/*.mjs`) | Generar, validar y simular el banco de preguntas |
 
 No hay backend, cuentas, analítica ni servicios de pago. La partida no llama a ninguna API: todo lo necesario viaja en la build.
 
 ## Requisitos
 
-- Node.js 20.19 o superior (la CI usa Node 24; la Raspberry Pi de desarrollo, 20.19). `package.json` lo declara en `engines`.
+- Node.js 20.19 o superior (la CI usa Node 24; la Raspberry Pi de desarrollo, 20.19). `package.json` lo declara en `engines`. Los scripts `mobile:*` necesitan Node 22 o superior (lo pide `@capacitor/cli` 8).
 - npm 10+ (con el npm 9 de algunas distribuciones `npm install` de paquetes nuevos puede fallar; usa `npx npm@11 install ...`).
 - Para móvil: Android Studio y/o Xcode, solo si vas a usar Capacitor.
 
@@ -60,6 +60,7 @@ src/
   records.ts       récords locales por dificultad (con reloj y contrarreloj)
   stats.ts         estadísticas del jugador (parseStats valida lo guardado)
   share.ts         texto del resultado y Web Share API → portapapeles
+  daily.ts         rosco del día: fecha local, semilla determinista, racha, cuenta atrás y texto para compartir
   contrast.ts      tema de alto contraste (prefers-contrast + interruptor)
   pwa.ts           instalar la app (beforeinstallprompt / iPhone) y aviso de versión nueva
   *.test.ts(x)     tests de Vitest junto al archivo que prueban (los .tsx usan happy-dom)
@@ -78,6 +79,14 @@ doc/               documentación de diseño, roles de agentes y esta guía
 2. `choosePack()` elige una pregunta por letra que el jugador no haya visto, baraja sus opciones una sola vez y guarda los IDs en `localStorage` (`roscodex-question-history-v4`; se migra desde `pokereto-question-history-v3`). Si alguna letra ya no tiene preguntas nuevas lanza `QuestionBankExhaustedError` y la interfaz ofrece «Reiniciar rotación».
 3. `gameState.ts` aplica las acciones sin efectos secundarios; `App.tsx` solo dispara sonidos, temporizadores y anuncios para lectores de pantalla.
 4. El temporizador compara con `endAt` cada 250 ms; al llegar a cero, `finish(state, "time")` marca la letra activa como «sin tiempo».
+
+### Rosco del día (`src/daily.ts`)
+
+- `localDateKey(new Date())` da la fecha **local** `AAAA-MM-DD`; `seedFromKey` (FNV-1a de `roscodex-daily:AAAA-MM-DD`) siembra `createRandom` (mulberry32).
+- `chooseDailyQuestions(packs, fecha)` toma de Normal, por cada letra A–Z, una candidata de la lista ordenada por `id` y baraja sus opciones con el mismo generador. No usa `Math.random` ni el historial: con la misma versión del banco, todo el mundo tiene el mismo rosco ese día.
+- Se juega con `createGameState("normal", preguntas, ahora, "daily")` (5:00). `startDaily` guarda el día y la racha **antes** de la primera pregunta y `updateDailyProgress` guarda el progreso tras cada cambio: recargar o abandonar deja el día jugado.
+- Todo se guarda en `roscodex-daily-v1` (`parseDaily` valida cada campo). La racha sube si el último día jugado fue ayer y se muestra a 0 si fue antes (`currentStreak`).
+- `buildDailyShareText` → 6 líneas: número y fecha, recuento, 13 + 13 cuadraditos (🟩 🟥 🟦 ⬜), racha y `SHARE_URL`.
 
 ## Banco de preguntas
 
@@ -123,8 +132,8 @@ Dependabot (`.github/dependabot.yml`) propone cada lunes las actualizaciones de 
 
 - La build incluye una Content-Security-Policy estricta (`default-src 'self'`, sin scripts en línea) inyectada por el plugin `roscodex-csp` de `vite.config.ts`. Solo se aplica en la build porque el servidor de desarrollo necesita scripts en línea. Si añades un recurso externo, ajusta la política.
 - Nada de `innerHTML` ni `dangerouslySetInnerHTML`; los enlaces externos llevan `rel="noopener noreferrer"`.
-- **Origen compartido**: todas las webs de Pages de BertMarti comparten `https://bertmarti.github.io`, así que `localStorage` es común. Todas las claves están en `STORAGE_KEYS` (`src/storage.ts`) con el prefijo `roscodex-` (lo comprueba un test): historial de preguntas, sonido, primera visita, modo de juego, récords (con reloj y contrarreloj), estadísticas y contraste. Todo se valida al leer (otra web del mismo origen podría escribir esas claves). Nada sensible y nada sale del navegador; al compartir solo se envía el resumen visible y solo si el jugador lo pide.
-- `npm audit`: `uuid` se fuerza a 11.x para `xcode` (dependencia de `@capacitor/cli`) mediante `overrides` en `package.json`.
+- **Origen compartido**: todas las webs de Pages de BertMarti comparten `https://bertmarti.github.io`, así que `localStorage` es común. Todas las claves están en `STORAGE_KEYS` (`src/storage.ts`) con el prefijo `roscodex-` (lo comprueba un test): historial de preguntas, sonido, primera visita, modo de juego, récords (con reloj y contrarreloj), estadísticas, contraste y rosco del día (`roscodex-daily-v1`). Todo se valida al leer (otra web del mismo origen podría escribir esas claves). Nada sensible y nada sale del navegador; al compartir solo se envía el resumen visible y solo si el jugador lo pide.
+- `npm audit`: `overrides` en `package.json` de `glob` 14, `minimatch` 11 y `@trickfilm400/rollup-plugin-off-main-thread` 4 (dependencias de compilación de `workbox-build` y `rimraf`). El antiguo `overrides` de `uuid` para `xcode` se quitó en la 1.1.0: `@capacitor/cli` 8.6 usa `xcode` 4, que ya no depende de `uuid`. Quedan 4 avisos bajos de `deepmerge` sin versión arreglada (solo en compilación); la CI corta en `high`.
 - Política de avisos: [SECURITY.md](../SECURITY.md).
 
 ## Licencias

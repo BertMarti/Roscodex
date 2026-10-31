@@ -2,6 +2,19 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). Versionado semántico.
 
+## [1.1.0] — 2026-10-31
+
+### Añadido
+- **Rosco del día**: en la portada, un rosco nuevo cada día, el mismo para todo el mundo (mismas preguntas y mismo orden de opciones), elegido a partir de la fecha local del dispositivo. Sin servidor ni cuentas: funciona también sin conexión. Dificultad Normal con reloj de 5:00 y una sola partida al día (si abandonas o recargas a mitad, queda jugado con lo que llevabas).
+- **Racha de días seguidos** («🔥 Racha: N días · Mejor: M») y **cuenta atrás** hasta el siguiente rosco (a las 00:00 locales; la portada se pone al día sola al cambiar de día o al volver a la pestaña).
+- **Compartir el rosco del día**: texto con el número y la fecha del rosco, aciertos/fallos/pasadas, 26 cuadraditos de colores (🟩 acierto, 🟥 fallo, 🟦 pasada, ⬜ sin responder), la racha y el enlace al juego. No revela preguntas ni respuestas.
+- Ayuda «Cómo se juega» con el rosco del día.
+
+### Cambiado
+- El rosco del día no gasta preguntas de la rotación normal ni cambia los récords por dificultad; sí cuenta en «Estadísticas» cuando se termina.
+- Botón «Compartir resultado» común a los resultados y a la portada (mismo comportamiento: menú del sistema → portapapeles → texto a mano).
+- Mantenimiento: Capacitor 8.6.0; `overrides` de `glob` 14.0.3, `minimatch` 11.0.3 y `@trickfilm400/rollup-plugin-off-main-thread` 4.0.0 (con `ejs` 7) para las dependencias de compilación de `vite-plugin-pwa`/`workbox-build` y `@capacitor/cli`: `npm audit` pasa de 12 avisos (10 moderados, 2 bajos) a 4 bajos sin arreglo publicado (`deepmerge` dentro de `workbox-build`, solo al compilar). Fuera el `overrides` de `uuid` (ya no hace falta: `xcode` 4 no lo usa). Vitest 5 probado con Node 22 (todas las pruebas pasan), pero se queda en la 4 mientras la Raspberry Pi de desarrollo tenga Node 20.
+
 ## [1.0.0] — 2026-10-26
 
 Primera versión estable. Resume el camino desde la 0.3.0 (septiembre de 2026) hasta hoy; el detalle de cada paso está en las entradas de abajo.

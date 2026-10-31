@@ -1,6 +1,6 @@
 # PLAN.md — Hoja de ruta de Roscodex
 
-Actualizado el 26/10/2026. Prioridad de arriba abajo dentro de cada bloque.
+Actualizado el 31/10/2026. Prioridad de arriba abajo dentro de cada bloque.
 
 ## Hecho hoy (24/10/2026, v0.4.0)
 
@@ -39,6 +39,12 @@ Actualizado el 26/10/2026. Prioridad de arriba abajo dentro de cada bloque.
 - [x] Prueba de la build bajo `/Roscodex/` en Chromium, también sin conexión.
 - [x] CHANGELOG con la entrada `[1.0.0]`.
 
+## Hecho en la fase 6 (31/10/2026, v1.1.0)
+
+- [x] **Rosco del día**: el mismo rosco para todo el mundo cada día (fecha local, sin servidor, sin conexión), una partida al día, racha de días seguidos, cuenta atrás y compartir con cuadraditos sin revelar respuestas (con tests de semilla, racha, cambio de día y texto).
+- [x] Mantenimiento: Capacitor 8.6.0, `npm audit` de 12 avisos a 4 bajos sin arreglo publicado, 0 PRs de Dependabot, 0 alertas.
+- [x] Vitest 5 probado con Node 22.23 (todo en verde); no se sube por el Node 20 de la Pi.
+
 ## Depende de Alberto (no bloquea la 1.0)
 
 1. **Revisión editorial humana del banco**: muestreo por dificultad con el subagente `revisor-banco-preguntas` (ver hallazgos en `doc/agents/content-quality.md`). Los nombres ya están normalizados y el validador garantiza una sola respuesta válida; falta leer y decidir.
@@ -53,4 +59,6 @@ Actualizado el 26/10/2026. Prioridad de arriba abajo dentro de cada bloque.
 - Caché de movimientos completa en el generador (hoy guarda 20 por Pokémon; ver «Distractores» en MEMORY.md).
 - APK de Android con Capacitor (revisar antes derechos y políticas de tiendas).
 - Traducción al inglés.
-- Vitest 5 cuando la Raspberry Pi tenga Node ≥ 22.12 (quitar el `ignore` de `.github/dependabot.yml`).
+- Vitest 5 cuando la Raspberry Pi tenga Node ≥ 22.12 (quitar el `ignore` de `.github/dependabot.yml`; probado el 31/10/2026: solo cambia la versión, las pruebas pasan sin tocar nada).
+- `deepmerge` (aviso bajo dentro de `workbox-build`): quitarlo de las excepciones en cuanto `@rollup/plugin-node-resolve` o `workbox-build` publiquen versión sin él.
+- Rosco del día: estadísticas propias (histórico de días, distribución de aciertos) y una versión «difícil» del día si gusta.
