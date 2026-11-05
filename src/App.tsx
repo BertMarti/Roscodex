@@ -25,7 +25,8 @@ import { buildShareText, shareResult } from "./share";
 import { applyContrast, isHighContrast, loadContrast, saveContrast, systemPrefersMoreContrast, type ContrastPreference } from "./contrast";
 import { useInstallPrompt, useUpdateState, type InstallPlatform } from "./pwa";
 import { APP_VERSION } from "./version";
-import { DAILY_DIFFICULTY, buildDailyShareText, currentStreak, dailyNumber, describeCountdown, formatCountdown, hasPlayedToday, loadDaily, localDateKey, msUntilNextDay, chooseDailyQuestions, saveDaily, startDaily, updateDailyProgress, type DailyCell, type DailyData, type DailyResult } from "./daily";
+import { DAILY_DIFFICULTY, buildDailyShareText, currentStreak, dailyNumber, describeCountdown, formatCountdown, hasPlayedToday, loadDaily, localDateKey, msUntilNextDay, chooseDailyQuestions, resetDailyStats, saveDaily, startDaily, updateDailyProgress, summarizeDailyHistory, recentDailyDays, type DailyCell, type DailyData, type DailyResult } from "./daily";
+import { dailyShareCard, gameShareCard, renderShareCard, shareImage, type ShareCardData } from "./shareImage";
 
 type Screen = "home" | "game" | "stats";
 type Modal = "credits" | "help" | "ios-install" | "exhausted" | "results" | "abandon" | "reset-stats" | null;
@@ -35,6 +36,7 @@ const baseUrl = (path: string) => `${import.meta.env.BASE_URL}${path}`;
 
 function App() {
   const [screen, setScreen] = useState<Screen>("home");
+  const [statsFocus, setStatsFocus] = useState<"daily" | undefined>(undefined);
   const [packs, setPacks] = useState<QuestionPack[] | null>(null);
   const [game, setGame] = useState<GameState | null>(null);
   const [modal, setModal] = useState<Modal>(null);
@@ -329,9 +331,10 @@ function App() {
             onRetry={() => void startGame(lastDifficulty, lastMode)}
             contrastActive={contrastActive}
             onToggleContrast={() => { const next: ContrastPreference = contrastActive ? "off" : "on"; setContrast(next); saveContrast(next); }}
-            onOpenStats={() => setScreen("stats")}
+            onOpenStats={() => { setStatsFocus(undefined); setScreen("stats"); }}
+            onOpenDailyStats={() => { setStatsFocus("daily"); setScreen("stats"); }}
           />
-        ) : screen === "stats" ? <StatsScreen stats={stats} records={records} blitzRecords={blitzRecords} onHome={() => setScreen("home")} onReset={() => setModal("reset-stats")} /> : (
+        ) : screen === "stats" ? <StatsScreen stats={stats} daily={daily} todayKey={todayKey} focusSection={statsFocus} records={records} blitzRecords={blitzRecords} onHome={() => setScreen("home")} onReset={() => setModal("reset-stats")} /> : (
           <GameScreen
             game={game}
             question={question}
@@ -353,9 +356,9 @@ function App() {
       {modal === "help" && <HelpModal onClose={() => setModal(null)} onStartGuided={() => { setModal(null); void startGame("beginner", "guided"); }} />}
       {modal === "ios-install" && <IosInstallModal onClose={() => setModal(null)} />}
       {modal === "exhausted" && <ExhaustedModal onClose={showHome} onReset={resetRotation} />}
-      {modal === "results" && game && <ResultsModal game={game} daily={daily} todayKey={todayKey} record={(game.mode === "blitz" ? blitzRecords : records)[game.difficulty]} newRecord={newRecord} onRestart={() => void startGame(game.difficulty, game.mode === "guided" ? "timed" : game.mode)} onHome={showHome} onDayChange={refreshDay} />}
+      {modal === "results" && game && <ResultsModal game={game} daily={daily} todayKey={todayKey} record={(game.mode === "blitz" ? blitzRecords : records)[game.difficulty]} newRecord={newRecord} onRestart={() => void startGame(game.difficulty, game.mode === "guided" ? "timed" : game.mode)} onHome={showHome} onDayChange={refreshDay} onOpenDailyStats={() => { showHome(); setStatsFocus("daily"); setScreen("stats"); }} />}
       {modal === "abandon" && <AbandonModal timed={game ? isTimed(game) : true} daily={game?.mode === "daily"} onClose={resumeGame} onHome={showHome} />}
-      {modal === "reset-stats" && <ConfirmResetModal onCancel={() => setModal(null)} onConfirm={() => { resetStats(); setStats(loadStats()); setRecords(loadRecords()); setBlitzRecords(loadRecords("blitz")); setModal(null); }} />}
+      {modal === "reset-stats" && <ConfirmResetModal onCancel={() => setModal(null)} onConfirm={() => { resetStats(); const nextDaily = resetDailyStats(loadDaily(), todayKey); saveDaily(nextDaily); setDaily(nextDaily); setStats(loadStats()); setRecords(loadRecords()); setBlitzRecords(loadRecords("blitz")); setModal(null); }} />}
       <UpdateToast visible={screen === "home" && modal === null} update={update} />
     </>
   );
@@ -399,13 +402,14 @@ interface HomeScreenProps {
   contrastActive: boolean;
   onToggleContrast: () => void;
   onOpenStats: () => void;
+  onOpenDailyStats: () => void;
   daily: DailyData;
   todayKey: string;
   onDayChange: () => void;
   onStartDaily: () => void;
 }
 
-function HomeScreen({ loading, error, soundEnabled, onToggleSound, onStart, onOpenCredits, onOpenHelp, onStartGuided, onboarding, onDismissOnboarding, playMode, onPlayModeChange, records, installPlatform, onInstall, onIosInstall, creditsButtonRef, onRetry, contrastActive, onToggleContrast, onOpenStats, daily, todayKey, onDayChange, onStartDaily }: HomeScreenProps) {
+function HomeScreen({ loading, error, soundEnabled, onToggleSound, onStart, onOpenCredits, onOpenHelp, onStartGuided, onboarding, onDismissOnboarding, playMode, onPlayModeChange, records, installPlatform, onInstall, onIosInstall, creditsButtonRef, onRetry, contrastActive, onToggleContrast, onOpenStats, onOpenDailyStats, daily, todayKey, onDayChange, onStartDaily }: HomeScreenProps) {
   return (
     <section className="screen screen-home" aria-labelledby="home-title">
       <header className="brand-lockup">
@@ -418,7 +422,7 @@ function HomeScreen({ loading, error, soundEnabled, onToggleSound, onStart, onOp
       <p className="tagline">El desafío de las letras</p>
 
       {onboarding && <section className="panel onboarding-card" aria-labelledby="onboarding-title"><span className="panel-kicker">PRIMERA MISIÓN</span><h2 id="onboarding-title">¿Primera vez?</h2><p>Juega una partida guiada sin reloj: te explicamos el rosco, los atajos y el Pasapalabra sobre la marcha.</p><button className="primary-button" type="button" onClick={onStartGuided}>Jugar partida guiada</button><button className="secondary-button" type="button" onClick={onDismissOnboarding}>Ya sé jugar</button></section>}
-      <DailyCard daily={daily} todayKey={todayKey} loading={loading} onStart={onStartDaily} onDayChange={onDayChange} />
+      <DailyCard daily={daily} todayKey={todayKey} loading={loading} onStart={onStartDaily} onDayChange={onDayChange} onOpenStats={onOpenDailyStats} />
       <section className="panel setup-panel" aria-labelledby="setup-title">
         <div className="panel-heading"><div><span className="panel-kicker">ENTRENADOR // 01</span><h2 id="setup-title">Crear partida</h2></div><span className="panel-mark" aria-hidden="true">✦</span></div>
         <div className="panel-rule" />
@@ -476,11 +480,11 @@ function DailyCountdown({ todayKey, onDayChange }: { todayKey: string; onDayChan
   return <p className="daily-countdown"><span aria-hidden="true">Siguiente rosco en {formatCountdown(remaining)}</span><span className="sr-only">Siguiente rosco en {describeCountdown(remaining)}</span></p>;
 }
 
-function DailyCard({ daily, todayKey, loading, onStart, onDayChange }: { daily: DailyData; todayKey: string; loading: boolean; onStart: () => void; onDayChange: () => void }) {
+function DailyCard({ daily, todayKey, loading, onStart, onDayChange, onOpenStats }: { daily: DailyData; todayKey: string; loading: boolean; onStart: () => void; onDayChange: () => void; onOpenStats: () => void }) {
   const result = daily.result;
   const played = hasPlayedToday(daily, todayKey);
   const streak = currentStreak(daily, todayKey);
-  return <section className="panel daily-card" aria-labelledby="daily-title"><span className="panel-kicker">ROSCO DEL DÍA // #{played && result ? result.number : dailyNumber(todayKey)}</span><h2 id="daily-title">Rosco del día</h2><p className="daily-copy">El mismo rosco para todo el mundo. Dificultad Normal, 5:00 y una sola partida al día.</p><p className="daily-streak"><span aria-hidden="true">🔥</span> Racha: {streak} {streak === 1 ? "día" : "días"} · Mejor: {daily.bestStreak}</p>{!played || !result ? <button className="primary-button" type="button" disabled={loading} onClick={onStart}>Jugar el rosco del día</button> : <><p className="daily-state">Rosco de hoy {result.finished ? "terminado" : "sin terminar"}</p><DailyCells cells={result.cells} /><DailySummary result={result} /><p className="daily-score">{result.score} puntos</p><ShareButton getText={() => buildDailyShareText(result, streak)} /><DailyCountdown todayKey={todayKey} onDayChange={onDayChange} /></>}</section>;
+  return <section className="panel daily-card" aria-labelledby="daily-title"><span className="panel-kicker">ROSCO DEL DÍA // #{played && result ? result.number : dailyNumber(todayKey)}</span><h2 id="daily-title">Rosco del día</h2><p className="daily-copy">El mismo rosco para todo el mundo. Dificultad Normal, 5:00 y una sola partida al día.</p><p className="daily-streak"><span aria-hidden="true">🔥</span> Racha: {streak} {streak === 1 ? "día" : "días"} · Mejor: {daily.bestStreak}</p>{!played || !result ? <button className="primary-button" type="button" disabled={loading} onClick={onStart}>Jugar el rosco del día</button> : <><p className="daily-state">Rosco de hoy {result.finished ? "terminado" : "sin terminar"}</p><DailyCells cells={result.cells} /><DailySummary result={result} /><p className="daily-score">{result.score} puntos</p><ShareButton getText={() => buildDailyShareText(result, streak)} getCard={() => dailyShareCard(result, streak)} /><DailyCountdown todayKey={todayKey} onDayChange={onDayChange} /></>}<button className="secondary-button daily-stats-button" type="button" onClick={onOpenStats}>▤ Mis estadísticas del día</button></section>;
 }
 
 interface GameScreenProps {
@@ -561,10 +565,11 @@ function Legend({ status, label }: { status: RoscoStatus; label: string }) {
 
 type RecordTable = Partial<Record<Difficulty, DifficultyRecord>>;
 
-function StatsScreen({ stats, records, blitzRecords, onHome, onReset }: { stats: PlayerStats; records: RecordTable; blitzRecords: RecordTable; onHome: () => void; onReset: () => void }) {
+function StatsScreen({ stats, daily, todayKey, focusSection, records, blitzRecords, onHome, onReset }: { stats: PlayerStats; daily: DailyData; todayKey: string; focusSection?: "daily"; records: RecordTable; blitzRecords: RecordTable; onHome: () => void; onReset: () => void }) {
   const titleRef = useRef<HTMLHeadingElement>(null);
-  // Al entrar, el foco va al título: el lector de pantalla anuncia la pantalla nueva.
-  useEffect(() => { titleRef.current?.focus(); }, []);
+  const dailyRef = useRef<HTMLHeadingElement>(null);
+    // Al entrar, el foco va al título (o a la sección del Rosco del día): el lector de pantalla anuncia dónde está.
+  useEffect(() => { const target = focusSection === "daily" ? dailyRef.current : titleRef.current; target?.focus(); if (focusSection === "daily") target?.scrollIntoView?.({ block: "start", behavior: "auto" }); }, [focusSection]);
   const accuracy = accuracyPercent(stats.correct, stats.correct + stats.wrong);
   const hardest = LETTERS
     .map((letter) => ({ letter, percent: (stats.byLetter[letter]?.played ?? 0) >= 2 ? accuracyPercent(stats.byLetter[letter].correct, stats.byLetter[letter].played) : null }))
@@ -601,12 +606,19 @@ function StatsScreen({ stats, records, blitzRecords, onHome, onReset }: { stats:
         <thead><tr><th scope="col">Dificultad</th><th scope="col">Con reloj</th><th scope="col">Contrarreloj</th></tr></thead>
         <tbody>{difficultyOrder.map((difficulty) => <tr key={difficulty}><th scope="row">{difficultyConfig[difficulty].label}</th><td>{records[difficulty]?.bestScore ?? "—"}</td><td>{blitzRecords[difficulty]?.bestScore ?? "—"}</td></tr>)}</tbody>
       </table>
-      <button className="secondary-button" type="button" onClick={onReset}>Borrar estadísticas</button>
     </>}
+    <section className="panel daily-history-panel" aria-labelledby="daily-history-title"><h3 id="daily-history-title" tabIndex={-1} ref={dailyRef}>Rosco del día</h3>{daily.history.length ? <DailyHistory daily={daily} todayKey={todayKey} /> : <p>Juega el Rosco del día para ver aquí tu histórico, tu racha y cómo se reparten tus aciertos.</p>}</section>
+    {(stats.games > 0 || daily.history.length > 0) && <button className="secondary-button" type="button" onClick={onReset}>Borrar estadísticas</button>}
   </section>;
 }
 
-function ConfirmResetModal({ onCancel, onConfirm }: { onCancel: () => void; onConfirm: () => void }) { const titleId = useId(); return <ModalShell titleId={titleId} onClose={onCancel}><p className="eyebrow">ESTADÍSTICAS</p><h2 id={titleId}>¿Borrar estadísticas?</h2><p>Se borran tus estadísticas y récords de este dispositivo. No se puede deshacer.</p><button className="primary-button" type="button" onClick={onConfirm}>Borrar</button><button className="secondary-button" type="button" onClick={onCancel}>Cancelar</button></ModalShell>; }
+function DailyHistory({ daily, todayKey }: { daily: DailyData; todayKey: string }) {
+  const summary = summarizeDailyHistory(daily.history); const today = daily.history.find((entry) => entry.date === todayKey); const maximum = Math.max(1, ...summary.distribution.map((item) => item.count));
+  const formatDay = (date: string) => { const value = new Date(`${date}T12:00:00`); return `${value.toLocaleDateString("es-ES", { weekday: "short" }).replace(".", "")} ${date.slice(8, 10)}/${date.slice(5, 7)}`; };
+  return <><div className="stats-cards">{[["Días jugados", summary.played], ["Racha actual", currentStreak(daily, todayKey)], ["Racha máxima", daily.bestStreak], ["Media de aciertos", summary.averageCorrect === null ? "—" : summary.averageCorrect.toString().replace(".", ",")], ["Mejor día", summary.bestCorrect === null ? "—" : `${summary.bestCorrect} aciertos`], ["Terminados", summary.finished]].map(([label, value]) => <div className="stats-card" key={label}><strong>{value}</strong><span>{label}</span></div>)}</div><div className="daily-distribution"><h4>Distribución de aciertos</h4><ul>{summary.distribution.map((item) => { const isToday = today !== undefined && today.correct >= item.min && today.correct <= item.max; return <li className={isToday ? "is-today" : ""} key={item.label}><span aria-hidden="true">{item.label}</span><i style={{ width: `${item.count ? Math.max(5, item.count / maximum * 100) : 0}%` }} aria-hidden="true" /><b aria-hidden="true">{item.count}</b><span className="sr-only">{item.max === 26 ? `${item.label} aciertos` : `De ${item.min} a ${item.max} aciertos`}: {item.count} {item.count === 1 ? "día" : "días"}{isToday ? " (hoy)" : ""}</span></li>; })}</ul></div><div className="daily-days"><h4>Últimos 28 días</h4><div className="daily-days-grid">{recentDailyDays(daily.history, todayKey).map(({ date, entry }) => <span className={`daily-day daily-day--${entry ? entry.finished ? "finished" : "unfinished" : "empty"}`} role="img" aria-label={`${formatDay(date)}: ${entry ? `${entry.correct} aciertos, ${entry.finished ? "terminado" : "sin terminar"}` : "no jugado"}`} key={date}>{date.slice(8, 10)}</span>)}</div><div className="daily-days-legend"><span><i className="daily-day--finished" />Terminado</span><span><i className="daily-day--unfinished" />Sin terminar</span><span><i className="daily-day--empty" />No jugado</span></div></div></>;
+}
+
+function ConfirmResetModal({ onCancel, onConfirm }: { onCancel: () => void; onConfirm: () => void }) { const titleId = useId(); return <ModalShell titleId={titleId} onClose={onCancel}><p className="eyebrow">ESTADÍSTICAS</p><h2 id={titleId}>¿Borrar estadísticas?</h2><p>Se borran tus estadísticas, tus récords y el histórico del Rosco del día de este dispositivo. El rosco de hoy y tu racha actual se mantienen. No se puede deshacer.</p><button className="primary-button" type="button" onClick={onConfirm}>Borrar</button><button className="secondary-button" type="button" onClick={onCancel}>Cancelar</button></ModalShell>; }
 
 function QuestionCard({ game, question, onAnswer, onPass, onNext, highlightAnswer, highlightPass }: { game: GameState | null; question: Question | null; onAnswer: (optionId: string) => void; onPass: () => void; onNext: () => void; highlightAnswer: boolean; highlightPass: boolean }) {
   const options = question?.options ?? [];
@@ -682,26 +694,36 @@ function ExhaustedModal({ onClose, onReset }: { onClose: () => void; onReset: ()
   return <ModalShell titleId={titleId}><p className="eyebrow">BANCO COMPLETADO</p><h2 id={titleId}>No quedan preguntas nuevas</h2><p>Has recorrido todas las preguntas disponibles de esta dificultad. No se repetirán hasta que reinicies la rotación.</p><button className="primary-button" type="button" onClick={onReset}>Reiniciar rotación</button><button className="secondary-button" type="button" onClick={onClose}>Cambiar dificultad</button></ModalShell>;
 }
 
-function ShareButton({ getText }: { getText: () => string }) {
+function ShareButton({ getText, getCard }: { getText: () => string; getCard: () => ShareCardData }) {
   const fallbackId = useId();
   const [shareMessage, setShareMessage] = useState("");
-  const [manualText, setManualText] = useState("");
+  const [manualText, setManualText] = useState(""); const [creating, setCreating] = useState(false); const imageRef = useRef<{ key: string; blob: Blob } | null>(null);
   const manualRef = useRef<HTMLTextAreaElement>(null);
   useEffect(() => { if (manualText) { manualRef.current?.focus(); manualRef.current?.select(); } }, [manualText]);
-  const share = async () => { const result = await shareResult(getText()); setShareMessage(result === "shared" ? "¡Compartido!" : result === "copied" ? "Resultado copiado. Pégalo donde quieras." : result === "unavailable" ? "Tu navegador no deja compartir. Copia el texto:" : ""); if (result === "unavailable") { setManualText(getText()); manualRef.current?.focus(); manualRef.current?.select(); } };
-  return <><button className="secondary-button" type="button" onClick={() => void share()}>Compartir resultado</button>{shareMessage && <p className="inline-status share-status" role="status">{shareMessage}</p>}{manualText && <><label className="share-fallback-label" htmlFor={fallbackId}>Texto para compartir</label><textarea ref={manualRef} className="share-fallback" id={fallbackId} readOnly rows={6} value={manualText} /></>}</>;
+  // La imagen se prepara al mostrarse el botón: navigator.share exige un gesto reciente y Safari lo pierde si hay que esperar al lienzo.
+  // Se rehace solo si cambia lo que se comparte (cardKey); App se repinta cada 250 ms y getCard es nueva en cada repintado.
+  const cardKey = JSON.stringify(getCard());
+  useEffect(() => {
+    let cancelled = false;
+    const card = JSON.parse(cardKey) as ShareCardData;
+    renderShareCard(card).then((blob) => { if (!cancelled) imageRef.current = { key: cardKey, blob }; }).catch(() => { /* Se intentará al pulsar. */ });
+    return () => { cancelled = true; };
+  }, [cardKey]);
+  const textShare = async (prefix = "") => { const result = await shareResult(getText()); setShareMessage(prefix + (result === "shared" ? "¡Compartido!" : result === "copied" ? "Resultado copiado. Pégalo donde quieras." : result === "unavailable" ? "Tu navegador no deja compartir. Copia el texto:" : "")); if (result === "unavailable") { setManualText(getText()); manualRef.current?.focus(); manualRef.current?.select(); } };
+  const imageShare = async () => { if (creating) return; setCreating(true); try { const card = getCard(); const key = JSON.stringify(card); const blob = imageRef.current?.key === key ? imageRef.current.blob : await renderShareCard(card); imageRef.current = { key, blob }; const result = await shareImage(blob, card, getText()); if (result === "shared") setShareMessage("¡Imagen compartida!"); else if (result === "downloaded") setShareMessage(`Imagen descargada: ${card.fileName}`); else if (result === "failed") await textShare("No se pudo crear la imagen. "); else setShareMessage(""); } catch { await textShare("No se pudo crear la imagen. "); } finally { setCreating(false); } };
+  return <><div className="share-actions"><button className="secondary-button" type="button" aria-disabled={creating} onClick={() => void imageShare()}>{creating ? "Creando imagen…" : "Compartir imagen"}</button><button className="secondary-button" type="button" onClick={() => void textShare()}>Compartir texto</button></div>{shareMessage && <p className="inline-status share-status" role="status">{shareMessage}</p>}{manualText && <><label className="share-fallback-label" htmlFor={fallbackId}>Texto para compartir</label><textarea ref={manualRef} className="share-fallback" id={fallbackId} readOnly rows={6} value={manualText} /></>}</>;
 }
 
-function ResultsModal({ game, daily, todayKey, record, newRecord, onRestart, onHome, onDayChange }: { game: GameState; daily: DailyData; todayKey: string; record?: DifficultyRecord; newRecord: boolean; onRestart: () => void; onHome: () => void; onDayChange: () => void }) {
+function ResultsModal({ game, daily, todayKey, record, newRecord, onRestart, onHome, onDayChange, onOpenDailyStats }: { game: GameState; daily: DailyData; todayKey: string; record?: DifficultyRecord; newRecord: boolean; onRestart: () => void; onHome: () => void; onDayChange: () => void; onOpenDailyStats: () => void }) {
   const titleId = useId();
   const dailyResult = game.mode === "daily" ? daily.result : null;
   if (dailyResult) {
     const streak = currentStreak(daily, dailyResult.date);
-    return <ModalShell titleId={titleId}><p className="eyebrow">PARTIDA TERMINADA</p><h2 id={titleId}>Rosco del día #{dailyResult.number}</h2><p>{game.finishReason === "time" ? "Tiempo agotado" : "Reto completado"}</p><div className="result-score"><span>{dailyResult.score}</span><small> PUNTOS</small></div><DailyCells cells={dailyResult.cells} /><DailySummary result={dailyResult} /><p className="streak-message"><span aria-hidden="true">🔥</span> Racha: {streak} {streak === 1 ? "día" : "días"}</p><ShareButton getText={() => buildDailyShareText(dailyResult, streak)} />{dailyResult.date === todayKey ? <DailyCountdown todayKey={todayKey} onDayChange={onDayChange} /> : <p className="daily-countdown">Ya hay un rosco del día nuevo: vuelve a la portada para jugarlo.</p>}<button className="primary-button" type="button" onClick={onHome}>Volver a la portada</button></ModalShell>;
+    return <ModalShell titleId={titleId}><p className="eyebrow">PARTIDA TERMINADA</p><h2 id={titleId}>Rosco del día #{dailyResult.number}</h2><p>{game.finishReason === "time" ? "Tiempo agotado" : "Reto completado"}</p><div className="result-score"><span>{dailyResult.score}</span><small> PUNTOS</small></div><DailyCells cells={dailyResult.cells} /><DailySummary result={dailyResult} /><p className="streak-message"><span aria-hidden="true">🔥</span> Racha: {streak} {streak === 1 ? "día" : "días"}</p><ShareButton getText={() => buildDailyShareText(dailyResult, streak)} getCard={() => dailyShareCard(dailyResult, streak)} /><button className="secondary-button" type="button" onClick={onOpenDailyStats}>Ver mis estadísticas</button>{dailyResult.date === todayKey ? <DailyCountdown todayKey={todayKey} onDayChange={onDayChange} /> : <p className="daily-countdown">Ya hay un rosco del día nuevo: vuelve a la portada para jugarlo.</p>}<button className="primary-button" type="button" onClick={onHome}>Volver a la portada</button></ModalShell>;
   }
   const practice = game.mode === "practice";
   const guided = game.mode === "guided";
-  return <ModalShell titleId={titleId}><p className="eyebrow">PARTIDA TERMINADA</p><h2 id={titleId}>{guided ? "¡Ya sabes jugar!" : practice ? "Práctica terminada" : game.finishReason === "time" ? "Tiempo agotado" : "Reto completado"}</h2><div className="result-score"><span>{game.score}</span><small> PUNTOS</small></div>{!practice && !guided && record && <p className="record-message">{newRecord ? "¡Nuevo récord!" : `Récord: ${record.bestScore}`}</p>}{practice && <p>Prueba ahora una partida con reloj.</p>}{game.bestStreak > 1 && <p className="streak-message">Mejor racha: {game.bestStreak} aciertos seguidos</p>}<div className="result-grid"><div><strong>{game.correct}</strong><span>Correctas</span></div><div><strong>{game.wrong}</strong><span>Falladas</span></div><div><strong>{game.passed}</strong><span>Pasadas</span></div></div>{!guided && <ShareButton getText={() => buildShareText(game)} />}<button className="primary-button" type="button" onClick={onRestart}>{guided ? "Jugar con reloj" : "Jugar de nuevo"}</button><button className="secondary-button" type="button" onClick={onHome}>Cambiar dificultad</button></ModalShell>;
+  return <ModalShell titleId={titleId}><p className="eyebrow">PARTIDA TERMINADA</p><h2 id={titleId}>{guided ? "¡Ya sabes jugar!" : practice ? "Práctica terminada" : game.finishReason === "time" ? "Tiempo agotado" : "Reto completado"}</h2><div className="result-score"><span>{game.score}</span><small> PUNTOS</small></div>{!practice && !guided && record && <p className="record-message">{newRecord ? "¡Nuevo récord!" : `Récord: ${record.bestScore}`}</p>}{practice && <p>Prueba ahora una partida con reloj.</p>}{game.bestStreak > 1 && <p className="streak-message">Mejor racha: {game.bestStreak} aciertos seguidos</p>}<div className="result-grid"><div><strong>{game.correct}</strong><span>Correctas</span></div><div><strong>{game.wrong}</strong><span>Falladas</span></div><div><strong>{game.passed}</strong><span>Pasadas</span></div></div>{!guided && <ShareButton getText={() => buildShareText(game)} getCard={() => gameShareCard(game)} />}<button className="primary-button" type="button" onClick={onRestart}>{guided ? "Jugar con reloj" : "Jugar de nuevo"}</button><button className="secondary-button" type="button" onClick={onHome}>Cambiar dificultad</button></ModalShell>;
 }
 
 function HelpModal({ onClose, onStartGuided }: { onClose: () => void; onStartGuided: () => void }) {

@@ -1,3 +1,5 @@
+// Primero: la política de Trusted Types debe existir antes de que nada registre el service worker.
+import "./trustedTypes";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";

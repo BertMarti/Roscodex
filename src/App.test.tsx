@@ -316,7 +316,7 @@ describe("compartir el resultado", () => {
 
       const dialogo = await screen.findByRole("dialog");
       expect(within(dialogo).getByRole("heading", { name: "Práctica terminada" })).toBeTruthy();
-      fireEvent.click(within(dialogo).getByRole("button", { name: "Compartir resultado" }));
+      fireEvent.click(within(dialogo).getByRole("button", { name: "Compartir texto" }));
       expect(await screen.findByText(/Resultado copiado/)).toBeTruthy();
       expect(writeText).toHaveBeenCalledOnce();
       const texto = writeText.mock.calls[0][0] as string;
@@ -454,7 +454,7 @@ describe("rosco del día", () => {
     fireEvent.click(boton("Abandonar"));
     expect(await screen.findByText("Rosco de hoy sin terminar")).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Jugar el rosco del día" })).toBeNull();
-    expect(boton("Compartir resultado")).toBeTruthy();
+    expect(boton("Compartir texto")).toBeTruthy();
     expect(screen.getByText(/Siguiente rosco en \d\d:\d\d:\d\d/)).toBeTruthy();
     expect(screen.getByText(/sin responder/)).toBeTruthy();
     const daily = JSON.parse(localStorage.getItem(STORAGE_KEYS.daily) ?? "null") as { result: { cells: string[] } };
@@ -517,12 +517,12 @@ describe("rosco del día", () => {
     Object.defineProperty(navegador, "clipboard", { value: undefined, configurable: true });
     try {
       render(<App />);
-      fireEvent.click(boton("Compartir resultado"));
+      fireEvent.click(boton("Compartir texto"));
       const textarea = await screen.findByLabelText("Texto para compartir") as HTMLTextAreaElement;
       await waitFor(() => expect(document.activeElement).toBe(textarea));
       // Segunda pulsación con el texto ya visible: vuelve a enfocarlo y seleccionarlo (revisión de Fable).
       textarea.blur();
-      fireEvent.click(boton("Compartir resultado"));
+      fireEvent.click(boton("Compartir texto"));
       await waitFor(() => expect(document.activeElement).toBe(textarea));
       expect(textarea.selectionEnd - textarea.selectionStart).toBe(textarea.value.length);
       expect(textarea.value).toContain("Rosco del día #1");

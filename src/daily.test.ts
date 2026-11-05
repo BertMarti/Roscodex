@@ -253,7 +253,7 @@ describe("Rosco del día · datos guardados", () => {
     expect(({} as Record<string, unknown>).polluted).toBeUndefined();
 
     const result: DailyResult = { date: "2026-10-31", number: 1, cells: celdasMixtas(), score: 130, correct: 13, wrong: 5, passed: 4, finished: true };
-    const original: DailyData = { lastDate: "2026-10-31", streak: 3, bestStreak: 5, result };
+    const original: DailyData = { lastDate: "2026-10-31", streak: 3, bestStreak: 5, result, history: [{ date: result.date, number: result.number, correct: result.correct, wrong: result.wrong, passed: result.passed, score: result.score, finished: result.finished }] };
     expect(parseDaily(JSON.stringify(original))).toEqual(original);
   });
 });
@@ -278,7 +278,7 @@ describe("Rosco del día · coherencia de lo guardado (revisión cruzada)", () =
     expect(leer(base({ number: 7 }))).toBeNull();
     expect(leer(base({ date: "2026-11-01", number: 1 }))).toBeNull();
     const datos = parseDaily(JSON.stringify({ lastDate: "2026-10-31", streak: 3, bestStreak: 5, result: base({ correct: 26 }) }));
-    expect(datos).toEqual({ lastDate: "2026-10-31", streak: 3, bestStreak: 5, result: null });
+    expect(datos).toEqual({ lastDate: "2026-10-31", streak: 3, bestStreak: 5, result: null, history: [] });
   });
 });
 

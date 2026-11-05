@@ -71,6 +71,7 @@ h1 b { color: var(--ink); font-weight: 400; }
 .daily-cell--passed { border-color: var(--blue); background: var(--blue); }
 .modal .daily-countdown { margin-bottom: 14px; }
 .daily-countdown { margin: 14px 0 0; color: var(--muted); font-family: "Press Start 2P", monospace; font-size: 8px; line-height: 1.7; text-align: center; }
+.daily-stats-button { margin-top: 12px; }
 .onboarding-card h2 { margin: 0 0 10px; font-size: 16px; }
 .onboarding-card p { margin: 0 0 16px; color: var(--muted); font-size: 12px; line-height: 1.6; }
 .panel-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
@@ -198,6 +199,26 @@ h1 b { color: var(--ink); font-weight: 400; }
 .letter-stat--empty { border-style: dashed; color: var(--muted); }
 .stats-hint { margin: 14px 0 0; color: var(--muted); font-size: 12px; }
 .stats-hint b { color: var(--yellow); font-family: "Press Start 2P", monospace; font-size: 10px; }
+.daily-history-panel { margin-top: 18px; padding: 18px 16px; }
+.daily-history-panel h3 { margin: 0 0 14px; color: var(--yellow); font-size: 12px; }
+.daily-history-panel h3:focus-visible { outline: 3px solid var(--yellow); outline-offset: 4px; }
+.daily-history-panel > p { color: var(--muted); font-size: 12px; line-height: 1.7; }
+.daily-distribution h4, .daily-days h4 { margin: 18px 0 10px; font-family: "Press Start 2P", monospace; font-size: 9px; }
+.daily-distribution ul { display: grid; gap: 7px; margin: 0; padding: 0; list-style: none; }
+.daily-distribution li { display: grid; grid-template-columns: 48px 1fr 22px; align-items: center; gap: 7px; min-width: 0; color: var(--muted); font-family: "Press Start 2P", monospace; font-size: 8px; }
+.daily-distribution li > i { display: block; height: 10px; min-width: 0; background: var(--blue); }
+.daily-distribution li.is-today > i { background: var(--yellow); }
+.daily-distribution li b { color: var(--ink); text-align: right; }
+.daily-days-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 44px)); gap: 5px; }
+.daily-day { display: grid; place-items: center; aspect-ratio: 1; min-width: 0; border: 2px solid var(--line); color: var(--ink); font-family: "Press Start 2P", monospace; font-size: 8px; }
+.daily-day--finished { border-color: var(--green); background: var(--green); color: #092e19; }
+.daily-day--unfinished { border-style: dashed; border-color: var(--blue); background: rgba(88,116,255,.22); }
+.daily-day--empty { background: #3c4150; color: var(--muted); }
+.daily-days-legend { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; color: var(--muted); font-size: 9px; }
+.daily-days-legend span { display: inline-flex; align-items: center; gap: 5px; }
+.daily-days-legend i { display: inline-block; width: 10px; height: 10px; border: 1px solid var(--line); }
+.share-actions { display: flex; gap: 8px; }
+.share-actions .secondary-button { flex: 1; min-width: 0; }
 .records-table { width: 100%; margin: 14px 0 6px; border-collapse: collapse; background: var(--panel); font-size: 11px; }
 .records-table caption { margin-bottom: 10px; color: var(--ink); font-family: "Press Start 2P", monospace; font-size: 10px; line-height: 1.5; text-align: left; }
 .records-table th, .records-table td { padding: 10px 8px; border: 1px solid var(--line); text-align: left; }
@@ -281,6 +302,7 @@ h1 b { color: var(--ink); font-weight: 400; }
   .question-rule { align-self: stretch; text-align: left; }
   .answers { grid-template-columns: 1fr; }
   .stats-cards { grid-template-columns: repeat(2, 1fr); }
+  .share-actions { flex-direction: column; gap: 0; }
   .letter-stats { grid-template-columns: repeat(5, 1fr); }
   .fan-note__actions { flex-wrap: wrap; }
 }
