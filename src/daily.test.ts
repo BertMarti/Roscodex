@@ -5,6 +5,7 @@ import { createGameState } from "./gameState";
 import { STORAGE_KEYS } from "./storage";
 import { SHARE_URL } from "./share";
 import { crearAlmacenFalso, preguntaDePrueba, roscoDePrueba } from "./test/fixtures";
+import { DAILY_EPOCH, DAILY_HISTORY_LIMIT, recentDailyDays, resetDailyStats, summarizeDailyHistory, upsertDailyHistory, type DailyHistoryEntry } from "./daily";
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -347,5 +348,176 @@ describe("Rosco del día · almacenamiento", () => {
     vi.stubGlobal("localStorage", { ...store, getItem: () => { throw new Error("Bloqueado"); } });
     expect(() => loadDaily()).not.toThrow();
     expect(loadDaily()).toEqual(emptyDaily());
+  });
+});
+
+describe("Rosco del día · histórico", () => {
+  const fecha = "2026-10-31";
+  const numero = dailyNumber(fecha);
+  const celdasVacias = (): DailyCell[] => LETTERS.map(() => "empty" as DailyCell);
+  const entrada = (cambios: Partial<DailyHistoryEntry> = {}): DailyHistoryEntry => ({
+    date: fecha, number: numero, correct: 0, wrong: 0, passed: 0, score: 0, finished: false, ...cambios
+  });
+  const resultado = (cambios: Partial<DailyResult> = {}): DailyResult => ({
+    date: fecha, number: numero, cells: celdasVacias(), score: 0, correct: 0, wrong: 0, passed: 0, finished: false, ...cambios
+  });
+
+  it("migra los datos de la 1.1 sin histórico y respeta el histórico explícito", () => {
+    const valido = resultado();
+    const migrado = parseDaily(JSON.stringify({ lastDate: fecha, streak: 2, bestStreak: 4, result: valido }));
+    expect(migrado.history).toEqual([entrada()]);
+    expect(parseDaily(JSON.stringify({ lastDate: fecha, streak: 2, bestStreak: 4 })).history).toEqual([]);
+
+    const explicito = parseDaily(JSON.stringify({ lastDate: fecha, streak: 2, bestStreak: 4, result: valido, history: [] }));
+    expect(explicito.result).toEqual(valido);
+    expect(explicito.history).toEqual([]);
+  });
+
+  it("descarta entradas basura sin perder las válidas", () => {
+    const valida = entrada();
+    const basura: unknown[] = [
+      "basura", null, [], { ...valida, number: numero + 1 }, { ...valida, date: "2026-02-30" },
+      { ...valida, correct: 20, wrong: 7 }, { ...valida, correct: -1 }, { ...valida, correct: 1.5 },
+      { ...valida, finished: "sí" }, { ...valida, passed: 1001 }
+    ];
+    expect(parseDaily(JSON.stringify({ history: [valida, ...basura] })).history).toEqual([valida]);
+  });
+
+  it("copia solo los campos conocidos y no deja contaminar el prototipo", () => {
+    const valida = entrada();
+    const conExtra = parseDaily(JSON.stringify({ history: [{ ...valida, extra: "x", cells: [] }] }));
+    expect(conExtra.history).toEqual([valida]);
+
+    const envenenado = parseDaily(`{"history":[{"__proto__":{"pollutedHistory":true},"date":"${fecha}","number":${numero},"correct":0,"wrong":0,"passed":0,"score":0,"finished":false}]}`);
+    expect(envenenado.history).toHaveLength(1);
+    expect(envenenado.history[0]).not.toHaveProperty("pollutedHistory");
+    expect(({} as Record<string, unknown>).pollutedHistory).toBeUndefined();
+  });
+
+  it("se queda con la última entrada de cada fecha y ordena por fecha", () => {
+    const primera = entrada({ score: 10 });
+    const segunda = entrada({ score: 99 });
+    const otroDia = entrada({ date: "2026-11-02", number: dailyNumber("2026-11-02"), score: 50 });
+    const data = parseDaily(JSON.stringify({ history: [otroDia, primera, segunda] }));
+    expect(data.history.map((item) => item.date)).toEqual([fecha, "2026-11-02"]);
+    expect(data.history[0].score).toBe(99);
+    expect(data.history).toEqual([segunda, otroDia]);
+  });
+
+  it("recorta a las 400 entradas más recientes", () => {
+    const history: DailyHistoryEntry[] = Array.from({ length: 450 }, (_, index) => {
+      const date = new Date(Date.UTC(2026, 9, 31 + index));
+      const key = `${date.getUTCFullYear().toString().padStart(4, "0")}-${(date.getUTCMonth() + 1).toString().padStart(2, "0")}-${date.getUTCDate().toString().padStart(2, "0")}`;
+      return entrada({ date: key, number: dailyNumber(key) });
+    });
+    const data = parseDaily(JSON.stringify({ history }));
+    expect(data.history).toHaveLength(DAILY_HISTORY_LIMIT);
+    expect(data.history[0].number).toBe(51);
+    expect(data.history[data.history.length - 1].number).toBe(450);
+    expect(data.history[0].date).toBe(history[50].date);
+  });
+
+  it("sustituye la entrada del mismo día y añade la nueva en orden", () => {
+    const primero = entrada({ score: 10 });
+    const segundo = entrada({ date: "2026-11-02", number: dailyNumber("2026-11-02"), score: 20 });
+    const base = upsertDailyHistory(upsertDailyHistory([], segundo), primero);
+    expect(base.map((item) => item.date)).toEqual([fecha, "2026-11-02"]);
+
+    const actualizado = entrada({ score: 99 });
+    const siguiente = upsertDailyHistory(base, actualizado);
+    expect(siguiente).toHaveLength(2);
+    expect(siguiente[0]).toEqual(actualizado);
+    expect(siguiente[1]).toEqual(segundo);
+
+    const nuevo = entrada({ date: "2026-11-01", number: dailyNumber("2026-11-01"), score: 5 });
+    expect(upsertDailyHistory(base, nuevo).map((item) => item.date)).toEqual([fecha, "2026-11-01", "2026-11-02"]);
+  });
+
+  it("añade el día al empezar y lo actualiza con el progreso", () => {
+    const data = startDaily(emptyDaily(), fecha);
+    expect(data.history).toHaveLength(1);
+    expect(data.history[0]).toEqual(entrada());
+
+    const base = createGameState("normal", roscoDePrueba("normal"), 0, "daily");
+    const statuses: Record<string, RoscoStatus> = { ...base.statuses, A: "correct", B: "wrong", C: "passed" };
+    const game = { ...base, statuses, score: 10, correct: 1, wrong: 1, passed: 1 };
+    const next = updateDailyProgress(data, game, false);
+    expect(next.history).toHaveLength(1);
+    expect(next.history[0]).toEqual(entrada({ correct: 1, wrong: 1, passed: 1, score: 10 }));
+    expect(next.result?.cells.slice(0, 4)).toEqual(["correct", "wrong", "passed", "empty"]);
+  });
+
+  it("borra el histórico y conserva resultado, fecha y racha viva", () => {
+    const data: DailyData = { ...startDaily(emptyDaily(), fecha), streak: 5, bestStreak: 9 };
+    const next = resetDailyStats(data, "2026-11-01");
+    expect(next.history).toEqual([]);
+    expect(next.result).toEqual(data.result);
+    expect(next.lastDate).toBe(fecha);
+    expect(next.streak).toBe(5);
+    expect(next.bestStreak).toBe(5);
+
+    const caducada = resetDailyStats(data, "2026-11-03");
+    expect(caducada.bestStreak).toBe(0);
+    expect(caducada.result).toEqual(data.result);
+  });
+
+  it("resume el histórico vacío y calcula la media con un decimal", () => {
+    const vacio = summarizeDailyHistory([]);
+    expect(vacio.played).toBe(0);
+    expect(vacio.finished).toBe(0);
+    expect(vacio.averageCorrect).toBeNull();
+    expect(vacio.bestCorrect).toBeNull();
+    expect(vacio.bestScore).toBeNull();
+    expect(vacio.distribution.map(({ min, max, count }) => `${min}-${max}:${count}`)).toEqual(["0-5:0", "6-10:0", "11-15:0", "16-20:0", "21-25:0", "26-26:0"]);
+
+    const resumen = summarizeDailyHistory([
+      entrada({ correct: 14, score: 140, finished: true }),
+      entrada({ correct: 18, score: 180, finished: true }),
+      entrada({ correct: 19, score: 190, finished: true })
+    ]);
+    expect(resumen.played).toBe(3);
+    expect(resumen.finished).toBe(3);
+    expect(resumen.averageCorrect).toBe(17);
+    expect(resumen.bestCorrect).toBe(19);
+    expect(resumen.bestScore).toBe(190);
+  });
+
+  it("reparte los tramos con sus límites incluidos", () => {
+    const resumen = summarizeDailyHistory([
+      entrada({ correct: 5 }), entrada({ correct: 6 }), entrada({ correct: 25 }), entrada({ correct: 26 })
+    ]);
+    expect(resumen.distribution.map(({ min, max }) => [min, max])).toEqual([[0, 5], [6, 10], [11, 15], [16, 20], [21, 25], [26, 26]]);
+    expect(resumen.distribution.map((item) => item.count)).toEqual([1, 1, 0, 0, 1, 1]);
+    expect(resumen.averageCorrect).toBe(15.5);
+    expect(resumen.bestCorrect).toBe(26);
+  });
+
+  it("genera los últimos 28 días terminando hoy y marca los no jugados", () => {
+    const hoy = "2026-11-27";
+    const jugado = entrada({ date: "2026-11-10", number: dailyNumber("2026-11-10"), correct: 7 });
+    const dias = recentDailyDays([jugado], hoy);
+    expect(dias).toHaveLength(28);
+    expect(dias[0].date).toBe(DAILY_EPOCH);
+    expect(dias[dias.length - 1].date).toBe(hoy);
+    expect(dias.map((dia) => dia.number)).toEqual(Array.from({ length: 28 }, (_, index) => index + 1));
+    for (let index = 1; index < dias.length; index += 1) expect(dias[index - 1].date < dias[index].date).toBe(true);
+    expect(dias[0].entry).toBeNull();
+    expect(dias.find((dia) => dia.date === "2026-11-10")?.entry).toEqual(jugado);
+  });
+
+  it("con hoy en el epoch devuelve solo ese día y fuera del epoch no devuelve nada", () => {
+    expect(recentDailyDays([], DAILY_EPOCH)).toEqual([{ date: DAILY_EPOCH, number: 1, entry: null }]);
+    expect(recentDailyDays([], "2026-10-30")).toEqual([]);
+    expect(recentDailyDays([], "2026-02-30")).toEqual([]);
+    expect(recentDailyDays([], DAILY_EPOCH, 0)).toEqual([]);
+  });
+
+  it("cruza el cambio de mes y deja null los días sin jugar", () => {
+    const jugado = entrada();
+    const dias = recentDailyDays([jugado], "2026-11-01", 2);
+    expect(dias.map((dia) => dia.date)).toEqual(["2026-10-31", "2026-11-01"]);
+    expect(dias.map((dia) => dia.number)).toEqual([1, 2]);
+    expect(dias[0].entry).toEqual(jugado);
+    expect(dias[1].entry).toBeNull();
   });
 });
