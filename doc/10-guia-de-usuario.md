@@ -148,11 +148,11 @@ El botón **▤ Estadísticas** de la portada muestra tus datos de juego. Se div
 
 Esta sección (que también puedes abrir con **▤ Mis estadísticas del día** desde la tarjeta de la portada) incluye:
 
-- **Resumen:** días jugados, racha actual, racha máxima, media de aciertos, mejor día y roscos terminados.
+- **Resumen:** días jugados, racha actual, racha máxima, media de aciertos, mejor día y roscos terminados. La media de aciertos y el mejor día solo cuentan los roscos **terminados** (uno abandonado a medias, o el de hoy mientras lo juegas, no baja la media); los días jugados, la distribución y el calendario incluyen todos.
 - **Distribución de aciertos:** un gráfico que agrupa tus resultados por tramos (0–5, 6–10, 11–15, 16–20, 21–25 o 26 aciertos). El tramo que corresponde al rosco de hoy aparece resaltado en amarillo.
 - **Últimos 28 días:** un calendario visual que muestra qué días has terminado el rosco (verde), cuáles dejaste sin terminar (azul) y cuáles no jugaste (gris).
 
-Puedes borrarlas con **Borrar estadísticas** y confirmando con **Borrar**. Se borran las estadísticas generales, los récords y el histórico del rosco del día de ese dispositivo. El rosco de hoy se mantiene como jugado y la racha actual no se pierde (el aviso lo indica). No se puede deshacer. Todo se queda en tu dispositivo.
+Puedes borrarlas con **Borrar estadísticas** y confirmando con **Borrar**. Se borran las estadísticas generales, los récords y el histórico del rosco del día de ese dispositivo. El rosco de hoy se mantiene como jugado (y sigue en el histórico) y la racha actual no se pierde (el aviso lo indica). No se puede deshacer. Todo se queda en tu dispositivo.
 
 ## Accesibilidad y ajustes
 

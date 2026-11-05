@@ -7,7 +7,9 @@ export interface ShareCardData { kicker: string; title: string; subtitle: string
 export const SHARE_CARD_LOGICAL = 300;
 export const SHARE_CARD_SCALE = 4;
 
-const modeLabel = (game: GameState): string => game.mode === "blitz" ? "CONTRARRELOJ" : game.mode === "practice" ? "PRÁCTICA" : "CON RELOJ";
+const modeLabel = (game: GameState): string => game.mode === "blitz" ? "CONTRARRELOJ" : game.mode === "practice" ? "PRACTICA" : "CON RELOJ";
+/** Press Start 2P pinta las mayúsculas acentuadas como minúsculas: en el lienzo van sin tilde (la Ñ se queda). Solo para la imagen, no para el DOM. */
+export const canvasText = (text: string): string => text.replace(/[ÁÀÄÂ]/g, "A").replace(/[ÉÈËÊ]/g, "E").replace(/[ÍÌÏÎ]/g, "I").replace(/[ÓÒÖÔ]/g, "O").replace(/[ÚÙÜÛ]/g, "U");
 const cellsForGame = (game: GameState): { letter: string; cell: ShareCell }[] => LETTERS.map((letter) => ({ letter, cell: game.statuses[letter] === "correct" ? "correct" : game.statuses[letter] === "wrong" ? "wrong" : game.statuses[letter] === "passed" ? "passed" : "empty" }));
 const countStats = (counts: { correct: number; wrong: number; passed: number }) => [
   { label: "ACIERTOS", value: String(counts.correct), color: "#35cf78" },
@@ -16,10 +18,10 @@ const countStats = (counts: { correct: number; wrong: number; passed: number }) 
 ];
 export const SHARE_CARD_FOOTER = "bertmarti.github.io/Roscodex";
 export function dailyShareCard(result: DailyResult, streak: number): ShareCardData {
-  return { kicker: "ROSCO DEL DÍA", title: `#${result.number}`, subtitle: result.date.split("-").reverse().join("/"), score: result.score, cells: result.cells.map((cell, index) => ({ letter: LETTERS[index], cell })), stats: [...countStats(result), { label: "RACHA", value: String(streak) }], footer: SHARE_CARD_FOOTER, fileName: `roscodex-rosco-del-dia-${result.number}.png` };
+  return { kicker: "ROSCO DEL DIA", title: `#${result.number}`, subtitle: result.date.split("-").reverse().join("/"), score: result.score, cells: result.cells.map((cell, index) => ({ letter: LETTERS[index], cell })), stats: [...countStats(result), { label: "RACHA", value: String(streak) }], footer: SHARE_CARD_FOOTER, fileName: `roscodex-rosco-del-dia-${result.number}.png` };
 }
 export function gameShareCard(game: GameState): ShareCardData {
-  return { kicker: difficultyConfig[game.difficulty].label, title: modeLabel(game), subtitle: "¿ME SUPERAS?", score: game.score, cells: cellsForGame(game), stats: countStats(game), footer: SHARE_CARD_FOOTER, fileName: "roscodex-resultado.png" };
+  return { kicker: canvasText(difficultyConfig[game.difficulty].label), title: modeLabel(game), subtitle: "¿ME SUPERAS?", score: game.score, cells: cellsForGame(game), stats: countStats(game), footer: SHARE_CARD_FOOTER, fileName: "roscodex-resultado.png" };
 }
 
 export interface ShareCanvasContext {
@@ -62,8 +64,8 @@ export function drawShareCard(ctx: ShareCanvasContext, data: ShareCardData): voi
   ctx.textAlign = "center"; ctx.textBaseline = "top";
   // Cabecera: logotipo con sombra dura, modo y fecha o reto.
   ctx.font = font(16); ctx.fillStyle = "#7a5f00"; ctx.fillText("ROSCODEX", 152, 18); ctx.fillStyle = "#ffcb05"; ctx.fillText("ROSCODEX", 150, 16);
-  ctx.font = font(8); ctx.fillStyle = "#f7f7fa"; ctx.fillText([data.kicker, data.title].filter(Boolean).join(" · "), 150, 40);
-  ctx.fillStyle = "#a7acbd"; ctx.fillText(data.subtitle, 150, 52);
+  ctx.font = font(8); ctx.fillStyle = "#f7f7fa"; ctx.fillText(canvasText([data.kicker, data.title].filter(Boolean).join(" · ")), 150, 40);
+  ctx.fillStyle = "#a7acbd"; ctx.fillText(canvasText(data.subtitle), 150, 52);
   // El rosco: 26 casillas en círculo con su letra.
   data.cells.forEach(({ letter, cell }, index) => {
     const { x, y } = ringCellPosition(index, data.cells.length);
@@ -82,7 +84,7 @@ export function drawShareCard(ctx: ShareCanvasContext, data: ShareCardData): voi
   ctx.textAlign = "left";
   for (const item of items) {
     if (item.color) { ctx.fillStyle = item.color; ctx.fillRect(cursor, 254, 8, 8); ctx.fillStyle = "#f7f7fa"; ctx.fillText(item.value, cursor + 12, 254); }
-    else { ctx.fillStyle = "#a7acbd"; ctx.fillText(item.label, cursor, 254); ctx.fillStyle = "#f7f7fa"; ctx.fillText(item.value, cursor + (item.label.length + 1) * 8, 254); }
+    else { ctx.fillStyle = "#a7acbd"; ctx.fillText(canvasText(item.label), cursor, 254); ctx.fillStyle = "#f7f7fa"; ctx.fillText(item.value, cursor + (item.label.length + 1) * 8, 254); }
     cursor += item.width + gap;
   }
   ctx.textAlign = "center"; ctx.fillStyle = "#ffcb05"; ctx.fillText(data.footer, 150, 274);

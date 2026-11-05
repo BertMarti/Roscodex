@@ -461,6 +461,13 @@ describe("Rosco del día · histórico", () => {
     expect(caducada.result).toEqual(data.result);
   });
 
+  it("al borrar el mismo día deja solo la entrada de hoy, que sobrevive a una recarga (revisión de Fable)", () => {
+    const data: DailyData = { ...startDaily(emptyDaily(), fecha), streak: 2, bestStreak: 4 };
+    const next = resetDailyStats({ ...data, history: [entrada({ date: "2026-10-30", number: 0 }), ...data.history] }, fecha);
+    expect(next.history).toEqual([{ date: fecha, number: 1, correct: 0, wrong: 0, passed: 0, score: 0, finished: false }]);
+    expect(parseDaily(JSON.stringify(next)).history).toEqual(next.history);
+  });
+
   it("resume el histórico vacío y calcula la media con un decimal", () => {
     const vacio = summarizeDailyHistory([]);
     expect(vacio.played).toBe(0);
@@ -484,12 +491,28 @@ describe("Rosco del día · histórico", () => {
 
   it("reparte los tramos con sus límites incluidos", () => {
     const resumen = summarizeDailyHistory([
-      entrada({ correct: 5 }), entrada({ correct: 6 }), entrada({ correct: 25 }), entrada({ correct: 26 })
+      entrada({ correct: 5, finished: true }), entrada({ correct: 6, finished: true }), entrada({ correct: 25, finished: true }), entrada({ correct: 26, finished: true })
     ]);
     expect(resumen.distribution.map(({ min, max }) => [min, max])).toEqual([[0, 5], [6, 10], [11, 15], [16, 20], [21, 25], [26, 26]]);
     expect(resumen.distribution.map((item) => item.count)).toEqual([1, 1, 0, 0, 1, 1]);
     expect(resumen.averageCorrect).toBe(15.5);
     expect(resumen.bestCorrect).toBe(26);
+  });
+
+  it("la media, el mejor día y la mejor puntuación solo cuentan los roscos terminados (revisión de Fable)", () => {
+    const resumen = summarizeDailyHistory([
+      entrada({ correct: 20, score: 200, finished: true }),
+      entrada({ correct: 2, score: 20, finished: false }),
+      entrada({ correct: 25, score: 250, finished: false }),
+      entrada({ correct: 15, score: 150, finished: true })
+    ]);
+    expect(resumen.played).toBe(4);
+    expect(resumen.finished).toBe(2);
+    expect(resumen.averageCorrect).toBe(17.5);
+    expect(resumen.bestCorrect).toBe(20);
+    expect(resumen.bestScore).toBe(200);
+    expect(resumen.distribution.reduce((total, tramo) => total + tramo.count, 0)).toBe(4);
+    expect(summarizeDailyHistory([entrada({ correct: 9, finished: false })]).averageCorrect).toBeNull();
   });
 
   it("genera los últimos 28 días terminando hoy y marca los no jugados", () => {

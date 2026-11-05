@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { LETTERS, type RoscoStatus } from "./game";
 import type { DailyCell, DailyResult } from "./daily";
 import {
+  canvasText,
   dailyShareCard,
   drawShareCard,
   gameShareCard,
@@ -94,7 +95,7 @@ describe("tarjetas para compartir", () => {
     expect(card.cells).toHaveLength(26);
     expect(card.cells.map((item) => item.letter)).toEqual(LETTERS);
     expect(card.cells.map((item) => item.cell)).toEqual(result.cells);
-    expect(card.kicker).toBe("ROSCO DEL DÍA");
+    expect(card.kicker).toBe("ROSCO DEL DIA");
     expect(card.title).toBe("#1");
     expect(card.subtitle).toBe("31/10/2026");
     expect(card.score).toBe(130);
@@ -179,6 +180,20 @@ describe("drawShareCard", () => {
     expect(textos.some((texto) => /[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/u.test(texto))).toBe(false);
 
     expect(llamadas.fillRect.every(([x, y, width, height]) => x >= 0 && y >= 0 && x + width <= SHARE_CARD_LOGICAL && y + height <= SHARE_CARD_LOGICAL)).toBe(true);
+  });
+
+  it("no pinta mayúsculas acentuadas: Press Start 2P las dibuja como minúsculas (revisión de Fable)", () => {
+    expect(canvasText("ROSCO DEL DÍA · DIFÍCIL · PRÁCTICA · ÉXITO · ÓPALO · ÚLTIMO · PINGÜINO · ESPAÑA")).toBe("ROSCO DEL DIA · DIFICIL · PRACTICA · EXITO · OPALO · ULTIMO · PINGUINO · ESPAÑA");
+    expect(dailyShareCard(resultadoDiario(), 1).kicker).toBe("ROSCO DEL DIA");
+    const base = createGameState("hard", roscoDePrueba("hard"), 0, "practice");
+    const tarjeta = gameShareCard(base);
+    expect(tarjeta.kicker).toBe("DIFICIL");
+    expect(tarjeta.title).toBe("PRACTICA");
+    for (const datos of [dailyShareCard(resultadoDiario(), 1), tarjeta, { ...tarjeta, subtitle: "ÚLTIMO DÍA", kicker: "DIFÍCIL" }]) {
+      const { ctx, llamadas } = contextoFalso();
+      drawShareCard(ctx, datos);
+      expect(llamadas.fillText.map((item) => item.texto).filter((texto) => /[ÁÉÍÓÚÀÈÌÒÙÄËÏÖÜÂÊÎÔÛ]/.test(texto))).toEqual([]);
+    }
   });
 });
 

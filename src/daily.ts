@@ -111,11 +111,15 @@ export function startDaily(data: DailyData, todayKey: string): DailyData { const
 export function updateDailyProgress(data: DailyData, game: GameState, finished: boolean): DailyData { if (game.mode !== "daily" || !data.result) return data; const result = { ...data.result, cells: cellsFromGame(game), score: game.score, correct: game.correct, wrong: game.wrong, passed: game.passed, finished }; return { ...data, result, history: upsertDailyHistory(data.history, historyEntryFromResult(result)) }; }
 export function hasPlayedToday(data: DailyData, todayKey: string): boolean { return data.result?.date === todayKey; }
 export function currentStreak(data: DailyData, todayKey: string): number { return data.lastDate && (data.lastDate === todayKey || dayIndex(todayKey) - dayIndex(data.lastDate) === 1) ? data.streak : 0; }
-export function resetDailyStats(data: DailyData, todayKey: string): DailyData { return { ...data, history: [], bestStreak: currentStreak(data, todayKey) }; }
+// El rosco de hoy se queda en el histórico: si no, al recargar desaparecería (parseDaily solo repuebla si NO existe `history`)
+// y las estadísticas dirían «0 días» mientras la portada dice «terminado» (revisión de Fable).
+export function resetDailyStats(data: DailyData, todayKey: string): DailyData { return { ...data, history: data.result?.date === todayKey ? [historyEntryFromResult(data.result)] : [], bestStreak: currentStreak(data, todayKey) }; }
 export interface DailySummary { played: number; finished: number; averageCorrect: number | null; bestCorrect: number | null; bestScore: number | null; distribution: { label: string; min: number; max: number; count: number }[]; }
 export function summarizeDailyHistory(history: DailyHistoryEntry[]): DailySummary {
   const distribution = [{ label: "0–5", min: 0, max: 5 }, { label: "6–10", min: 6, max: 10 }, { label: "11–15", min: 11, max: 15 }, { label: "16–20", min: 16, max: 20 }, { label: "21–25", min: 21, max: 25 }, { label: "26", min: 26, max: 26 }].map((range) => ({ ...range, count: history.filter((entry) => entry.correct >= range.min && entry.correct <= range.max).length }));
-  return { played: history.length, finished: history.filter((entry) => entry.finished).length, averageCorrect: history.length ? Math.round(history.reduce((sum, entry) => sum + entry.correct, 0) / history.length * 10) / 10 : null, bestCorrect: history.length ? Math.max(...history.map((entry) => entry.correct)) : null, bestScore: history.length ? Math.max(...history.map((entry) => entry.score)) : null, distribution };
+  // Media, mejor día y mejor puntuación solo con los roscos terminados: uno empezado y abandonado (o el de hoy a medias) no debe bajar la media.
+  const finished = history.filter((entry) => entry.finished);
+  return { played: history.length, finished: finished.length, averageCorrect: finished.length ? Math.round(finished.reduce((sum, entry) => sum + entry.correct, 0) / finished.length * 10) / 10 : null, bestCorrect: finished.length ? Math.max(...finished.map((entry) => entry.correct)) : null, bestScore: finished.length ? Math.max(...finished.map((entry) => entry.score)) : null, distribution };
 }
 export function recentDailyDays(history: DailyHistoryEntry[], todayKey: string, count = 28): { date: string; number: number; entry: DailyHistoryEntry | null }[] {
   if (!isDateKey(todayKey) || todayKey < DAILY_EPOCH || count <= 0) return [];

@@ -682,12 +682,33 @@ describe("estadísticas del rosco del día", () => {
 
     await waitFor(() => {
       const guardado = JSON.parse(localStorage.getItem(STORAGE_KEYS.daily) ?? "null") as { history: unknown[]; result: { finished: boolean } };
-      expect(guardado.history).toEqual([]);
+      expect(guardado.history).toHaveLength(1);
       expect(guardado.result.finished).toBe(true);
     });
-    expect(screen.getByText("Juega el Rosco del día para ver aquí tu histórico, tu racha y cómo se reparten tus aciertos.")).toBeTruthy();
+    // Tras recargar, el día de hoy sigue en el histórico (revisión de Fable).
+    cleanup();
+    render(<App />);
+    fireEvent.click(boton("▤ Estadísticas"));
+    expect(screen.queryByText("Juega el Rosco del día para ver aquí tu histórico, tu racha y cómo se reparten tus aciertos.")).toBeNull();
+    expect(screen.getByText("Días jugados").previousElementSibling?.textContent).toBe("1");
     fireEvent.click(boton("‹ Volver"));
     expect(await screen.findByText("Rosco de hoy terminado")).toBeTruthy();
+  });
+
+  it("«Borrar estadísticas» parte del estado en memoria: si localStorage falla, la racha visible no se pone a 0 (revisión de Fable)", async () => {
+    localStorage.setItem(STORAGE_KEYS.daily, JSON.stringify({
+      lastDate: fecha, streak: 1, bestStreak: 3, result: resultado(), history: [entrada()]
+    }));
+    render(<App />);
+    fireEvent.click(boton("▤ Estadísticas"));
+    fireEvent.click(boton("Borrar estadísticas"));
+    const lectura = vi.spyOn(localStorage, "getItem").mockImplementation(() => { throw new Error("almacenamiento bloqueado"); });
+    try {
+      fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Borrar" }));
+      fireEvent.click(boton("‹ Volver"));
+      expect(await screen.findByText("Rosco de hoy terminado")).toBeTruthy();
+      expect(screen.getByText(/Racha: 1 día · Mejor: 1/)).toBeTruthy();
+    } finally { lectura.mockRestore(); }
   });
 
   it("sin lienzo, «Compartir imagen» cae al texto y lo copia", async () => {

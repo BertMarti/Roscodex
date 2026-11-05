@@ -67,7 +67,7 @@ Despliegue: push a `main` → `deploy-pages.yml` publica en GitHub Pages. Tambi�
 - Nunca secretos, tokens, rutas personales ni IPs reales en el repo (ejemplos: `192.168.1.50`).
 - Nada de servicios de pago, analítica ni llamadas a APIs durante la partida.
 - Nada de `innerHTML`/`dangerouslySetInnerHTML`. Enlaces externos con `rel="noopener noreferrer"`.
-- La CSP de producción está en el plugin `roscodex-csp` de `vite.config.ts` y exige Trusted Types: nada de sumideros de HTML o script con cadenas; un sumidero de URL de script nuevo (p. ej. `new Worker`) hay que admitirlo en `allowedScriptUrl` y probarlo en la build. Si añades un recurso externo, ajústala de forma explícita.
+- La CSP de producción está en `csp.ts` (la inyecta el plugin `roscodex-csp` de `vite.config.ts`; la vigila `src/csp.test.ts`) y exige Trusted Types: nada de sumideros de HTML o script con cadenas; un sumidero de URL de script nuevo (p. ej. `new Worker`) hay que admitirlo en `allowedScriptUrl` y probarlo en la build. Si añades un recurso externo, ajústala de forma explícita.
 - La CI pasa gitleaks y `npm audit --audit-level=high`; no la debilites.
 
 ## Qué no tocar

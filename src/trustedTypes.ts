@@ -9,7 +9,7 @@ interface TrustedTypesLike { createPolicy: (name: string, rules: { createScriptU
 export function allowedScriptUrl(input: string, origin: string, base: string): string {
   const url = new URL(input, origin);
   const expected = new URL(`${base}sw.js`, origin);
-  if (url.origin === expected.origin && url.pathname === expected.pathname && !url.search && !url.hash) return url.href;
+  if (url.origin === expected.origin && url.pathname === expected.pathname && !url.search && !url.hash && !url.username && !url.password) return url.href;
   throw new TypeError(`URL de script no permitida: ${url.href}`);
 }
 

@@ -19,7 +19,9 @@ describe("allowedScriptUrl", () => {
       "/Roscodex/sw.js?v=1",
       "/Roscodex/sw.js#fragmento",
       "javascript:alert(1)",
-      "/Roscodex/sw.js/../x.js"
+      "/Roscodex/sw.js/../x.js",
+      "https://usuario:clave@bertmarti.github.io/Roscodex/sw.js",
+      "https://usuario@bertmarti.github.io/Roscodex/sw.js"
     ];
     for (const input of prohibidas) {
       expect(() => allowedScriptUrl(input, origen, base)).toThrow(TypeError);

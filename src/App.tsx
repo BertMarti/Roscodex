@@ -358,7 +358,7 @@ function App() {
       {modal === "exhausted" && <ExhaustedModal onClose={showHome} onReset={resetRotation} />}
       {modal === "results" && game && <ResultsModal game={game} daily={daily} todayKey={todayKey} record={(game.mode === "blitz" ? blitzRecords : records)[game.difficulty]} newRecord={newRecord} onRestart={() => void startGame(game.difficulty, game.mode === "guided" ? "timed" : game.mode)} onHome={showHome} onDayChange={refreshDay} onOpenDailyStats={() => { showHome(); setStatsFocus("daily"); setScreen("stats"); }} />}
       {modal === "abandon" && <AbandonModal timed={game ? isTimed(game) : true} daily={game?.mode === "daily"} onClose={resumeGame} onHome={showHome} />}
-      {modal === "reset-stats" && <ConfirmResetModal onCancel={() => setModal(null)} onConfirm={() => { resetStats(); const nextDaily = resetDailyStats(loadDaily(), todayKey); saveDaily(nextDaily); setDaily(nextDaily); setStats(loadStats()); setRecords(loadRecords()); setBlitzRecords(loadRecords("blitz")); setModal(null); }} />}
+      {modal === "reset-stats" && <ConfirmResetModal onCancel={() => setModal(null)} onConfirm={() => { resetStats(); const nextDaily = resetDailyStats(daily, todayKey); setDaily(nextDaily); saveDaily(nextDaily); setStats(loadStats()); setRecords(loadRecords()); setBlitzRecords(loadRecords("blitz")); setModal(null); }} />}
       <UpdateToast visible={screen === "home" && modal === null} update={update} />
     </>
   );
@@ -568,7 +568,7 @@ type RecordTable = Partial<Record<Difficulty, DifficultyRecord>>;
 function StatsScreen({ stats, daily, todayKey, focusSection, records, blitzRecords, onHome, onReset }: { stats: PlayerStats; daily: DailyData; todayKey: string; focusSection?: "daily"; records: RecordTable; blitzRecords: RecordTable; onHome: () => void; onReset: () => void }) {
   const titleRef = useRef<HTMLHeadingElement>(null);
   const dailyRef = useRef<HTMLHeadingElement>(null);
-    // Al entrar, el foco va al título (o a la sección del Rosco del día): el lector de pantalla anuncia dónde está.
+  // Al entrar, el foco va al título (o a la sección del Rosco del día): el lector de pantalla anuncia dónde está.
   useEffect(() => { const target = focusSection === "daily" ? dailyRef.current : titleRef.current; target?.focus(); if (focusSection === "daily") target?.scrollIntoView?.({ block: "start", behavior: "auto" }); }, [focusSection]);
   const accuracy = accuracyPercent(stats.correct, stats.correct + stats.wrong);
   const hardest = LETTERS
