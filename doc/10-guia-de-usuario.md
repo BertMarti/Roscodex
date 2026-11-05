@@ -94,7 +94,7 @@ La pantalla de resultados muestra:
 
 En las partidas con reloj y en las contrarrelojes también muestra el récord de la dificultad. Si superas el anterior, aparece **¡Nuevo récord!** Las partidas de práctica no cuentan para los récords, pero sí para las estadísticas.
 
-Desde ahí puedes pulsar **Compartir resultado**. Se abre el menú de compartir del sistema; si no está disponible, el resultado se copia al portapapeles o se muestra un texto para copiarlo a mano. Solo incluye los puntos, los contadores y una fila de cuadritos **🟩🟥⬜**: no incluye ningún dato personal.
+Desde ahí puedes pulsar **Compartir imagen** o **Compartir texto**. **Compartir imagen** genera una tarjeta cuadrada pixel-art (PNG) con el rosco coloreado, tus puntos y, en el Rosco del día, tu racha. Se abre el menú de compartir del sistema; si el navegador no permite compartir archivos, se descarga el PNG; si tampoco es posible, se recurre al texto. **Compartir texto** funciona como siempre: abre el menú de compartir con un resumen de los puntos, los contadores y una fila de cuadritos **🟩🟥⬜**; si no está disponible, lo copia al portapapeles o lo muestra para copiarlo a mano. Ninguna de las opciones incluye datos personales.
 
 También puedes pulsar **Jugar de nuevo** para iniciar otra partida con el mismo modo y dificultad, o **Cambiar dificultad** para volver a la pantalla inicial.
 
@@ -108,7 +108,7 @@ Siempre se juega en dificultad **Normal**, con un reloj de **5:00**, y solo se p
 
 Durante el rosco, **‹ Menú** pausa el reloj y muestra el aviso de abandono. Si abandonas, el rosco del día queda jugado con lo que hayas conseguido. Cerrar o recargar la página a mitad también guarda el progreso como resultado de hoy.
 
-Al finalizar aparece **Rosco del día #N**, la puntuación, 26 cuadraditos, la racha, **Compartir resultado**, la cuenta atrás **Siguiente rosco en HH:MM:SS** y **Volver a la portada**. En la portada, después de jugar, la tarjeta indica si el rosco está **terminado** o **sin terminar** (lo abandonaste, cerraste la página a mitad o sigue abierto en otra pestaña), conserva los cuadraditos y los puntos, y muestra la misma cuenta atrás. Al llegar el nuevo día vuelve a aparecer el botón para jugar.
+Al finalizar aparece **Rosco del día #N**, la puntuación, 26 cuadraditos, la racha, los botones **Compartir imagen** y **Compartir texto**, la cuenta atrás **Siguiente rosco en HH:MM:SS** y **Volver a la portada**. En la portada, después de jugar, la tarjeta indica si el rosco está **terminado** o **sin terminar** (lo abandonaste, cerraste la página a mitad o sigue abierto en otra pestaña), conserva los cuadraditos y los puntos, y permite consultar **Mis estadísticas del día** o volver a compartir el resultado. Al llegar el nuevo día vuelve a aparecer el botón para jugar.
 
 | Cuadradito | Significado |
 |---|---|
@@ -134,16 +134,25 @@ https://bertmarti.github.io/Roscodex/
 
 ## Estadísticas
 
-El botón **▤ Estadísticas** de la portada muestra, entre otros datos:
+El botón **▤ Estadísticas** de la portada muestra tus datos de juego. Se dividen en dos grandes bloques:
 
-- Partidas jugadas.
-- Aciertos totales y porcentaje de acierto.
+### Estadísticas generales
+
+- Partidas jugadas, aciertos totales y porcentaje de acierto.
 - Mejor racha de aciertos seguidos.
 - Preguntas falladas y pasadas.
 - Aciertos por letra y la letra que más cuesta.
 - Récords de las partidas con reloj y de las contrarrelojes, por dificultad.
 
-Puedes borrarlas con **Borrar estadísticas** y confirmando con **Borrar** (se borran también los récords; no se puede deshacer). Todo se queda en tu dispositivo.
+### Rosco del día
+
+Esta sección (que también puedes abrir con **▤ Mis estadísticas del día** desde la tarjeta de la portada) incluye:
+
+- **Resumen:** días jugados, racha actual, racha máxima, media de aciertos, mejor día y roscos terminados.
+- **Distribución de aciertos:** un gráfico que agrupa tus resultados por tramos (0–5, 6–10, 11–15, 16–20, 21–25 o 26 aciertos). El tramo que corresponde al rosco de hoy aparece resaltado en amarillo.
+- **Últimos 28 días:** un calendario visual que muestra qué días has terminado el rosco (verde), cuáles dejaste sin terminar (azul) y cuáles no jugaste (gris).
+
+Puedes borrarlas con **Borrar estadísticas** y confirmando con **Borrar**. Se borran las estadísticas generales, los récords y el histórico del rosco del día de ese dispositivo. El rosco de hoy se mantiene como jugado y la racha actual no se pierde (el aviso lo indica). No se puede deshacer. Todo se queda en tu dispositivo.
 
 ## Accesibilidad y ajustes
 
@@ -188,8 +197,12 @@ Los problemas técnicos de recursos y de desarrollo se explican en la [guía de 
 
 El rosco del día cambia a las 00:00 según la fecha de tu dispositivo. Si la app estaba abierta, la cuenta atrás detecta el cambio sola; al volver a la pestaña también se actualiza. Comprueba que el dispositivo tiene la fecha correcta.
 
+### No se comparte la imagen
+
+Si el navegador o el sistema no permiten compartir archivos directamente, Roscodex intentará descargar el archivo PNG en tu dispositivo. Si esto tampoco funciona, usa el botón **Compartir texto** para copiar el resultado al portapapeles.
+
 ## Estado actual del proyecto
 
-La versión actual es la **1.1.0** (31/10/2026). Incluye los modos con reloj, contrarreloj y práctica, partida guiada, el rosco del día, estadísticas, récords, compartir resultado, alto contraste y una PWA instalable que funciona sin conexión. El número de versión se ve al pie de la portada y en **«Fuentes y créditos»**.
+La versión actual es la **1.2.0** (02/11/2026). Incluye los modos con reloj, contrarreloj y práctica, partida guiada, el rosco del día, estadísticas detalladas con histórico diario, récords, compartir resultado (imagen pixel-art o texto), alto contraste y una PWA instalable que funciona sin conexión. El número de versión se ve al pie de la portada y en **«Fuentes y créditos»**.
 
 Sigue sin incluir cuentas, ranking online, multijugador ni sincronización entre dispositivos.

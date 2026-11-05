@@ -2,6 +2,18 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). Versionado semántico.
 
+## [1.2.0] — 2026-11-02
+
+### Añadido
+- **Compartir el resultado como imagen**: «Compartir imagen» crea una tarjeta cuadrada pixel-art (PNG de 1200 × 1200) con el rosco de 26 letras coloreadas (verde acierto, rojo fallo, azul pasada, gris sin responder), los puntos, los recuentos, la racha en el Rosco del día y la dirección del juego. Sin nombre, sin preguntas y sin respuestas. En el móvil se abre el menú de compartir del sistema con la imagen; si el navegador no deja compartir archivos, se descarga el PNG; y si tampoco se puede crear, se comparte el texto de siempre. Funciona en las partidas normales y en el Rosco del día (también desde la tarjeta de la portada).
+- **Estadísticas del Rosco del día** en «▤ Estadísticas» (y directamente con «▤ Mis estadísticas del día» en la portada o «Ver mis estadísticas» en el resultado del día): días jugados, racha actual y máxima, media de aciertos, mejor día, roscos terminados, distribución de aciertos por tramos (el de hoy resaltado) y los últimos 28 días (terminado, sin terminar o no jugado), con textos para lector de pantalla. Se guarda solo en el dispositivo; quien jugó con la 1.1 conserva ese día como primer registro.
+
+### Cambiado
+- El botón «Compartir resultado» pasa a ser dos: «Compartir imagen» y «Compartir texto» (este, igual que antes).
+- «Borrar estadísticas» borra también el histórico del Rosco del día; el rosco de hoy sigue jugado y la racha actual se mantiene (el aviso lo explica).
+- Seguridad: la Content-Security-Policy exige ahora **Trusted Types** (`require-trusted-types-for 'script'`); una política mínima solo deja registrar el service worker propio, y cualquier HTML o script creado desde texto queda bloqueado.
+- Mantenimiento: `@vitejs/plugin-react` 6.2.1. `npm audit` sigue con 4 avisos bajos sin arreglo publicado (`deepmerge` 4.3.1 dentro de `workbox-build`, solo al compilar; comprobado el 02/11/2026: no hay versión nueva de `deepmerge` ni de `@rollup/plugin-node-resolve` sin él). Vitest 5.1 vuelve a probarse: pasa todo con Node 22.23, pero con el Node 20.19 de la Raspberry Pi no arranca (`Map.groupBy`), así que se queda en la 4.
+
 ## [1.1.0] — 2026-10-31
 
 ### Añadido

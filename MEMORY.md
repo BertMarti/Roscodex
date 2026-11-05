@@ -1,9 +1,10 @@
 # MEMORY.md — Roscodex
 
-Memoria del proyecto para personas y agentes: decisiones, por qué se tomaron y trampas conocidas. Fecha del último repaso: **31/10/2026**.
+Memoria del proyecto para personas y agentes: decisiones, por qué se tomaron y trampas conocidas. Fecha del último repaso: **02/11/2026**.
 
-## Estado actual (31/10/2026)
+## Estado actual (02/11/2026)
 
+- **Versión 1.2.0** (fase 7, PR desde `v1.2-2026-11-02`): **compartir como imagen** (`src/shareImage.ts`) y **estadísticas del Rosco del día** (histórico en `roscodex-daily-v1`). CSP con Trusted Types (`src/trustedTypes.ts`). `npm audit`: los mismos 4 avisos bajos de `deepmerge`.
 - **Versión 1.1.0** (fase 6, PR desde `v1.1-2026-10-31`): **Rosco del día** (`src/daily.ts`), racha de días, cuenta atrás y compartir con cuadraditos. `npm audit`: 4 avisos bajos sin arreglo (`deepmerge` en `workbox-build`, solo en compilación).
 
 - **Versión 1.0.0** (fase 5, PR desde `v1-2026-10-26`): primera versión estable. Versión visible en la portada y en «Fuentes y créditos» (`src/version.ts` la lee de `package.json`). La release y la etiqueta `v1.0.0` las publica Alberto/el orquestador tras fusionar.
@@ -44,10 +45,18 @@ Memoria del proyecto para personas y agentes: decisiones, por qué se tomaron y 
 | La racha del día cuenta días en que se **empieza** | Más sencillo y sin trampas (recargar no la salva ni la rompe). Se rompe si pasa un día entero sin jugar. |
 | El rosco del día cuenta en estadísticas, no en récords ni en la rotación | Es otra selección de preguntas: mezclarlo con los récords de Normal no sería justo; y no debe gastar la rotación de nadie. |
 | Clave `roscodex-daily-v1` (no `roscodex:`) | El encargo pedía el prefijo `roscodex:`, pero el repo ya usa `roscodex-` en todas sus claves y un test lo exige; se mantiene la convención. |
+| Histórico del día DENTRO de `roscodex-daily-v1` (campo `history`, máx. 400 días) | Una sola escritura guarda resultado e histórico (no se desincronizan) y no hace falta otra clave en el origen compartido. Sin `history` (datos de la 1.1) se siembra con el `result`; con `history: []` no (así «Borrar estadísticas» no lo resucita). |
+| «Borrar estadísticas» vacía el histórico del día pero conserva `result`, `lastDate` y `streak`; `bestStreak` = racha actual | Borrar no puede dar otra partida hoy ni romper la racha en curso; la racha máxima no puede ser menor que la actual. |
+| Imagen = lienzo lógico 300×300 ×4 sin suavizado, Press Start 2P, solo `fillRect`/`fillText` | Pixel-art nítido coherente con el juego, sin recursos externos, y probable con un contexto falso (happy-dom no tiene canvas). Sin emojis: la fuente no los tiene. |
+| La imagen se prepara al mostrarse el botón (clave = JSON de la tarjeta) | `navigator.share` exige un gesto reciente y Safari lo pierde si antes hay que esperar a la fuente y a `toBlob`. |
+| Orden: compartir archivo → descargar PNG → texto | Web Share Level 2 donde exista (móviles); en escritorio sin `canShare` se descarga; si no hay canvas, el texto de siempre. «Compartir texto» sigue aparte. |
+| Trusted Types con política `default` limitada a `${BASE_URL}sw.js` | `workbox-window` registra el SW con una cadena y Chromium lo bloquea con `require-trusted-types-for`. La política no define `createHTML` ni `createScript`: cualquier `innerHTML`/`eval` con cadena sigue bloqueado. Se importa la primera en `main.tsx`. |
 | Licencia MIT solo para el código | Sprites, retrato de SpriteCollab (CC BY-NC 4.0) y fuente (OFL) mantienen sus licencias; Pokémon es marca de terceros. |
 
 ## Trampas conocidas
 
+- **Trusted Types**: si algún día se añade un `new Worker(url)` u otro sumidero de URL de script, hay que admitirlo en `allowedScriptUrl` (`src/trustedTypes.ts`); si no, Chromium lo bloquea en producción (en `npm run dev` no hay CSP y no se nota).
+- **Compartir imagen en Chromium sin cabeza**: no hay `navigator.share` ni `canShare`, así que se descarga el PNG (es lo esperado). Para probar el menú del sistema hace falta un móvil.
 - **Rosco del día a medianoche**: `msUntilNextDay` salta de ~0 a 24 h, así que `DailyCountdown` detecta el día nuevo comparando `localDateKey(new Date())` con `todayKey`, no esperando a 0. También se recalcula con `visibilitychange`.
 - **Rosco del día y `showHome`**: al salir se guarda `updateDailyProgress(..., game.finished)`; con `false` fijo, «Volver a la portada» tras terminar lo marcaba como «abandonado» (lo cazó la revisión de Claude).
 - **`npm audit` (31/10/2026)**: `overrides` de `glob` ^14.0.3, `minimatch` ^11.0.3 y `@trickfilm400/rollup-plugin-off-main-thread` ^4.0.0 (arrastra `ejs` 7 sin `jake`/`filelist`). Probado: la build genera el mismo precache (34 entradas). Queda `deepmerge` 4.3.1 (aviso bajo, sin versión arreglada) dentro de `@rollup/plugin-node-resolve` → `workbox-build`: solo se usa al compilar con opciones propias, no llega a la web.
@@ -86,3 +95,9 @@ Memoria del proyecto para personas y agentes: decisiones, por qué se tomaron y 
 - **GPT-5.6 Luna** (OpenCode, delegado): `src/daily.ts`, integración en `App.tsx` (tarjeta, cuenta atrás, resultados, botón de compartir común) y estilos; borrador de README y guía de usuario. Revisión cruzada de solo lectura (`--agent plan`).
 - **Big Pickle (Zen)**: 26 tests (`daily.test.ts` y el bloque «rosco del día» de `App.test.tsx`). No puede ejecutar `npx`: Claude los pasó.
 - **Claude (jefe)**: diseño y encargos; arreglos de la entrega (progreso que no llegaba al estado, «terminado» que pasaba a «abandonado», cuenta atrás que nunca detectaba medianoche, pasadas en azul como en el rosco, ids únicos del texto de respaldo, cuadraditos gigantes en escritorio); arreglos de la revisión cruzada (otra pestaña, resultado abierto a medianoche, coherencia de lo guardado) con sus tests; mantenimiento de dependencias, prueba de Vitest 5 con Node 22, docs técnicas, prueba en Chromium y capturas.
+
+## Quién hizo qué (02/11/2026, v1.2.0)
+
+- **GPT-5.6 Luna** (OpenCode, delegado): histórico y resumen en `daily.ts`, sección de estadísticas, botones de compartir y primer `shareImage.ts`.
+- **Claude (jefe)**: diseño y encargos; dibujo pixel-art de la tarjeta (rosco en círculo), Trusted Types, arreglos de la entrega (tipos, imagen preparada según su contenido, «Ver mis estadísticas» que no guardaba el progreso como «Volver a la portada», texto de 7 px, casillas gigantes con pocos días, campos extra copiados del histórico), mantenimiento, prueba en Chromium y capturas.
+

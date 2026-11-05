@@ -10,7 +10,7 @@ Todo lo técnico del proyecto: cómo arrancarlo, cómo está organizado, cómo s
 | Vite 8 | Servidor de desarrollo y build estática |
 | vite-plugin-pwa (Workbox) | PWA instalable y offline-first (precache de la build) |
 | Capacitor 8 | Empaquetado opcional para Android/iOS reutilizando la misma build |
-| Vitest 4 + happy-dom + Testing Library | Tests unitarios y de componentes (Vitest 5 exige Node ≥ 22.12: probado el 31/10/2026 con Node 22 y pasa todo; no se actualiza mientras la Pi tenga Node 20) |
+| Vitest 4 + happy-dom + Testing Library | Tests unitarios y de componentes (Vitest 5 exige Node ≥ 22.12: probado el 31/10 y el 02/11/2026 —Vitest 5.1— con Node 22 y pasa todo; con Node 20.19 no arranca, así que no se actualiza mientras la Pi tenga Node 20) |
 | Scripts Node (`scripts/*.mjs`) | Generar, validar y simular el banco de preguntas |
 
 No hay backend, cuentas, analítica ni servicios de pago. La partida no llama a ninguna API: todo lo necesario viaja en la build.
@@ -60,7 +60,9 @@ src/
   records.ts       récords locales por dificultad (con reloj y contrarreloj)
   stats.ts         estadísticas del jugador (parseStats valida lo guardado)
   share.ts         texto del resultado y Web Share API → portapapeles
-  daily.ts         rosco del día: fecha local, semilla determinista, racha, cuenta atrás y texto para compartir
+  daily.ts         rosco del día: fecha local, semilla determinista, racha, cuenta atrás, histórico y resumen, texto para compartir
+  shareImage.ts    tarjeta pixel-art en canvas (300×300 ×4) y envío: archivo con Web Share → descarga del PNG
+  trustedTypes.ts  política «default» de Trusted Types (solo la URL del service worker propio); se importa la primera
   contrast.ts      tema de alto contraste (prefers-contrast + interruptor)
   pwa.ts           instalar la app (beforeinstallprompt / iPhone) y aviso de versión nueva
   *.test.ts(x)     tests de Vitest junto al archivo que prueban (los .tsx usan happy-dom)
@@ -130,10 +132,10 @@ Dependabot (`.github/dependabot.yml`) propone cada lunes las actualizaciones de 
 
 ## Seguridad y privacidad
 
-- La build incluye una Content-Security-Policy estricta (`default-src 'self'`, sin scripts en línea) inyectada por el plugin `roscodex-csp` de `vite.config.ts`. Solo se aplica en la build porque el servidor de desarrollo necesita scripts en línea. Si añades un recurso externo, ajusta la política.
+- La build incluye una Content-Security-Policy estricta (`default-src 'self'`, sin scripts en línea) inyectada por el plugin `roscodex-csp` de `vite.config.ts`. Desde la 1.2.0 exige también **Trusted Types** (`require-trusted-types-for 'script'; trusted-types default`): la única política, en `src/trustedTypes.ts`, solo deja pasar la URL del service worker (`workbox-window` lo registra con una cadena). Solo se aplica en la build porque el servidor de desarrollo necesita scripts en línea; por eso hay que probar en `npm run preview` o en la build servida (un `new Worker(url)` nuevo, por ejemplo, fallaría solo ahí). Si añades un recurso externo, ajusta la política. La imagen para compartir se dibuja en un `<canvas>` sin recursos externos y se descarga con una URL `blob:` en un enlace (no hace falta tocar `img-src`).
 - Nada de `innerHTML` ni `dangerouslySetInnerHTML`; los enlaces externos llevan `rel="noopener noreferrer"`.
-- **Origen compartido**: todas las webs de Pages de BertMarti comparten `https://bertmarti.github.io`, así que `localStorage` es común. Todas las claves están en `STORAGE_KEYS` (`src/storage.ts`) con el prefijo `roscodex-` (lo comprueba un test): historial de preguntas, sonido, primera visita, modo de juego, récords (con reloj y contrarreloj), estadísticas, contraste y rosco del día (`roscodex-daily-v1`). Todo se valida al leer (otra web del mismo origen podría escribir esas claves). Nada sensible y nada sale del navegador; al compartir solo se envía el resumen visible y solo si el jugador lo pide.
-- `npm audit`: `overrides` en `package.json` de `glob` 14, `minimatch` 11 y `@trickfilm400/rollup-plugin-off-main-thread` 4 (dependencias de compilación de `workbox-build` y `rimraf`). El antiguo `overrides` de `uuid` para `xcode` se quitó en la 1.1.0: `@capacitor/cli` 8.6 usa `xcode` 4, que ya no depende de `uuid`. Quedan 4 avisos bajos de `deepmerge` sin versión arreglada (solo en compilación); la CI corta en `high`.
+- **Origen compartido**: todas las webs de Pages de BertMarti comparten `https://bertmarti.github.io`, así que `localStorage` es común. Todas las claves están en `STORAGE_KEYS` (`src/storage.ts`) con el prefijo `roscodex-` (lo comprueba un test): historial de preguntas, sonido, primera visita, modo de juego, récords (con reloj y contrarreloj), estadísticas, contraste y rosco del día (`roscodex-daily-v1`, que desde la 1.2.0 guarda también el histórico de días, máximo 400). Todo se valida al leer (otra web del mismo origen podría escribir esas claves). Nada sensible y nada sale del navegador; al compartir solo se envía el resumen visible y solo si el jugador lo pide.
+- `npm audit`: `overrides` en `package.json` de `glob` 14, `minimatch` 11 y `@trickfilm400/rollup-plugin-off-main-thread` 4 (dependencias de compilación de `workbox-build` y `rimraf`). El antiguo `overrides` de `uuid` para `xcode` se quitó en la 1.1.0: `@capacitor/cli` 8.6 usa `xcode` 4, que ya no depende de `uuid`. Quedan 4 avisos bajos de `deepmerge` sin versión arreglada (solo en compilación; comprobado el 02/11/2026: `deepmerge` 4.3.1 sigue siendo la última y `@rollup/plugin-node-resolve` 16.0.3 aún lo usa); la CI corta en `high`.
 - Política de avisos: [SECURITY.md](../SECURITY.md).
 
 ## Licencias
