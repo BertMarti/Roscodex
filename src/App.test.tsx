@@ -8,6 +8,7 @@ import { STORAGE_KEYS } from "./storage";
 import { SHARE_URL } from "./share";
 import packageJson from "../package.json";
 import { bancoDePrueba } from "./test/fixtures";
+import { dailyNumber } from "./daily";
 
 vi.mock("./audio", () => ({ playSound: vi.fn() }));
 
@@ -316,7 +317,7 @@ describe("compartir el resultado", () => {
 
       const dialogo = await screen.findByRole("dialog");
       expect(within(dialogo).getByRole("heading", { name: "Práctica terminada" })).toBeTruthy();
-      fireEvent.click(within(dialogo).getByRole("button", { name: "Compartir resultado" }));
+      fireEvent.click(within(dialogo).getByRole("button", { name: "Compartir texto" }));
       expect(await screen.findByText(/Resultado copiado/)).toBeTruthy();
       expect(writeText).toHaveBeenCalledOnce();
       const texto = writeText.mock.calls[0][0] as string;
@@ -454,7 +455,7 @@ describe("rosco del día", () => {
     fireEvent.click(boton("Abandonar"));
     expect(await screen.findByText("Rosco de hoy sin terminar")).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Jugar el rosco del día" })).toBeNull();
-    expect(boton("Compartir resultado")).toBeTruthy();
+    expect(boton("Compartir texto")).toBeTruthy();
     expect(screen.getByText(/Siguiente rosco en \d\d:\d\d:\d\d/)).toBeTruthy();
     expect(screen.getByText(/sin responder/)).toBeTruthy();
     const daily = JSON.parse(localStorage.getItem(STORAGE_KEYS.daily) ?? "null") as { result: { cells: string[] } };
@@ -517,12 +518,12 @@ describe("rosco del día", () => {
     Object.defineProperty(navegador, "clipboard", { value: undefined, configurable: true });
     try {
       render(<App />);
-      fireEvent.click(boton("Compartir resultado"));
+      fireEvent.click(boton("Compartir texto"));
       const textarea = await screen.findByLabelText("Texto para compartir") as HTMLTextAreaElement;
       await waitFor(() => expect(document.activeElement).toBe(textarea));
       // Segunda pulsación con el texto ya visible: vuelve a enfocarlo y seleccionarlo (revisión de Fable).
       textarea.blur();
-      fireEvent.click(boton("Compartir resultado"));
+      fireEvent.click(boton("Compartir texto"));
       await waitFor(() => expect(document.activeElement).toBe(textarea));
       expect(textarea.selectionEnd - textarea.selectionStart).toBe(textarea.value.length);
       expect(textarea.value).toContain("Rosco del día #1");
@@ -606,5 +607,131 @@ describe("rosco del día", () => {
     const stats = JSON.parse(localStorage.getItem(STORAGE_KEYS.stats) ?? "null") as { games: number };
     expect(stats.games).toBe(1);
     expect(localStorage.getItem(STORAGE_KEYS.records)).toBeNull();
+  });
+});
+
+describe("estadísticas del rosco del día", () => {
+  const fecha = "2026-10-31";
+  const numero = dailyNumber(fecha);
+  const celdasVacias = () => Array.from({ length: 26 }, () => "empty");
+  const resultado = (cambios: Record<string, unknown> = {}) => ({
+    date: fecha, number: numero, cells: celdasVacias(), score: 0, correct: 0, wrong: 0, passed: 0, finished: true, ...cambios
+  });
+  const entrada = (cambios: Record<string, unknown> = {}) => ({
+    date: fecha, number: numero, correct: 18, wrong: 4, passed: 2, score: 180, finished: true, ...cambios
+  });
+
+  beforeEach(() => {
+    vi.useFakeTimers({ shouldAdvanceTime: true, toFake: ["Date"] });
+    vi.setSystemTime(new Date(2026, 9, 31, 10, 0, 0));
+    localStorage.setItem(STORAGE_KEYS.onboarding, "done");
+  });
+
+  afterEach(() => {
+    cleanup();
+    vi.useRealTimers();
+  });
+
+  it("muestra el histórico del día aunque no haya partidas normales", async () => {
+    localStorage.setItem(STORAGE_KEYS.daily, JSON.stringify({
+      lastDate: fecha, streak: 1, bestStreak: 3, result: null, history: [entrada()]
+    }));
+    render(<App />);
+    fireEvent.click(boton("▤ Estadísticas"));
+
+    expect(await screen.findByText("Días jugados")).toBeTruthy();
+    expect(screen.getByText("Racha máxima")).toBeTruthy();
+    expect(screen.getByText("De 16 a 20 aciertos: 1 día (hoy)")).toBeTruthy();
+    expect(screen.getByLabelText(/31\/10: 18 aciertos, terminado/)).toBeTruthy();
+    expect(screen.getByText("Aún no has terminado ninguna partida")).toBeTruthy();
+  });
+
+  it("sin histórico muestra el estado vacío y no ofrece borrar estadísticas", () => {
+    localStorage.setItem(STORAGE_KEYS.daily, JSON.stringify({
+      lastDate: null, streak: 0, bestStreak: 0, result: null, history: []
+    }));
+    render(<App />);
+    fireEvent.click(boton("▤ Estadísticas"));
+
+    expect(screen.getByText("Juega el Rosco del día para ver aquí tu histórico, tu racha y cómo se reparten tus aciertos.")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Borrar estadísticas" })).toBeNull();
+  });
+
+  it("«Mis estadísticas del día» enfoca el histórico y «Estadísticas» enfoca el título", async () => {
+    render(<App />);
+    fireEvent.click(boton("▤ Mis estadísticas del día"));
+    const tituloDia = screen.getByRole("heading", { name: "Rosco del día", level: 3 });
+    await waitFor(() => expect(document.activeElement).toBe(tituloDia));
+
+    cleanup();
+    render(<App />);
+    fireEvent.click(boton("▤ Estadísticas"));
+    const titulo = screen.getByRole("heading", { name: "Estadísticas", level: 2 });
+    await waitFor(() => expect(document.activeElement).toBe(titulo));
+  });
+
+  it("«Borrar estadísticas» vacía el histórico pero mantiene el rosco de hoy terminado", async () => {
+    localStorage.setItem(STORAGE_KEYS.daily, JSON.stringify({
+      lastDate: fecha, streak: 1, bestStreak: 3, result: resultado(), history: [entrada()]
+    }));
+    render(<App />);
+    fireEvent.click(boton("▤ Estadísticas"));
+    fireEvent.click(boton("Borrar estadísticas"));
+    const dialogo = screen.getByRole("dialog");
+    fireEvent.click(within(dialogo).getByRole("button", { name: "Borrar" }));
+
+    await waitFor(() => {
+      const guardado = JSON.parse(localStorage.getItem(STORAGE_KEYS.daily) ?? "null") as { history: unknown[]; result: { finished: boolean } };
+      expect(guardado.history).toHaveLength(1);
+      expect(guardado.result.finished).toBe(true);
+    });
+    // Tras recargar, el día de hoy sigue en el histórico (revisión de Fable).
+    cleanup();
+    render(<App />);
+    fireEvent.click(boton("▤ Estadísticas"));
+    expect(screen.queryByText("Juega el Rosco del día para ver aquí tu histórico, tu racha y cómo se reparten tus aciertos.")).toBeNull();
+    expect(screen.getByText("Días jugados").previousElementSibling?.textContent).toBe("1");
+    fireEvent.click(boton("‹ Volver"));
+    expect(await screen.findByText("Rosco de hoy terminado")).toBeTruthy();
+  });
+
+  it("«Borrar estadísticas» parte del estado en memoria: si localStorage falla, la racha visible no se pone a 0 (revisión de Fable)", async () => {
+    localStorage.setItem(STORAGE_KEYS.daily, JSON.stringify({
+      lastDate: fecha, streak: 1, bestStreak: 3, result: resultado(), history: [entrada()]
+    }));
+    render(<App />);
+    fireEvent.click(boton("▤ Estadísticas"));
+    fireEvent.click(boton("Borrar estadísticas"));
+    const lectura = vi.spyOn(localStorage, "getItem").mockImplementation(() => { throw new Error("almacenamiento bloqueado"); });
+    try {
+      fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Borrar" }));
+      fireEvent.click(boton("‹ Volver"));
+      expect(await screen.findByText("Rosco de hoy terminado")).toBeTruthy();
+      expect(screen.getByText(/Racha: 1 día · Mejor: 1/)).toBeTruthy();
+    } finally { lectura.mockRestore(); }
+  });
+
+  it("sin lienzo, «Compartir imagen» cae al texto y lo copia", async () => {
+    localStorage.setItem(STORAGE_KEYS.daily, JSON.stringify({
+      lastDate: fecha, streak: 1, bestStreak: 3, result: resultado(), history: [entrada()]
+    }));
+    const navegador = globalThis.navigator;
+    const shareOriginal = Object.getOwnPropertyDescriptor(navegador, "share");
+    const clipboardOriginal = Object.getOwnPropertyDescriptor(navegador, "clipboard");
+    const writeText = vi.fn(async (_texto: string) => undefined);
+    Object.defineProperty(navegador, "share", { value: undefined, configurable: true });
+    Object.defineProperty(navegador, "clipboard", { value: { writeText }, configurable: true });
+    try {
+      render(<App />);
+      fireEvent.click(boton("Compartir imagen"));
+      expect(await screen.findByText("No se pudo crear la imagen. Resultado copiado. Pégalo donde quieras.", {}, { timeout: 5000 })).toBeTruthy();
+      expect(writeText).toHaveBeenCalledOnce();
+      expect(writeText.mock.calls[0][0]).toContain("Rosco del día #1");
+    } finally {
+      if (shareOriginal) Object.defineProperty(navegador, "share", shareOriginal);
+      else Reflect.deleteProperty(navegador, "share");
+      if (clipboardOriginal) Object.defineProperty(navegador, "clipboard", clipboardOriginal);
+      else Reflect.deleteProperty(navegador, "clipboard");
+    }
   });
 });

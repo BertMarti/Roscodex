@@ -13,7 +13,7 @@
   <img src="https://img.shields.io/badge/PWA-Sin_conexi%C3%B3n-35cf78?style=for-the-badge" alt="PWA sin conexión">
   <img src="https://img.shields.io/badge/Gratis-Sin_anuncios-5874ff?style=for-the-badge" alt="Gratis sin anuncios">
   <img src="https://img.shields.io/badge/Idioma-Espa%C3%B1ol-e86f00?style=for-the-badge" alt="Idioma Español">
-  <img src="https://img.shields.io/badge/Versi%C3%B3n-1.1.0-35cf78?style=for-the-badge" alt="Versión 1.1.0">
+  <img src="https://img.shields.io/badge/Versi%C3%B3n-1.2.0-35cf78?style=for-the-badge" alt="Versión 1.2.0">
   <a href="LICENSE"><img src="https://img.shields.io/badge/Licencia-MIT-ef5262?style=for-the-badge" alt="Licencia MIT"></a>
 </p>
 
@@ -45,6 +45,8 @@
 | Portada: elige modo y dificultad | Tus estadísticas |
 | :---: | :---: |
 | <img src="doc/img/captura-portada.png" alt="Portada con los modos Con reloj, Contrarreloj 2:00 y Práctica, las cuatro dificultades y los botones Alto contraste y Estadísticas" width="440"> | <img src="doc/img/captura-estadisticas.png" alt="Pantalla de estadísticas con partidas, porcentaje de acierto, mejor racha y aciertos por letra" width="440"> |
+| **«Compartir imagen»: la tarjeta que se comparte** | **Tus estadísticas del Rosco del día** |
+| <img src="doc/img/captura-imagen-compartida.png" alt="Tarjeta cuadrada pixel-art del Rosco del día número 6: el rosco de 26 letras en verde, rojo y azul, 190 puntos en el centro, los recuentos, la racha y la dirección del juego" width="300"> | <img src="doc/img/captura-estadisticas-dia.png" alt="Sección Rosco del día en el móvil: días jugados, racha actual y máxima, media de aciertos, mejor día, distribución de aciertos por tramos y los últimos días en un calendario" width="300"> |
 
 <p align="center">
   <em>En el móvil: al fallar, la respuesta correcta explicada</em><br>
@@ -69,8 +71,8 @@
 5. **Elige tu respuesta:** dispones de **4 opciones posibles**. Si aciertas, sumas **+10 puntos** y la casilla se ilumina en verde; si fallas, se tiñe de rojo y verás **la respuesta correcta con una línea que la explica** (su tipo y su generación). Pulsa **«Siguiente ›»** (o `Intro`) para seguir; con reloj, el juego sigue solo a los pocos segundos.
 6. **Usa «Pasapalabra»:** si dudas con una letra, puedes pasarla para no arriesgarte. No penaliza y la casilla quedará en azul para más adelante.
 7. **Segunda vuelta:** tras recorrer el abecedario de la A a la Z, volverás una vez más a las letras que hayas dejado pendientes, siempre que el temporizador no haya llegado a cero.
-8. **Consulta tu resultado:** al finalizar, la pantalla de resumen te mostrará tu puntuación, tus aciertos, tus fallos y las letras que pasaste. En las partidas con reloj verás también tu **récord** de esa dificultad (y «¡Nuevo récord!» si lo superas). Desde ahí puedes **compartir tu resultado** (un resumen con tus puntos y una fila de cuadritos 🟩🟥⬜, sin ningún dato tuyo), volver a jugar o cambiar de dificultad.
-9. **Mira tus estadísticas:** en la portada, **«▤ Estadísticas»** muestra tus partidas, aciertos totales, porcentaje de acierto, tu mejor racha de aciertos seguidos, qué letras se te dan mejor y peor, y tus récords. Todo se queda en tu dispositivo y puedes borrarlo cuando quieras.
+8. **Consulta tu resultado:** al finalizar, la pantalla de resumen te mostrará tu puntuación, tus aciertos, tus fallos y las letras que pasaste. En las partidas con reloj verás también tu **récord** de esa dificultad (y «¡Nuevo récord!» si lo superas). Desde ahí puedes **«Compartir imagen»** (una tarjeta cuadrada pixel-art con tu rosco coloreado y tus puntos; en el móvil se abre el menú de compartir y, si no se puede, se descarga el PNG) o **«Compartir texto»** (el resumen de siempre con cuadritos 🟩🟥⬜), sin ningún dato tuyo, volver a jugar o cambiar de dificultad.
+9. **Mira tus estadísticas:** en la portada, **«▤ Estadísticas»** muestra tus partidas, aciertos totales, récords y una sección especial para el **Rosco del día** con tu racha, historial de los últimos 28 días y distribución de aciertos. Todo se queda en tu dispositivo y puedes borrarlo cuando quieras.
 
 ---
 
@@ -79,8 +81,8 @@
 1. En la portada, pulsa **«Jugar el rosco del día»** en la tarjeta **«Rosco del día»**.
 2. Responde el mismo rosco que tiene todo el mundo ese día: dificultad Normal, 5:00 y una sola partida.
 3. Completa las 26 letras, usando **Pasapalabra** si quieres dejar alguna para después.
-4. Al terminar verás los puntos, los 26 cuadraditos, tu racha, **«Compartir resultado»** y la cuenta atrás hasta el siguiente rosco.
-5. El rosco cambia a las 00:00 según la hora local de tu dispositivo. No necesitas conexión ni una cuenta, también funciona con la app instalada.
+4. Al terminar verás los puntos, los 26 cuadraditos, tu racha, los botones de **«Compartir imagen»** y **«Compartir texto»**, y la cuenta atrás hasta el siguiente rosco.
+5. El rosco cambia a las 00:00 según la hora local de tu dispositivo. Puedes consultar tu evolución diaria en **«▤ Mis estadísticas del día»**. No necesitas conexión ni una cuenta, también funciona con la app instalada.
 
 Los cuadraditos del rosco diario significan: 🟩 acierto, 🟥 fallo, 🟦 pasada (la dejaste con Pasapalabra y ya no llegaste a responderla) y ⬜ sin responder. Una letra que pasaste y luego respondiste en la segunda vuelta sale en verde o en rojo; el número junto a ↻ sí cuenta todas las veces que pulsaste Pasapalabra.
 
@@ -202,7 +204,7 @@ Sí. Gracias a la tecnología PWA, tras abrir la web por primera vez, el juego y
 <details>
 <summary><strong>¿Guarda o comparte mis datos?</strong></summary>
 
-No. Roscodex no envía ningún dato a servidores externos. Únicamente guarda de manera local en tu navegador tu preferencia de sonido y de contraste, el modo de juego elegido, si ya hiciste la partida guiada, tus récords, tus estadísticas y el registro de preguntas jugadas para gestionar la rotación. Al compartir un resultado solo se comparte el resumen que ves (puntos y cuadritos), nunca tu nombre ni nada tuyo.
+No. Roscodex no envía ningún dato a servidores externos. Únicamente guarda de manera local en tu navegador tu preferencia de sonido y de contraste, el modo de juego elegido, si ya hiciste la partida guiada, tus récords, tus estadísticas, el historial del rosco del día y el registro de preguntas jugadas para gestionar la rotación. Al compartir un resultado (como imagen o texto) solo se incluye el resumen que ves (puntos y cuadritos), nunca tu nombre ni nada tuyo.
 </details>
 
 <details>
@@ -239,7 +241,7 @@ El número aparece al pie de la portada y en **«Fuentes y créditos»**. Cuando
 
 ## 🧑‍💻 Lo que tienes que hacer tú (Alberto)
 
-1. **Comprobarlo en el móvil** cuando se publique la 1.1.0: abre <https://bertmarti.github.io/Roscodex/>, comprueba que el pie de la portada dice **ROSCODEX v1.1.0**, juega el rosco del día, pulsa **«Compartir resultado»** y vuelve al día siguiente para comprobar que la racha pasa a 2.
+1. **Comprobarlo en el móvil** cuando se publique la 1.2.0: abre <https://bertmarti.github.io/Roscodex/>, comprueba que el pie de la portada dice **ROSCODEX v1.2.0**, juega el rosco del día, pulsa **«Compartir imagen»** (debe abrir el menú con la imagen) y entra en **«▤ Mis estadísticas del día»**.
 2. **Revisión editorial del banco** de preguntas (muestreo por dificultad; ver `doc/agents/content-quality.md`). Los nombres ya salen en español oficial (Pokémon, movimientos y habilidades); lo que queda es leer preguntas y decidir si alguna es confusa.
 3. **Decidir la puntuación** pendiente en `doc/08-decisiones-abiertas.md` (penalización por fallo, bonus por completar, puntos por velocidad, si Pasapalabra resta). Ahora mismo: +10 por acierto y nada más. Cuando lo decidas, se cambia solo `answerCurrent` en `src/gameState.ts` y su test.
 4. **Derechos del contenido Pokémon y del retrato CC BY-NC** antes de pensar en tiendas de apps.

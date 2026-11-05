@@ -17,7 +17,8 @@ Roscodex es un juego fan, gratuito y no oficial de preguntas tipo rosco (inspira
 | `src/audio.ts` | Sonidos 8-bit con Web Audio |
 | `src/storage.ts` | **Todas** las claves de `localStorage` (prefijo `roscodex-`) y lectura/escritura que nunca lanza |
 | `src/tutorial.ts` / `src/records.ts` | Partida guiada (`currentTip`) y récords locales (con reloj y contrarreloj) |
-| `src/daily.ts` | Rosco del día: fecha local, semilla determinista, selección, racha, cuenta atrás, texto para compartir y su clave `roscodex-daily-v1` |
+| `src/daily.ts` | Rosco del día: fecha local, semilla determinista, selección, racha, cuenta atrás, histórico (`history`, máx. 400 días) y su resumen, texto para compartir y su clave `roscodex-daily-v1` |
+| `src/shareImage.ts` / `src/trustedTypes.ts` | Tarjeta pixel-art en canvas para compartir (archivo con Web Share → descarga del PNG) y política «default» de Trusted Types (solo la URL del SW) |
 | `src/stats.ts` / `src/share.ts` / `src/contrast.ts` | Estadísticas (validadas al leer), texto y envío del resultado (Web Share → portapapeles), tema de alto contraste |
 | `src/pwa.ts` | Instalar la app y aviso de versión nueva (el registro del SW está en `main.tsx`) |
 | `src/styles.css` | Estética pixel-art; paleta en `:root` |
@@ -66,7 +67,7 @@ Despliegue: push a `main` → `deploy-pages.yml` publica en GitHub Pages. Tambi�
 - Nunca secretos, tokens, rutas personales ni IPs reales en el repo (ejemplos: `192.168.1.50`).
 - Nada de servicios de pago, analítica ni llamadas a APIs durante la partida.
 - Nada de `innerHTML`/`dangerouslySetInnerHTML`. Enlaces externos con `rel="noopener noreferrer"`.
-- La CSP de producción está en el plugin `roscodex-csp` de `vite.config.ts`: si añades un recurso externo, ajústala de forma explícita.
+- La CSP de producción está en `csp.ts` (la inyecta el plugin `roscodex-csp` de `vite.config.ts`; la vigila `src/csp.test.ts`) y exige Trusted Types: nada de sumideros de HTML o script con cadenas; un sumidero de URL de script nuevo (p. ej. `new Worker`) hay que admitirlo en `allowedScriptUrl` y probarlo en la build. Si añades un recurso externo, ajústala de forma explícita.
 - La CI pasa gitleaks y `npm audit --audit-level=high`; no la debilites.
 
 ## Qué no tocar
