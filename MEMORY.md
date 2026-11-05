@@ -99,5 +99,7 @@ Memoria del proyecto para personas y agentes: decisiones, por qué se tomaron y 
 ## Quién hizo qué (02/11/2026, v1.2.0)
 
 - **GPT-5.6 Luna** (OpenCode, delegado): histórico y resumen en `daily.ts`, sección de estadísticas, botones de compartir y primer `shareImage.ts`.
+- **Big Pickle (Zen)**: 38 pruebas (histórico, imagen, Trusted Types, interfaz); no puede ejecutar `npx`: Claude las pasó (todas en verde a la primera).
+- **Gemini 3 Flash** (delegado): borrador de README y guía de usuario (Claude corrigió la tabla de capturas y lo que hace «Compartir texto»).
+- **Revisión cruzada** (GPT-5.6 Luna, `--agent plan`): aceptados «resultado anterior al primer rosco» (número 0; ahora se descarta, con test) y «doble pulsación» (cerrojo con ref); «dos pestañas» ya estaba asumido en la 1.1 (BAJA: solo una puede empezar el rosco); «Safari sin imagen preparada» se queda: si se pierde el gesto, se descarga el PNG.
 - **Claude (jefe)**: diseño y encargos; dibujo pixel-art de la tarjeta (rosco en círculo), Trusted Types, arreglos de la entrega (tipos, imagen preparada según su contenido, «Ver mis estadísticas» que no guardaba el progreso como «Volver a la portada», texto de 7 px, casillas gigantes con pocos días, campos extra copiados del histórico), mantenimiento, prueba en Chromium y capturas.
-

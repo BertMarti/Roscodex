@@ -63,7 +63,7 @@ const validInteger = (value: unknown) => typeof value === "number" && Number.isI
 // Origen compartido: otra web podría escribir la clave. Los contadores deben cuadrar con las casillas y el número con la fecha.
 function consistentResult(date: string, number: number, values: DailyCell[], correct: number, wrong: number, passed: number): boolean {
   const count = (cell: DailyCell) => values.filter((value) => value === cell).length;
-  return number === dailyNumber(date) && correct === count("correct") && wrong === count("wrong") && passed >= count("passed") && passed <= 1_000;
+  return number >= 1 && number === dailyNumber(date) && correct === count("correct") && wrong === count("wrong") && passed >= count("passed") && passed <= 1_000;
 }
 export function emptyDaily(): DailyData { return { lastDate: null, streak: 0, bestStreak: 0, result: null, history: [] }; }
 

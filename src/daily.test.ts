@@ -521,3 +521,11 @@ describe("Rosco del día · histórico", () => {
     expect(dias[1].entry).toBeNull();
   });
 });
+
+describe("Rosco del día · fechas anteriores al primer rosco (revisión cruzada de la 1.2)", () => {
+  it("descarta un resultado anterior al 31/10/2026 (número 0) y no lo lleva al histórico", () => {
+    const datos = parseDaily(JSON.stringify({ lastDate: "2026-10-30", streak: 1, bestStreak: 1, result: { date: "2026-10-30", number: 0, cells: Array.from({ length: 26 }, () => "empty"), score: 0, correct: 0, wrong: 0, passed: 0, finished: true } }));
+    expect(datos.result).toBeNull();
+    expect(datos.history).toEqual([]);
+  });
+});
